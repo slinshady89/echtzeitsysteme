@@ -11,3 +11,21 @@
 #include <string>
 #include <sstream>
 #include <boost/math/special_functions/sign.hpp>
+
+#include <cv_bridge/cv_bridge.h>
+
+#include <ros/ros.h>
+#include <tf/tf.h>
+#include <std_msgs/String.h>
+#include <std_msgs/UInt8.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/Range.h>
+#include <nav_msgs/Odometry.h>
+
+
+#endif //LANE_DETECTOR_H
