@@ -30,7 +30,7 @@
 #include "trajectory.h"
 
 
-namespace lane_detector {
+namespace lane_detector  {
 
 
     /**
@@ -44,7 +44,7 @@ namespace lane_detector {
                             received. */
   
 }
-class Lane_Detector: Trajectory{
+class Lane_Detector : CTrajectory{
     public:
     size_t getArraySize(size_t m_size);
 
