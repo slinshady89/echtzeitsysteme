@@ -49,9 +49,11 @@ int main(int argc, char **argv) {
             // end of video stream
             break; 
           imshow("Camera Input Picture !#!", frame);
-          if( waitKey(10) == 27 )
+          if( waitKey(10) == 27 ){
             // stop capturing by pressing the emergency Button :) "ESC"
-           break;  
+            cap.close();  // ????? maybe this work   ????
+            break;
+          }
     }
     // the camera will be closed automatically upon exit
     // cap.close();
