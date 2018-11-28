@@ -1,4 +1,5 @@
 #include <lane_detector/lane_detector.h>
+#include <lane_detector/controller.h>
 
 int main(int argc, char** argv)
 {

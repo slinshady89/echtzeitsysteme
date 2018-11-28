@@ -2,6 +2,7 @@
 #define _CONTROLLER_H_
 
 #include "trajectory.h"
+#include <array>
 // https://gist.github.com/bradley219/5373998
 // referenced to PID controller here
 
