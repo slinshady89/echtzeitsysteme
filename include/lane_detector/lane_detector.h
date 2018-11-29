@@ -27,10 +27,11 @@
 #include <sensor_msgs/Range.h>
 #include <nav_msgs/Odometry.h>
 
-#include "trajectory.h"
+#include "controller.h"
 
 
-namespace lane_detector  {
+namespace lane_detector  
+{
 
 
     /**
@@ -44,7 +45,8 @@ namespace lane_detector  {
                             received. */
   
 }
-class Lane_Detector : CTrajectory{
+class Lane_Detector : CTrajectory
+{
     public:
     size_t getArraySize(size_t m_size);
 

@@ -9,7 +9,8 @@
 static const size_t arraySize = 5;
 
 //class CControllerImpl;
-class CController{
+class CController
+{
 public:
     CController(double _K_P /*direct gain to err*/, 
                 double _K_I /*gain of integrated err*/, 
@@ -31,8 +32,8 @@ public:
     * output: steering wheel angle
     */
     double computeSteering(std::array<double,arraySize> _arrTrajErrors);
-    void setCtrlParams(double P, double I, double D, double lim, double t);
-    
+    void setCtrlParams(double P, double I, double D, double t, double lim);
+    double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
     bool ctrlLoop();
     bool ctrlDone();
@@ -44,6 +45,8 @@ private:
     double limit;
     double preError;
     double integral;
+    double lastError, actError; // subtraction of preError and err in t-1 and t
+    double limI;
 };
 
 

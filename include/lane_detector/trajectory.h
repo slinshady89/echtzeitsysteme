@@ -1,4 +1,8 @@
-
+#include <cmath>
+#include <std_msgs/UInt8.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
+#include <sensor_msgs/Imu.h>
 #include <vector>
 
 class CPoint{
@@ -12,52 +16,41 @@ private:
     double m_y;
 };
 
-class CTrajectory : CPoint{
+
+#include <cstdio>//.....................................................printf()
+#include "y_interp.h"//...................................yInterp,<cmath>{sin()}
+int main(){//<===========A SIMPLE EXAMPLE FOR THE yInterp::CubeInterp() FUNCTION
+double X[20];/*<-*/for(int i=0;i<20;++i)X[i]=5*i/20.+5;
+double Y[20];/*<-*/for(int i=0;i<20;++i)Y[i]=sin(2*3.14159*X[i]/5)+1;
+double x=7.18;
+int i=yInterp::BinarySearch(X+1,X+19,x)-X;
+double y=yInterp::CubeInterp(X+i,Y+i,x,0.,0.);
+printf("At x=%.3f, y is approximately %.3f.\n",x,y);
+}//~~~~~~YAGENAUT@GMAIL.COM~~~~~~~~~~~~~~~~~~~~~~~~~LAST~UPDATED~21JUL2014~~~~~~
+
+
+class CTrajectory{
 public:
+    friend CPoint;
     CTrajectory(CPoint point, double acc = 0.0, double curv = 0.0, 
-                 double theta = 0.0, double s = 0)
+                 double theta = 0.0, double s = 0, double t = 0 )
     {
         m_point = point;    
         m_acceleration = acc;
         m_curvature = curv;
         m_theta = theta;
         m_s = s;
+        m_t = t;
     };
-private:
+    std::vector<CTrajectory> trajPoints;
+    CPoint icc; // 
     CPoint m_point;
     double m_acceleration;
     double m_curvature; // curvature kappa
     double m_theta; // tangential angle of the traj
     double m_s; // driven dist on traj
-};
-
-class CController{
-public:
-    CController(double _K_P, double _K_I, double _K_D, double _dt, 
-                double _limit, std::vector<double> _vecSums,
-                std::vector<double> _vecErrors)
-    {
-        K_P = _K_P;
-        K_I = _K_I;
-        K_D = _K_D;
-        dt = _dt;
-        limit = _limit;
-        previous_sums = _vecSums;
-        previous_errors = _vecErrors;
-    };
-    double computeSteering(std::vector<double> _vecTrajErrors);
-    void setCtrlParams(double P, double I, double D, double t);
-    bool initCtrl();
-
-    bool ctrlInit();
-    bool ctrlLoop();
-    bool ctrlDone();
+    double m_t; // time of arrival with actual v
 
 private:
-    double K_P, K_I, K_D;
-    double arrErrs[5];
-    double dt;
-    double limit;
-    std::vector<double> previous_sums;
-    std::vector<double> previous_errors;
 };
+
