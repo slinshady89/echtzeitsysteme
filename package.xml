@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>Echtzeitsysteme</name>
+  <name>echtzeitsysteme</name>
   <version>0.0.0</version>
   <description>The lane_detector package</description>
 
