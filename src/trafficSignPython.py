@@ -27,7 +27,7 @@ def onMouse(event, x, y, flags, param):
 # default Kamera 0 ansonsten andere Zahl waehlen >0 
 # Standard Quelle (/dev/videoN)
 cameraCapture = cv2.VideoCapture(0) 
-#Kamera öffnen 
+#Kamera oeffnen 
 cv2.namedWindow('Kamerabild')
 cv2.setMouseCallback('Kamera', onMouse)
 
@@ -38,7 +38,7 @@ while success and not clicked:
     success, frame = cameraCapture.read()
 
     # Eingehendes Bild in den Grauen Farbraum transferieren
-    # erhöht die Geschwindigkeit der Erkennung
+    # erhoeht die Geschwindigkeit der Erkennung
     # kein Unterschied ob das Schild grau oder bunt ist
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -52,9 +52,9 @@ while success and not clicked:
     # Hough Transformation um Kreise in einem grayscale Bild zu finden
     # minDist: minimaler euklidischer Abstand zwischen Mittelpunkt des erkannten Kreises und dessen Rand/Kanten
     #           -> nur ein Schild immer erkennen 
-    # cv2.HOUGH_GRADIENT: Vector mit erkannten Rändern (Kreis)
-    # parameter1: Anzahl zu erkennende Kreise kann durch den Wert erhöht werden
-    # parameter2: Je höher desto geringer die Fehlerkennung
+    # cv2.HOUGH_GRADIENT: Vector mit erkannten Raendern (Kreis)
+    # parameter1: Anzahl zu erkennende Kreise kann durch den Wert erhoeht werden
+    # parameter2: Je hoeher desto geringer die Fehlerkennung
     # parameter1 > parameter2 !!!
     # https://docs.opencv.org/3.1.0/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
     #
@@ -137,7 +137,7 @@ while success and not clicked:
     cv2.imshow('Kamera', frame)
 
 
-# offene Fenster schließen
+# offene Fenster schliessen
 cv2.destroyAllWindows()
-# Kamera Stream beenden und Ausführung stoppen 
+# Kamera Stream beenden und Ausfuehrung stoppen 
 cameraCapture.release()
