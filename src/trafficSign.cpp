@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
 
 // Custom Message Publisher (Result with sign, size)
-    ros::Publisher signPublishing = n.advertise<//
+    ros::Publisher signPublishing = n.advertise<>;//
 
 
 
