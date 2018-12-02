@@ -1,9 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Point.h"
-#include "test/include/points.h"
+#include "points.h"
 #include "y_interp.h"//...................................yInterp,<cmath>{sin()}
 #include <cstdio>//.....................................................printf()
-
 
 struct point
 {
