@@ -18,6 +18,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
+## Generate messages in the 'msg' folder
+ add_message_files(
+   FILES
+   points.msg
+#   Message2.msg
+ )
+
+## Generate added messages and services with any dependencies listed here
+ generate_messages(
+   DEPENDENCIES
+   geometry_msgs#   std_msgs
+ )
 
 
 #set(CMAKE_AUTOMOC ON)
@@ -115,7 +127,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
    #INCLUDE_DIRS include
    #LIBRARIES pses_lane_detector
-   #CATKIN_DEPENDS pses_ucbridge
+   CATKIN_DEPENDS geometry_msgs roscpp std_msgs
 )
 
 ###########
@@ -149,6 +161,8 @@ add_library(lane_detector_project
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(lane_detector src/lane_detector_node.cpp)
+add_executable(lane_detection src/lane_detection.cpp)
+add_executable(trajectory_planning src/trajectory_planning.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -160,6 +174,8 @@ add_executable(lane_detector src/lane_detector_node.cpp)
 ## same as for the library above
 #add_dependencies(pses_lane_detector pses_ucbridge _gencpp ${catkin_EXPORTED_TARGETS})
 add_dependencies(lane_detector_project ${catkin_EXPORTED_TARGETS})
+add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(lane_detector_project
@@ -170,6 +186,14 @@ target_link_libraries(lane_detector
   lane_detector_project
   ${catkin_LIBRARIES}
   ${QT_LIBRARIES}
+)
+
+target_link_libraries(lane_detection
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(trajectory_planning
+  ${catkin_LIBRARIES}
 )
 
 #############
