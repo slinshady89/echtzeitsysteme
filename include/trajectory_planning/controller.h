@@ -1,7 +1,6 @@
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
-#include "trajectory.h"
 #include <array>
 
 static const size_t arraySize = 5;

@@ -5,8 +5,15 @@
 #include <sensor_msgs/Imu.h>
 #include <vector>
 #include <array>
+#include "ros/ros.h"
+#include "geometry_msgs/Point.h"
+#include "y_interp.h"//...................................yInterp,<cmath>{sin()}
+#include <cstdio>//.....................................................printf()
 
-#include "y_interp.h"
+#include "echtzeitsysteme/points.h"
+#include "controller.h"
+
+
 
 class CPoint{
 public:

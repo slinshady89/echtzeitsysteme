@@ -2,6 +2,7 @@
 #include "std_msgs/Int16.h"
 #include "geometry_msgs/Point.h"
 #include "echtzeitsysteme/points.h"
+#include "trajectory_planning/trajectory.h"
 #include "y_interp.h"//...................................yInterp,<cmath>{sin()}
 #include <cstdio>//.....................................................printf()
 
@@ -79,8 +80,7 @@ int main(int argc, char **argv)
 	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 	ROS_INFO("trajectory_planning");
   
-
-   CController ctrl(2.0,0.0,0.0,100,0.2);
+  CController ctrl(2.0,0.0,0.0,100,0.2);
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);

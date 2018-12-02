@@ -1,5 +1,6 @@
 #include <lane_detector/lane_detector.h>
 #include <trajectory_planning/controller.h>
+#include <trajectory_planning/trajectory.h>
 
 std::vector<CTrajectory> trajPoints;
 
