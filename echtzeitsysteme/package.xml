@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/lane_detector</url> -->
+  <!-- <url type="website">http://wiki.ros.org/echtzeitsysteme</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -48,7 +48,7 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>  
   <build_depend>message_generation</build_depend>
   <build_depend>opencv</build_depend>
   <build_depend>roscpp</build_depend>
