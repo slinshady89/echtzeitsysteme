@@ -22,6 +22,13 @@
 #include <std_msgs/Int16.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/Range.h>
+#include <nav_msgs/Odometry.h>
+
+#include "controller.h"
+
 
 namespace lane_detector  
 {
@@ -38,7 +45,7 @@ namespace lane_detector
                             received. */
   
 }
-class Lane_Detector 
+class Lane_Detector : CTrajectory
 {
     public:
     size_t getArraySize(size_t m_size);

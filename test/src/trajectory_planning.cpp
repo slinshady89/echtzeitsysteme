@@ -1,6 +1,9 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Point.h"
-#include "test/points.h"
+#include "test/include/points.h"
+#include "y_interp.h"//...................................yInterp,<cmath>{sin()}
+#include <cstdio>//.....................................................printf()
+
 
 struct point
 {
@@ -21,11 +24,37 @@ void trajectoryCallback(const test::points::ConstPtr& msg)
   ROS_INFO("trajectory planning is hearing %f %f %f %f", trajectory[0].x, trajectory[0].y, trajectory[1].x, trajectory[1].y);
 }
 
+
+
+
+
 /**
  * Here comes the tracejtory planning magic
  */
 int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "LKA");
+  std::vector<double> sums, errors;
+  double looptime = .2;
+
+  std_msgs::Int16 velocity;
+  std_msgs::Int16 steering;
+  steering.data = 0;
+
+
+  // tests for trajectory
+
+  //double X[20];/*<-*/for(int i=0;i<20;++i)X[i]=5*i/20.+5;
+  //double Y[20];/*<-*/for(int i=0;i<20;++i)Y[i]=sin(2*3.14159*X[i]/5)+1;
+  //double x=7.18;
+  //int i=yInterp::BinarySearch(X+1,X+19,x)-X;
+  //double y=yInterp::CubeInterp(X+i,Y+i,x,0.,0.);
+  //printf("At x=%.3f, y is approximately %.3f.\n",x,y);
+
+
+
+
+
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line.
@@ -44,6 +73,36 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle nh;
+  ros::Publisher motorCtrl =
+	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
+	ros::Publisher steeringCtrl =
+	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
+	ROS_INFO("trajectory_planning");
+  
+
+   CController ctrl(2.0,0.0,0.0,100,0.2);
+
+  // Loop starts here:
+  ros::Rate loop_rate(1/looptime);
+  while (ros::ok())
+  {
+    // some validation check should be done!
+    if(!ctrl.ctrlLoop())    
+          ROS_ERROR("error calculating steering angle");
+
+    ctrl.setCtrlParams(2.0,0.0,0.0,100,0.0);
+
+    velocity.data = 500;
+    steering.data = (int16_t) ctrl.computeSteering( std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );
+    
+    motorCtrl.publish(velocity);
+    steeringCtrl.publish(steering);
+    // clear input/output buffers
+    ros::spinOnce();
+    // this is needed to ensure a const. loop rate
+    loop_rate.sleep();
+
+  }
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages

@@ -132,8 +132,6 @@ include_directories(
 
 set(hdrs
   include/lane_detector/lane_detector.h
-  include/lane_detector/trajectory.h
-  include/lane_detector/controller.h
 )
 
 ## Declare a C++ library
