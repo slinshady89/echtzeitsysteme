@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Point.h"
-#include "test/points.h"
+#include "echtzeitsysteme/points.h"
 
 /**
  * Here comes the cv stuff
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   /**
    * Init ROS Publisher here. Can set to be a fixed array
    */
-  test::points trajectory;
+  echtzeitsysteme::points trajectory;
   float counter = 0;
   //trajectory.data.clear();
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
    * than we can send them, the number here specifies how many messages to
    * buffer up before throwing some away.
    */
-  ros::Publisher trajectory_pub = nh.advertise<test::points>("trajectory", 1);  //TODO: change buffer size
+  ros::Publisher trajectory_pub = nh.advertise<echtzeitsysteme::points>("trajectory", 1);  //TODO: change buffer size
 
   ros::Rate loop_rate(10); //TODO: Hz anpassen
 

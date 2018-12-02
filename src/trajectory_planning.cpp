@@ -1,6 +1,7 @@
 #include "ros/ros.h"
+#include "std_msgs/Int16.h"
 #include "geometry_msgs/Point.h"
-#include "points.h"
+#include "echtzeitsysteme/points.h"
 #include "y_interp.h"//...................................yInterp,<cmath>{sin()}
 #include <cstdio>//.....................................................printf()
 
@@ -14,7 +15,7 @@ struct point
  * callback function fpr trajectory custom points message
  * iterate over each Point in msg and save it in trajectory
  */
-void trajectoryCallback(const test::points::ConstPtr& msg)
+void trajectoryCallback(const echtzeitsysteme::points::ConstPtr& msg)
 {
   trajectory[0].x = msg->points[0].x;
   trajectory[0].y = msg->points[0].y;
