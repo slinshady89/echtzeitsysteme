@@ -4,9 +4,6 @@
 
 std::vector<CTrajectory> trajPoints;
 
-
-
-
 bool CController::ctrlInit(){
     arrErrsWeighting = {1.0, 0.8, 0.6, 0.4, 0.2};
     return true;
@@ -74,4 +71,9 @@ void CController::setCtrlParams(double P, double I, double D, double t, double l
     K_D = D;
     dt = t;
     limit = lim;
+}
+
+CController::~CController()
+{
+    //implement destructor
 }
