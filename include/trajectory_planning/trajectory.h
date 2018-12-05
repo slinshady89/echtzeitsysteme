@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <math.h>
 
-//#include "interpolation.h"
-//#include "stdafx.h"
+#include "interpolation.h"
+#include "stdafx.h"
 
 
 class CPoint{

@@ -9,10 +9,6 @@
 
 class CSafety{
 public:
-    // Callbacks for the left front and right ultrasonic sensors
-    void uslCallback(sensor_msgs::Range::ConstPtr uslMsg, sensor_msgs::Range* usl);
-    void usfCallback(sensor_msgs::Range::ConstPtr usfMsg, sensor_msgs::Range* usf);
-    void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr);
     void set_US_Dist_front(double _dist){
         maxDistFront = _dist;
     }

@@ -122,13 +122,21 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+#FIND_LIBRARY(ALG_LIB /usr/include/libalglib)
+#LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/usr/include/libalglib)
+message(STATUS /usr/include/libalglib)
 
-FIND_LIBRARY(ALG_LIB alglib3.11 /usr/include/libalglib)
+
+
+include_directories(/home/pses/catkin_ws/devel/include/alglib/cpp/src)
+
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -167,15 +175,16 @@ add_executable(trajectory_planning src/trajectory_planning.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 #add_dependencies(pses_lane_detector pses_ucbridge _gencpp ${catkin_EXPORTED_TARGETS})
+
 add_dependencies(lane_detector_project ${catkin_EXPORTED_TARGETS})
 add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+
 target_link_libraries(lane_detector_project
-  ${catkin_LIBRARIES}
-  ${QT_LIBRARIES}
 )
+
 target_link_libraries(lane_detector
   lane_detector_project
   ${catkin_LIBRARIES}
@@ -184,10 +193,11 @@ target_link_libraries(lane_detector
 
 target_link_libraries(lane_detection
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 target_link_libraries(trajectory_planning
-  ALG_LIB
+  #libalglib
   controller 
   safety
   ${catkin_LIBRARIES}

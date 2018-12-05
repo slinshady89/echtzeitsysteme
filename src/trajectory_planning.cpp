@@ -28,6 +28,20 @@ void trajectoryCallback(const echtzeitsysteme::points::ConstPtr& msg)
 }
 
 
+void uslCallback(sensor_msgs::Range::ConstPtr uslMsg, sensor_msgs::Range* usl)
+{
+  *usl = *uslMsg;
+}
+
+void usfCallback(sensor_msgs::Range::ConstPtr usfMsg, sensor_msgs::Range* usf)
+{
+  *usf = *usfMsg;
+}
+
+void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
+{
+  *usr = *usrMsg;
+}
 
 
 
@@ -85,12 +99,10 @@ int main(int argc, char **argv)
 	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
     // generate subscriber for sensor messages
-  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>(
-      "/uc_bridge/usr", 10, boost::bind(CSafety::usrCallback, _1, &usr));
-  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>(
-      "/uc_bridge/usl", 10, boost::bind(CSafety::uslCallback, _1, &usl));
-  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>(
-      "/uc_bridge/usf", 10, boost::bind(CSafety::usfCallback, _1, &usf));
+  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 5,  boost::bind( usrCallback, _1, &usr ));
+  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
+  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
+
 
 
 
@@ -105,7 +117,7 @@ int main(int argc, char **argv)
   {
     // some validation check should be done!
     if(!ctrl.ctrlLoop(usl, usr, usf))    {
-      ROS_INFO("Ultrasonic sensor is detecting something closer than: %s", ctrl.getUsMinDist());
+      //ROS_INFO("Ultrasonic sensor is detecting something closer than: %s", std::to_string(ctrl.getUsMinDist()));
       velocity.data = 0;
     }else{
       ctrl.setCtrlParams(2.0,0.0,0.0,100,0.0);
