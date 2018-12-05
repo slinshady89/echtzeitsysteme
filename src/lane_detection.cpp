@@ -1,7 +1,94 @@
-#include "ros/ros.h"
 #include "geometry_msgs/Point.h"
 #include "echtzeitsysteme/points.h"
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <opencv2/videoio.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/opencv_modules.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core.hpp>
+#include <math.h>
+#include <iomanip>
 
+using namespace cv;
+using namespace std;
+
+int lane() {
+  // value can either be 1 or 0 depending on which camera you want to use --> if there is only one camera value should be 0
+  int num = 0;
+  VideoCapture cap = VideoCapture("LangsameRunde.mkv");
+  Mat frame, resized, cut, ipm;
+
+  if (!cap.isOpened()) {
+    cerr << "Unable to collect video feed number: " << num;
+    return -1;
+  }
+
+  while (true) {
+    // skip frames
+    int skip = 4;
+    for (int i = 0; i < skip; i++) {
+      cap.read(frame);
+    }
+    if (frame.empty())
+      break;
+
+    imshow("input", frame);
+
+    // resize the image for limited resources
+    resize(frame, resized, Size(800, 450), 0, 0, 5);
+    imshow("resized", resized);
+
+    //cut the image to only see the lane --> parameters need to be adjusted
+    cut = resized.clone();
+    cut = cut(Rect(0, 250, resized.cols, 250));
+    imshow("cut", cut);
+    
+    //Transformation mat
+    Mat transform(2, 4, CV_32FC1);
+
+    /*the function warpPerspective() needs a 3x3 matrix to change the perspective of the image
+    the function getPerspectiveTransform() creates this matrix with the four corner points of the source image and the desired image*/
+    Point2f inputvalues[4];
+    Point2f outputvalues[4];
+
+    //source points
+    inputvalues[0] = Point2f(0, 0);
+    inputvalues[1] = Point2f(cut.cols, 0);
+    inputvalues[2] = Point2f(cut.cols, cut.rows);
+    inputvalues[3] = Point2f(0, cut.rows);
+
+    //desired points
+    outputvalues[0] = Point2f(0, 0);
+    outputvalues[1] = Point2f(resized.cols, 0);
+    outputvalues[2] = Point2f(resized.cols - 300, cut.rows);
+    outputvalues[3] = Point2f(300, cut.rows);
+
+    //transformation matrix is generated
+    transform = getPerspectiveTransform(inputvalues, outputvalues);
+
+    //transformation occurs and is stored on ipm
+    warpPerspective(resized, ipm, transform, resized.size());
+    imshow("IPM", ipm);
+  }
+  return -1;
+
+}
 /**
  * Here comes the cv stuff
  */
