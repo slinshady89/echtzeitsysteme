@@ -1,4 +1,5 @@
 #include <cmath>
+#include "ros/ros.h"
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -12,7 +13,16 @@
 
 #include "echtzeitsysteme/points.h"
 #include "controller.h"
+#include "../safety.h"
 
+
+// alglib
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+//#include "interpolation.h"
+//#include "stdafx.h"
 
 
 class CPoint{

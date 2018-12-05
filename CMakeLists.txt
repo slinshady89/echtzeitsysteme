@@ -27,6 +27,7 @@ find_package(OpenCV REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system)
 
 
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -122,6 +123,8 @@ catkin_package(
 ## Build ##
 ###########
 
+FIND_LIBRARY(ALG_LIB alglib3.11 /usr/include/libalglib)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -141,6 +144,7 @@ add_library(lane_detector_project
 )
 
 add_library(controller src/controller.cpp)
+add_library(safety src/safety.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -183,10 +187,12 @@ target_link_libraries(lane_detection
 )
 
 target_link_libraries(trajectory_planning
+  ALG_LIB
+  controller 
+  safety
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(trajectory_planning controller)
 
 #############
 ## Install ##

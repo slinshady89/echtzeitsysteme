@@ -2,6 +2,7 @@
 #include <trajectory_planning/controller.h>
 #include <trajectory_planning/trajectory.h>
 
+
 std::vector<CTrajectory> trajPoints;
 
 bool CController::ctrlInit(){
@@ -11,11 +12,22 @@ bool CController::ctrlInit(){
 
 // some validation check should be done here
 // calculate trajectory here? 
-bool CController::ctrlLoop(){
-    
+bool CController::ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _rangeUSR, sensor_msgs::Range _rangeUSF){
+    double minDist = getUsMinDist();
+    if(range_usl.range <= minDist)      return false;
+    if(range_usr.range <= minDist)      return false;
+    if(range_usf.range <= minDist)      return false;
+
     return true;
 };
 
+bool CController::ctrlLoop(double range_usl, double range_usr, double range_usf){
+    double minDist = getUsMinDist();
+    if(range_usl <= minDist || range_usr <= minDist || range_usf <= minDist)
+        return false;
+
+    return true;
+};
 
 
 /** computeSteering

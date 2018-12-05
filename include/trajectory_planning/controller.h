@@ -2,6 +2,8 @@
 #define _CONTROLLER_H_
 
 #include <array>
+#include <sensor_msgs/Range.h>
+#include "ros/ros.h"
 
 static const size_t arraySize = 5;
 
@@ -32,10 +34,17 @@ public:
     void setCtrlParams(double P, double I, double D, double t, double lim);
     double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
-    bool ctrlLoop();
+    bool ctrlLoop(double _rangeUSL, double _rangeUSR, double _rangeUSF);
+    bool ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _rangeUSR, sensor_msgs::Range _rangeUSF);
     bool ctrlDone();
+    
+    double getUsMinDist(){        return usMinDist;    };
+    void setUsMinDist(double _dist){      usMinDist = _dist;    };
+
+    sensor_msgs::Range range_usl, range_usr, range_usf;
 
 private:
+    double usMinDist = 0.3;
     double K_P, K_I, K_D;
     std::array<double,arraySize> arrErrsWeighting; // weighting of errors of desired traj
     double dt;

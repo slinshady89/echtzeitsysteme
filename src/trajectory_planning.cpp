@@ -6,6 +6,8 @@
 #include "y_interp.h"//...................................yInterp,<cmath>{sin()}
 #include <cstdio>//.....................................................printf()
 
+
+
 struct point
 {
   float x;
@@ -38,8 +40,11 @@ int main(int argc, char **argv)
   std::vector<double> sums, errors;
   double looptime = .2;
 
-  std_msgs::Int16 velocity;
-  std_msgs::Int16 steering;
+  std_msgs::Int16 velocity, steering;
+  sensor_msgs::Range usr, usf, usl;
+
+
+
   steering.data = 0;
 
 
@@ -78,6 +83,18 @@ int main(int argc, char **argv)
 	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
 	ros::Publisher steeringCtrl =
 	  nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
+
+    // generate subscriber for sensor messages
+  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>(
+      "/uc_bridge/usr", 10, boost::bind(CSafety::usrCallback, _1, &usr));
+  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>(
+      "/uc_bridge/usl", 10, boost::bind(CSafety::uslCallback, _1, &usl));
+  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>(
+      "/uc_bridge/usf", 10, boost::bind(CSafety::usfCallback, _1, &usf));
+
+
+
+
 	ROS_INFO("trajectory_planning");
   
   CController ctrl(2.0,0.0,0.0,100,0.2);
@@ -87,21 +104,20 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     // some validation check should be done!
-    if(!ctrl.ctrlLoop())    
-          ROS_ERROR("error calculating steering angle");
-
-    ctrl.setCtrlParams(2.0,0.0,0.0,100,0.0);
-
-    velocity.data = 500;
-    steering.data = (int16_t) ctrl.computeSteering( std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );
-    
+    if(!ctrl.ctrlLoop(usl, usr, usf))    {
+      ROS_INFO("Ultrasonic sensor is detecting something closer than: %s", ctrl.getUsMinDist());
+      velocity.data = 0;
+    }else{
+      ctrl.setCtrlParams(2.0,0.0,0.0,100,0.0);
+      velocity.data = 500;
+      steering.data = (int16_t) ctrl.computeSteering( std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );      
+    }
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);
     // clear input/output buffers
     ros::spinOnce();
     // this is needed to ensure a const. loop rate
     loop_rate.sleep();
-
   }
 
   /**
