@@ -1,5 +1,5 @@
-#ifndef _CONTROLLER_H_
-#define _CONTROLLER_H_
+#ifndef CONTROLLER_H_
+#define CONTROLLER_H_
 
 #include <array>
 #include <sensor_msgs/Range.h>
@@ -56,4 +56,4 @@ private:
 };
 
 
-#endif
+#endif // CONTROLLER_H_

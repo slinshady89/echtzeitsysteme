@@ -1,3 +1,6 @@
+#ifndef TRAJECTORY_H
+#define TRAJECTORY_H
+
 #include <cmath>
 #include "ros/ros.h"
 #include <std_msgs/UInt8.h>
@@ -68,3 +71,4 @@ public:
 private:
 };
 
+#endif //TRAJECTORY_H
