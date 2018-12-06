@@ -44,7 +44,7 @@ public:
     sensor_msgs::Range range_usl, range_usr, range_usf;
 
 private:
-    double usMinDist = 0.3;
+    double usMinDist = 0.2;
     double K_P, K_I, K_D;
     std::array<double,arraySize> arrErrsWeighting; // weighting of errors of desired traj
     double dt;
