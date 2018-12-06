@@ -1,0 +1,7 @@
+<launch>
+
+	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" />
+
+	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" />
+
+</launch>
