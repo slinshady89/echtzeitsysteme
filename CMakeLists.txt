@@ -128,14 +128,11 @@ message(STATUS /usr/include/libalglib)
 
 
 
-include_directories(/home/pses/catkin_ws/devel/include/alglib/cpp/src)
-
-
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  include/alglib/cpp/src
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
