@@ -1,9 +1,15 @@
 #!/usr/bin/python
 
+# package scipy installieren ueber console
+# Befehl:     sudo apt-get install python-scipy
+
 #import
 import cv2
 import numpy as np
 from scipy.stats import itemfreq
+
+
+
 
 
 # Hilfsfunktion um den maximalen Farbanteil/groesstes Aufkommen einer Farbe in einem Bild zu erhalten
@@ -26,7 +32,15 @@ def onMouse(event, x, y, flags, param):
 
 # default Kamera 0 ansonsten andere Zahl waehlen >0 
 # Standard Quelle (/dev/videoN)
-cameraCapture = cv2.VideoCapture(0) 
+#videocapture cameraCapture = VideoCapture(0)
+cameraCapture = cv2.VideoCapture(1) 
+
+########## Aufloesung reduzieren ################################
+#cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+#cameraCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
+#cameraCapture.set(cv2.CAP_PROP_FPS, 10)
+#########
+
 #Kamera oeffnen 
 cv2.namedWindow('Kamerabild')
 cv2.setMouseCallback('Kamera', onMouse)
@@ -90,7 +104,7 @@ while success and not clicked:
             # STOP Schild ist als einizges Rot, Vergleich ob hoher Rotanteil im erkannten Kreis
             if dominant_color[2] > 100:
                 # Zuordnung des Verkehrszeichens zu seiner Bedeutung
-                print("STOP")
+                print("STOP")                       ##### // Problem alles rote wird als STOP erkannt
 
             # Richtungsweisende Schilder die nur Blau sein koennen
             # Vergleich ob hoher Blauanteil im erkannten Kreis
