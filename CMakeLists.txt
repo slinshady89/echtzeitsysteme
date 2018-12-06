@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+#find_package(Alglib REQUIRED)
 
 #set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTOUIC ON)
@@ -136,6 +137,7 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
+  #${ALGLIB_INCLUDES}
 )
 
 #set(hdrs
@@ -198,6 +200,7 @@ target_link_libraries(trajectory_planning
   controller 
   safety
   ${catkin_LIBRARIES}
+  #${ALGLIB_INCLUDES}
 )
 
 

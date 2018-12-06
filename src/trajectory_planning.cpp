@@ -50,6 +50,7 @@ void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
  */
 int main(int argc, char **argv)
 {
+  size_t i = 0;
   std::vector<double> sums, errors;
   double looptime = .2;
 
@@ -112,22 +113,31 @@ int main(int argc, char **argv)
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
 
-  CController ctrl(2.0,0.0,0.0,100,0.2);
+  CController ctrl(37.0,2.0,0.1,100,0.2);
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);
   
   while (ros::ok())
   {
+
+    
+
     // some validation check should be done!
+    /*
     if(!ctrl.ctrlLoop(usl, usr, usf))    {
-      ROS_INFO("Ultrasonic sensor is detecting something closer than: %s", std::to_string(ctrl.getUsMinDist()));
+      ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", ctrl.getUsMinDist());
       velocity.data = 0;
-    }else{
-      ctrl.setCtrlParams(2.0,0.0,0.0,100,0.0);
+    }else*/
+    {
+      ctrl.setCtrlParams(37.0,2.0,0.1,100,0.2);
       velocity.data = 500;
-      steering.data = (int16_t) ctrl.computeSteering( std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );      
+      steering.data = (int16_t) ctrl.computeSteering( 0.2*sin(2*M_PI/20.0*i++) );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
+      ROS_INFO("error: %f", 0.2*sin(2*M_PI/20.0*i));   
+      ROS_INFO("calculated Steering: %f", steering.data);   
     }
+
+
 
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);

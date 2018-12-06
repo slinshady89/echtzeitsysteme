@@ -31,6 +31,7 @@ public:
     * output: steering wheel angle
     */
     double computeSteering(std::array<double,arraySize> _arrTrajErrors);
+    double computeSteering(double err);
     void setCtrlParams(double P, double I, double D, double t, double lim);
     double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
@@ -43,6 +44,14 @@ public:
 
     sensor_msgs::Range range_usl, range_usr, range_usf;
 
+    void setDeratingWeightFact(double _fact){deratingWeightFact = _fact;};
+    double getDeratingWeightFact(){return deratingWeightFact;};
+
+
+    void computeTraj();
+    double computeVarErr();
+
+
 private:
     double usMinDist = 0.2;
     double K_P, K_I, K_D;
@@ -53,6 +62,7 @@ private:
     double integral;
     double lastError, actError; // subtraction of preError and err in t-1 and t
     double limI;
+    double deratingWeightFact = 0.8;
 };
 
 
