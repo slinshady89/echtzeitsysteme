@@ -14,7 +14,6 @@
 #include "y_interp.h"//...................................yInterp,<cmath>{sin()}
 #include <cstdio>//.....................................................printf()
 
-#include "echtzeitsysteme/points.h"
 #include "controller.h"
 #include "../safety.h"
 

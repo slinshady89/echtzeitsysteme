@@ -136,6 +136,7 @@ catkin_package(
 include_directories(
   include
   include/alglib/cpp/src
+  include/lane_detection
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -154,6 +155,8 @@ include_directories(
 
 add_library(controller src/controller.cpp)
 add_library(safety src/safety.cpp)
+add_library(image_processing include/lane_detection/image_processor.cpp)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -179,8 +182,6 @@ add_executable(trajectory_planning src/trajectory_planning.cpp)
 
 #add_dependencies(lane_detector_project ${catkin_EXPORTED_TARGETS})
 add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_dependencies(trajectory_planning echtzeitsysteme_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
@@ -195,6 +196,7 @@ add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 #)
 
 target_link_libraries(lane_detection
+  image_processing
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )

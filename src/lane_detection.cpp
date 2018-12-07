@@ -10,7 +10,7 @@ using namespace cv;
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-#define TEST_PICTURE_PATH "camera_reading_test/images/track_calibration_1.jpg"
+#define TEST_PICTURE_PATH "../include/lane_detection/images/track_calibration_1.jpg"
 
 
 #define USE_TEST_PICTURE
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
   if (frame.empty()) {
     ROS_ERROR("Test image could not be opened!");
+    ROS_ERROR(TEST_PICTURE_PATH);
   }
 #endif
   ROS_INFO("VIDEO READING TEST");
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
    * Init ROS Publisher here. Can set to be a fixed array
    */
   echtzeitsysteme::points trajectory;
-  trajectory.data.clear();
+  trajectory.points.clear();
   float counter = 0.0;
 
   /**
