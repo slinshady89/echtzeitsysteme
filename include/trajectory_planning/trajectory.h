@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "interpolation.h"
-#include "stdafx.h"
+#include "alglib/cpp/src/interpolation.h"
+#include "alglib/cpp/src/stdafx.h"
 
 
 class CPoint{

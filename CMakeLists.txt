@@ -131,11 +131,16 @@ catkin_package(
 
 
 
+#LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/usr/lib/x86_64-linux-gnu)
+
+
+
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  include/alglib/cpp/src
   include/lane_detection
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -195,14 +200,13 @@ add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 #  ${QT_LIBRARIES}
 #)
 
-target_link_libraries(lane_detection
+target_link_libraries(lane_detection  
   image_processing
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
 
 target_link_libraries(trajectory_planning
-  #libalglib
   controller 
   safety
   ${catkin_LIBRARIES}
