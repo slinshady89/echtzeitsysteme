@@ -1,94 +1,47 @@
-#include "geometry_msgs/Point.h"
-#include "echtzeitsysteme/points.h"
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
+#include <geometry_msgs/Point.h>
+#include <echtzeitsysteme/points.h>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <opencv2/videoio.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/videoio/videoio.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/opencv_modules.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/core.hpp>
-#include <math.h>
-#include <iomanip>
+#include <CameraReader.hpp>
+#include <image_processor.hpp>
+#include <stdio.h>
 
 using namespace cv;
-using namespace std;
 
-int lane() {
-  // value can either be 1 or 0 depending on which camera you want to use --> if there is only one camera value should be 0
-  int num = 0;
-  VideoCapture cap = VideoCapture("LangsameRunde.mkv");
-  Mat frame, resized, cut, ipm;
+//#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
+//#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
+#define TEST_PICTURE_PATH "camera_reading_test/images/track_calibration_1.jpg"
 
-  if (!cap.isOpened()) {
-    cerr << "Unable to collect video feed number: " << num;
-    return -1;
-  }
 
-  while (true) {
-    // skip frames
-    int skip = 4;
-    for (int i = 0; i < skip; i++) {
-      cap.read(frame);
-    }
-    if (frame.empty())
-      break;
+#define USE_TEST_PICTURE
+#define LOOP_RATE_IN_HERTZ 2
+//#define DRAW_GRID
 
-    imshow("input", frame);
+#define PARAMS_1 59.0,84.0,30.0,640,480,Point(0,366),Point(632,363),Point(404,238),Point(237,237),Point(151,639),Point(488,639),Point(488,0),Point(151,0)
+#define PARAMS_2 59.0,84.0,20,640,991,Point(43,387),Point(583,383),Point(404,189),Point(234,190),Point(95,990),Point(545,990),Point(545,350),Point(95,350)
 
-    // resize the image for limited resources
-    resize(frame, resized, Size(800, 450), 0, 0, 5);
-    imshow("resized", resized);
 
-    //cut the image to only see the lane --> parameters need to be adjusted
-    cut = resized.clone();
-    cut = cut(Rect(0, 250, resized.cols, 250));
-    imshow("cut", cut);
-    
-    //Transformation mat
-    Mat transform(2, 4, CV_32FC1);
+const Point2i POINT_1 = Point2i(320,0);
+const Point2i POINT_2 = Point2i(320,990);
+const Point2i POINT_3 = Point2i(20,460);
 
-    /*the function warpPerspective() needs a 3x3 matrix to change the perspective of the image
-    the function getPerspectiveTransform() creates this matrix with the four corner points of the source image and the desired image*/
-    Point2f inputvalues[4];
-    Point2f outputvalues[4];
 
-    //source points
-    inputvalues[0] = Point2f(0, 0);
-    inputvalues[1] = Point2f(cut.cols, 0);
-    inputvalues[2] = Point2f(cut.cols, cut.rows);
-    inputvalues[3] = Point2f(0, cut.rows);
-
-    //desired points
-    outputvalues[0] = Point2f(0, 0);
-    outputvalues[1] = Point2f(resized.cols, 0);
-    outputvalues[2] = Point2f(resized.cols - 300, cut.rows);
-    outputvalues[3] = Point2f(300, cut.rows);
-
-    //transformation matrix is generated
-    transform = getPerspectiveTransform(inputvalues, outputvalues);
-
-    //transformation occurs and is stored on ipm
-    warpPerspective(resized, ipm, transform, resized.size());
-    imshow("IPM", ipm);
-  }
-  return -1;
-
+// for calibration / centering the car
+void drawGrid(Mat& mat)
+{
+  int width = mat.cols;
+  int height = mat.rows;
+  line(mat, Point(0, (height-1)/2), Point(width-1, (height-1)/2), Scalar(0,0,255), 1);
+  line(mat, Point((width-1)/2, 0), Point((width-1)/2, height-1), Scalar(0,0,255), 1);
 }
+
+// for debugging
+void printWorldCoords(Point2i pxPoint, int pointId, ImageProcessor& proc)
+{
+  Point2d worldCoords1 = proc.getWorldCoordinates(pxPoint);
+  ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
+}
+
 /**
  * Here comes the cv stuff
  */
@@ -112,13 +65,44 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle nh;
+  Mat frame;
+
+#ifdef USE_TEST_PICTURE
+  frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
+  if (frame.empty()) {
+    ROS_ERROR("Test image could not be opened!");
+  }
+#endif
+  ROS_INFO("VIDEO READING TEST");
+  char dir_name[100];
+  getcwd(dir_name, 100);
+  ROS_INFO("Current directory is: %s", dir_name);
+#ifndef USE_TEST_PICTURE
+  CameraReader reader;
+
+  ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
+  //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
+#endif
+  
+  // TODO: for more meaningful testing, move object creation in the loop
+  ImageProcessor imageProcessor(frame);
+  imageProcessor.calibrateCameraImage(PARAMS_2);
+
+  imshow("CameraFrame", frame);
+  waitKey(0);
+
+  frame = imageProcessor.transformTo2D();
+  
+  ROS_INFO("Open up window...");
+  //namedWindow("CameraFrame", WINDOW_AUTOSIZE);
+
 
   /**
    * Init ROS Publisher here. Can set to be a fixed array
    */
   echtzeitsysteme::points trajectory;
-  float counter = 0;
-  //trajectory.data.clear();
+  trajectory.data.clear();
+  float counter = 0.0;
 
   /**
    * The advertise() function is how you tell ROS that you want to
@@ -139,7 +123,7 @@ int main(int argc, char **argv)
    */
   ros::Publisher trajectory_pub = nh.advertise<echtzeitsysteme::points>("trajectory", 1);  //TODO: change buffer size
 
-  ros::Rate loop_rate(10); //TODO: Hz anpassen
+  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ); //TODO: Hz anpassen
 
   while (ros::ok())
   {
@@ -152,15 +136,33 @@ int main(int argc, char **argv)
     geometry_msgs::Point point1;
     point1.x = counter;
     point1.y = counter + 1;
-    
-    geometry_msgs::Point point2;
-    point2.x = counter + 2;
-    point2.y = counter + 3;
 
-    trajectory.points.push_back(point1);
-    trajectory.points.push_back(point2);   
+    trajectory.points.push_back(point1);  
 
     ROS_INFO("lane_detection runs");
+
+    //reader.readImage();
+    //ROS_INFO("Number of frames: %f", reader.getNumberOfFrames());
+    
+    ROS_INFO("Show frame.");
+#ifndef USE_TEST_PICTURE
+    frame = reader.readImage();
+#endif
+#ifdef DRAW_GRID
+    drawGrid(frame);
+#endif
+
+    printWorldCoords(POINT_1, 1, imageProcessor);
+    imageProcessor.drawPoint(POINT_1);
+    printWorldCoords(POINT_2, 2, imageProcessor);
+    imageProcessor.drawPoint(POINT_2);
+    printWorldCoords(POINT_3, 3, imageProcessor);
+    frame = imageProcessor.drawPoint(POINT_3);
+
+
+    imshow("CameraFrame", frame);
+    waitKey(1); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
+    ROS_INFO("Showed frame.");
 
     /**
      * The publish() function is how you send messages. The parameter
@@ -172,8 +174,10 @@ int main(int argc, char **argv)
 
     ++counter;
 
+    // clear input/output buffers
     ros::spinOnce();
 
+    // this is needed to ensure a const. loop rate
     loop_rate.sleep();
   }
 

@@ -8,6 +8,7 @@ project(echtzeitsysteme)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  genmsg
   cv_bridge
   roscpp
   std_msgs  
@@ -82,7 +83,8 @@ find_package(OpenCV REQUIRED)
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   geometry_msgs#   std_msgs
+   geometry_msgs
+   #std_msgs
  )
 
 ################################################
@@ -117,7 +119,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
    #INCLUDE_DIRS include
    #LIBRARIES pses_lane_detector
-   CATKIN_DEPENDS geometry_msgs roscpp std_msgs
+   CATKIN_DEPENDS geometry_msgs roscpp std_msgs message_runtime
 )
 
 ###########
@@ -125,7 +127,7 @@ catkin_package(
 ###########
 #FIND_LIBRARY(ALG_LIB /usr/include/libalglib)
 #LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/usr/include/libalglib)
-message(STATUS /usr/include/libalglib)
+#message(STATUS /usr/include/libalglib)
 
 
 
@@ -177,6 +179,8 @@ add_executable(trajectory_planning src/trajectory_planning.cpp)
 
 #add_dependencies(lane_detector_project ${catkin_EXPORTED_TARGETS})
 add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(trajectory_planning echtzeitsysteme_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against

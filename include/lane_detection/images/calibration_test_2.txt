@@ -1,0 +1,23 @@
+Auflösung: 640x480
+
+## Weltkoordinaten ##
+
+Offset (Abstand zur Vorderachse):   30 cm
+Test-Rechteck-Höhe: 84 cm
+Test-Rechteck-Breite: 59 cm
+-> Verhältnis H/B: 1,424
+
+## Pixelkoordinaten - src ##
+
+P1: (0,366)
+P2: (632, 363)
+P3: (404,238)
+P4: (237,237)
+
+## Pixelkoordinaten - dst ##
+-> für Ausnutzung der vollen Höhe und Seitenverhältnis wie in der Realität
+
+P1: (151,639)
+P2: (488, 639)
+P3: (151,0)
+P4: (488,0)
