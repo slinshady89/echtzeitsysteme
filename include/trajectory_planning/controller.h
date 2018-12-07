@@ -14,13 +14,18 @@ public:
     CController(double _K_P /*direct gain to err*/, 
                 double _K_I /*gain of integrated err*/, 
                 double _K_D /*gain of derived err*/, 
-                double _dt /*loop interval time*/, 
+                double _dt /*loop interval time in s*/, 
                 double _limit /*+-steering limit*/):
                 K_P(_K_P = 0.0),
                 K_I(_K_I = 0.0),
                 K_D(_K_D = 0.0),
                 dt(_dt = 2.0),
-                limit(_limit = 0.0)
+                limit(_limit = 0.0),
+                dErrorLast(0.0), 
+                dErrorAct(0.0),
+                deratingWeightFact(0.8),
+                integral(0.0),
+                errCnt(0)
     {};
 
     ~CController();
@@ -31,7 +36,7 @@ public:
     * output: steering wheel angle
     */
     double computeSteering(std::array<double,arraySize> _arrTrajErrors);
-    double computeSteering(double err);
+    double computeSteering(double& err);
     void setCtrlParams(double P, double I, double D, double t, double lim);
     double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
@@ -60,9 +65,9 @@ private:
     double limit;
     double preError;
     double integral;
-    double lastError, actError; // subtraction of preError and err in t-1 and t
-    double limI;
-    double deratingWeightFact = 0.8;
+    double dErrorLast, dErrorAct; // subtraction of preError and err in t-1 and t
+    double deratingWeightFact;
+    size_t errCnt;
 };
 
 

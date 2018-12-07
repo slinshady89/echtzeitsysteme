@@ -109,58 +109,61 @@ double CController::computeSteering(std::array<double,arraySize> _errs)
         if(i == arraySize-1)
             continue;
     }
-    actError = (err - preError);
+    dErrorAct = (err - preError);
     // limit to the I-part of the controller so it stops raising if a countersteering onto the traj is detected
-    if(abs(actError) >= abs(lastError))      integral += dt*err;
+    if(abs(dErrorAct) >= abs(dErrorLast))      integral += dt*err;
     else                                    integral -= dt*err;
     
     // maybe dont use err but kappa directly instead?
     double Pout = K_P * err;
     double Iout = K_I * integral;
     double derivate = 0.0;
-    if(dt != 0.0) derivate = lastError / dt;
+    if(dt != 0.0) derivate = dErrorAct / dt;
     double Dout = K_D *derivate;
 
     steer = Pout + Iout + Dout;
     if(steer > limit) steer = limit;
     if(steer < -limit) steer = -limit;
 
-    lastError = (err - preError);
+    dErrorLast = (err - preError);
 
     preError = err;
     ctrlDone();
     return steer;
 };
 
-double CController::computeSteering(double _err)
+double CController::computeSteering(double& _err)
 {
     double steer = 0.0;
-    double err = _err;
 
-    actError = (err - preError);
+    dErrorAct = (_err - preError);
     // limit to the I-part of the controller so it stops raising if a countersteering onto the traj is detected
-    if(abs(actError) >= abs(lastError))      integral += dt*err;
-    else                                    integral -= dt*err;
+    if(abs(dErrorAct) >= abs(dErrorLast))       integral += dt*_err;
+    else                                        integral -= dt*_err;
     
+    if(dErrorAct < FLT_EPSILON && _err < FLT_EPSILON && integral > FLT_EPSILON) errCnt++;
+    if(errCnt > 5) integral = 0.0; 
+
     // maybe dont use err but kappa directly instead?
-    double Pout = K_P * err;
+    double Pout = K_P *_err;
     double Iout = K_I * integral;
     double derivate = 0.0;
-    if(dt != 0.0) derivate = lastError / dt;
-    double Dout = K_D *derivate;
+    if(dt != 0.0) derivate = dErrorAct / dt;
+    double Dout = K_D *derivate; 
+   
+    // calculuted controlleroutput has to be negated because of coordinate system. 
+    // steering to the left should be invoked by negative angles
+    // steering to the right should be invoked by positive angles
+    steer = -(Pout + Iout + Dout);
 
-      ROS_INFO("Dout: %f", Dout);   
-      ROS_INFO("Iout: %f", Iout);   
-      ROS_INFO("Pout: %f", Pout);   
+    if(steer > limit)   steer = limit;
+    if(steer < -limit)  steer = -limit;
 
-    steer = Pout + Iout + Dout;
-    if(steer > limit) steer = limit;
-    if(steer < -limit) steer = -limit;
+    dErrorLast = _err - preError;
 
-    lastError = (err - preError);
-
-    preError = err;
+    preError = _err;
     ctrlDone();
+    ROS_INFO("error: %f   ==>   P: %f  I: %f  D: %f   ==>  steer: %f", _err, Pout, Iout, Dout, steer);  
     return steer;
 };
 

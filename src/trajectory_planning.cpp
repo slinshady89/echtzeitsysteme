@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
 
-  CController ctrl(37.0,2.0,0.1,100,0.2);
+  CController ctrl(37.0, 2.0, 0.1, 0.1, 500);
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);
@@ -130,11 +130,15 @@ int main(int argc, char **argv)
       velocity.data = 0;
     }else*/
     {
-      ctrl.setCtrlParams(37.0,2.0,0.1,100,0.2);
+      ctrl.setCtrlParams(10.0, 5.0, 0.1, 0.1, 500);
       velocity.data = 500;
-      steering.data = (int16_t) ctrl.computeSteering( 0.2*sin(2*M_PI/20.0*i++) );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
-      ROS_INFO("error: %f", 0.2*sin(2*M_PI/20.0*i));   
-      ROS_INFO("calculated Steering: %f", steering.data);   
+      //ROS_INFO("error: %.4f", 0.2*sin(2*M_PI/20.0*i));
+      double err = (0.2*sin(2*M_PI/20.0*i++));
+      double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
+      i++;
+      //ROS_INFO("error: %.4f", err2);
+      steering.data = (int16_t) ctrl.computeSteering( err2 );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
+      //ROS_INFO("calculated Steering: %.4f\n", steering.data);   
     }
 
 
