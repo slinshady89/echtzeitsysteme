@@ -1,9 +1,8 @@
-// Language: Denglisch     C++
 
-//include Files
+
 #include "ros/ros.h"
 #include "opencv2/opencv.hpp"   // noch hinzufügen
-
+//include Files     Language: Denglisch     C++
 
 //namespace
 using namespace cv;
@@ -32,9 +31,10 @@ int main(int argc, char **argv) {
 
 
 
+
+
 // Image Input from Webcam
     VideoCapture cap;
-
     // opens default camera else tipe different number than 0
     if(!cap.open(0))
         // Cancel if camera can not be accessed
@@ -61,8 +61,8 @@ int main(int argc, char **argv) {
 
 
 
-// Custom Message Publisher (Result with sign, size)
-    ros::Publisher signPublishing = n.advertise<>;//
+    // Custom Message Publisher (Result with sign, size)
+    //ros::Publisher signPublishing = n.advertise<>;//
 
 
 
