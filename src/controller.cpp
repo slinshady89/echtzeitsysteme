@@ -141,7 +141,7 @@ double CController::computeSteering(double& _err)
     if(abs(dErrorAct) >= abs(dErrorLast))       integral += dt*_err;
     else                                        integral -= dt*_err;
     
-    if(dErrorAct < FLT_EPSILON && _err < FLT_EPSILON && integral > FLT_EPSILON) errCnt++;
+    if(_err < FLT_EPSILON && integral > FLT_EPSILON) errCnt++;
     if(errCnt > 5) integral = 0.0; 
 
     // maybe dont use err but kappa directly instead?
@@ -151,10 +151,7 @@ double CController::computeSteering(double& _err)
     if(dt != 0.0) derivate = dErrorAct / dt;
     double Dout = K_D *derivate; 
    
-    // calculuted controlleroutput has to be negated because of coordinate system. 
-    // steering to the left should be invoked by negative angles
-    // steering to the right should be invoked by positive angles
-    steer = -(Pout + Iout + Dout);
+    steer = Pout + Iout + Dout;
 
     if(steer > limit)   steer = limit;
     if(steer < -limit)  steer = -limit;

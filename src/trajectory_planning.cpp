@@ -130,7 +130,7 @@ int main(int argc, char **argv)
       velocity.data = 0;
     }else*/
     {
-      ctrl.setCtrlParams(10.0, 5.0, 0.1, 0.1, 500);
+      ctrl.setCtrlParams(17.5, 5.0, 0.1, 0.1, 500);
       velocity.data = 500;
       //ROS_INFO("error: %.4f", 0.2*sin(2*M_PI/20.0*i));
       double err = (0.2*sin(2*M_PI/20.0*i++));
