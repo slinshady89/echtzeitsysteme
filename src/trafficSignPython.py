@@ -33,19 +33,17 @@ def onMouse(event, x, y, flags, param):
 # default Kamera 0 ansonsten andere Zahl waehlen >0 
 # Standard Quelle (/dev/videoN)
 #videocapture cameraCapture = VideoCapture(0)
-cameraCapture = cv2.VideoCapture(0) 
+cameraCapture = cv2.VideoCapture(1) 
 
 ########## Aufloesung reduzieren ################################
-cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cameraCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-cameraCapture.set(cv2.CAP_PROP_FPS, 30)
+#cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+#cameraCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
+#cameraCapture.set(cv2.CAP_PROP_FPS, 10)
 #########
 
 #Kamera oeffnen 
 cv2.namedWindow('Kamerabild')
-
 cv2.setMouseCallback('Kamera', onMouse)
-#imshow('Kamera', onMouse)
 
 # Frames kontinuerlich in einer Schleife einlesen/aktualisieren
 success, frame = cameraCapture.read()
@@ -115,15 +113,16 @@ while success and not clicked:
                 # educates guess:  erkannter Kreis/Schild in 3 Zonen aufteilen
 
                 # linke Zone
-                zone_0 = square[square.shape[0]*3//8:square.shape[0]* 5//8,    square.shape[1]*1//8:square.shape[1]*3//8]
+                zone_0 = square[square.shape[0]*3//8:square.shape[0]
+                                * 5//8, square.shape[1]*1//8:square.shape[1]*3//8]
                 zone_0_color = get_dominant_color(zone_0, 1)
 
                 # mittlere Zone
-                zone_1 = square[square.shape[0]*1//8:square.shape[0] * 3//8,   square.shape[1]*3//8:square.shape[1]*5//8]
+                zone_1 = square[square.shape[0]*1//8:square.shape[0] * 3//8, square.shape[1]*3//8:square.shape[1]*5//8]
                 zone_1_color = get_dominant_color(zone_1, 1)
 
                 # rechte Zone
-                zone_2 = square[square.shape[0]*3//8:square.shape[0] * 5//8,   square.shape[1]*5//8:square.shape[1]*7//8]
+                zone_2 = square[square.shape[0]*3//8:square.shape[0] * 5//8, square.shape[1]*5//8:square.shape[1]*7//8]
                 zone_2_color = get_dominant_color(zone_2, 1)
 
 
