@@ -1,0 +1,20 @@
+<launch>
+
+	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" />
+
+	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" />
+
+	<node pkg="pses_ucbridge" type="uc_bridge" name="uc_bridge" output="screen">
+    <param name="config_path" value="$(find pses_ucbridge)/config/" />
+    <param name="register_sensor_groups" value="true" />
+    <param name="activate_motor_controller" value="true" />
+    <param name="activate_steering_controller" value="true" />
+    <param name="activate_kinect" value="true" />
+    <param name="activate_us_sensors" value="true" />
+    <param name="activate_daq" value="true" />
+    <param name="reset_on_shutdown" value="true" />
+    <param name="enable_debug_messages" value="false" />
+    <param name="enable_raw_communication" value="false" />
+  </node>
+
+</launch>
