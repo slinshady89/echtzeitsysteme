@@ -2,6 +2,28 @@
 
 #define FRAMES_TO_DISCARD 4
 
+
+
+CameraReader::CameraReader(): cap(
+#ifdef DEBUG
+            VideoCapture("test.mp4")
+#else
+            VideoCapture()
+#endif
+            ) {
+#ifndef DEBUG
+    cap.open(0);
+    if (!cap.isOpened()) {
+        cap.open(1);
+    }
+    if (!cap.isOpened()) {
+        std::cerr << "No video opened" << std::endl;
+    }
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, INIT_VIDEO_WIDTH);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, INIT_VIDEO_HEIGHT);
+#endif
+}
+
 Mat CameraReader::readImage() {
     // int numOfGrabbedImages = 0;
     // while (cap.grab()) {

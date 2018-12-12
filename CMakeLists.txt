@@ -172,10 +172,15 @@ add_library(image_processing src/lane_detection/image_processor.cpp)
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 #add_executable(lane_detector src/lane_detector_node.cpp)
+
 add_executable(lane_detection src/lane_detection.cpp
                               src/lane_detection/CameraReader.cpp
                               src/lane_detection/image_processor.cpp)
 add_executable(trajectory_planning src/trajectory_planning.cpp)
+add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
+                                    src/lane_detection/CameraReader.cpp
+                                    src/lane_detection/image_processor.cpp
+                                    src/gui/color_selector.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -213,6 +218,11 @@ target_link_libraries(trajectory_planning
   safety
   ${catkin_LIBRARIES}
   #${ALGLIB_INCLUDES}
+)
+
+target_link_libraries(camera_reading_test
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 
