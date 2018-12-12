@@ -92,11 +92,37 @@ int main(int argc, char **argv)
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
   double v_mops = 0;
+  double serverK_P(0.0);
+  double serverK_I(0.0);
+  double serverK_D(0.0);
+  double server_dt (0.0);
+  double steeringLimitAbs(1000);
 
   if(nh.getParam("v_mops", v_mops))
   {
     ROS_INFO("v_mops = %f", v_mops);
   }
+   if(nh.getParam("K_P", serverK_P))
+  {
+    ROS_INFO("K_P = %f", serverK_P);
+  }
+ if(nh.getParam("K_I", serverK_I))
+  {
+    ROS_INFO("K_I = %f", serverK_I);
+  }
+ if(nh.getParam("K_D", serverK_D))
+  {
+    ROS_INFO("K_D = %f", serverK_D);
+  }
+ if(nh.getParam("dt", server_dt))
+  {
+    ROS_INFO("dt = %f", server_dt);
+  }
+ if(nh.getParam("steeringLimitAbs", steeringLimitAbs))
+  {
+    ROS_INFO("steeringLimitAbs = %f", steeringLimitAbs);
+  }
+
 
 
   /**
@@ -121,7 +147,7 @@ int main(int argc, char **argv)
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
 
-  CController ctrl(37.0, 2.0, 0.1, 0.1, 500);
+  CController ctrl(serverK_P, serverK_I, serverK_D, server_dt, steeringLimitAbs);
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);
@@ -138,7 +164,7 @@ int main(int argc, char **argv)
       velocity.data = 0;
     }else*/
     {
-      ctrl.setCtrlParams(17.5, 5.0, 0.1, 0.1, 500);
+      ctrl.setCtrlParams(serverK_P, serverK_I, serverK_D, server_dt, steeringLimitAbs);
       velocity.data = 500;
       //ROS_INFO("error: %.4f", 0.2*sin(2*M_PI/20.0*i));
       double err = (0.2*sin(2*M_PI/20.0*i++));
