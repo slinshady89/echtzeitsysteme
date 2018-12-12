@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   double looptime = .2;
 
   std_msgs::Int16 velocity, steering;
-  sensor_msgs::Range usr, usf, usl;
+  sensor_msgs::Range usr, usf, usl;  
 
   velocity.data = 0;
   steering.data = 0;
@@ -90,6 +90,14 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::Publisher motorCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
+
+  double v_mops = 0;
+
+  if(nh.getParam("v_mops", v_mops))
+  {
+    ROS_INFO("v_mops = %f", v_mops);
+  }
+
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
