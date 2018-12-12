@@ -160,7 +160,7 @@ include_directories(
 
 add_library(controller src/controller.cpp)
 add_library(safety src/safety.cpp)
-add_library(image_processing include/lane_detection/image_processor.cpp)
+add_library(image_processing src/lane_detection/image_processor.cpp)
 
 
 ## Add cmake target dependencies of the library
@@ -172,7 +172,9 @@ add_library(image_processing include/lane_detection/image_processor.cpp)
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 #add_executable(lane_detector src/lane_detector_node.cpp)
-add_executable(lane_detection src/lane_detection.cpp)
+add_executable(lane_detection src/lane_detection.cpp
+                              src/lane_detection/CameraReader.cpp
+                              src/lane_detection/image_processor.cpp)
 add_executable(trajectory_planning src/trajectory_planning.cpp)
 
 ## Rename C++ executable without prefix
