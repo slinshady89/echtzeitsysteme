@@ -92,11 +92,11 @@ int main(int argc, char **argv)
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
   double v_mops = 0;
-  double serverK_P(0.0);
-  double serverK_I(0.0);
-  double serverK_D(0.0);
+  double serverK_P(0.0);  // range: 0...100
+  double serverK_I(0.0);  // range: 0...50
+  double serverK_D(0.0);  // range: 0...100
   double server_dt (0.0);
-  double steeringLimitAbs(1000);
+  double steeringLimitAbs(1000);  // range: 0...1000
 
   if(nh.getParam("v_mops", v_mops))
   {
