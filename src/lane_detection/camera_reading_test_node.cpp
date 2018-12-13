@@ -28,6 +28,7 @@ const Point2i POINT_1 = Point2i(320,0);
 const Point2i POINT_2 = Point2i(320,990);
 const Point2i POINT_3 = Point2i(20,460);
 
+Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc);
 
 // for calibration / centering the car
 void drawGrid(Mat& mat) {
@@ -42,6 +43,7 @@ void printWorldCoords(Point2i pxPoint, int pointId, ImageProcessor& proc) {
   Point2d worldCoords1 = proc.getWorldCoordinates(pxPoint);
   ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
 }
+
 
 int main(int argc, char** argv)
 {
@@ -69,6 +71,7 @@ int main(int argc, char** argv)
 
 
   ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
+  frame = reader.readImage();
   //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
 #endif
   
@@ -76,9 +79,10 @@ int main(int argc, char** argv)
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
   imageProcessor.calibrateCameraImage(PARAMS_3);
-
+/*
   imshow("CameraFrame", frame);
   waitKey(0);
+*/
 
 /*
   frame = imageProcessor.resize(800,450);
@@ -93,7 +97,7 @@ int main(int argc, char** argv)
   waitKey(0);
 */
 
-
+/*
   frame = imageProcessor.transformTo2D();
   imshow("2D", frame);
 
@@ -101,7 +105,7 @@ int main(int argc, char** argv)
   imshow("2D denoised", frame);
   
   waitKey(0);
-  
+ */ 
   //namedWindow("CameraFrame", WINDOW_AUTOSIZE);
 
   ros::Rate loop_rate(LOOP_RATE_IN_HERTZ);
@@ -119,6 +123,8 @@ int main(int argc, char** argv)
     drawGrid(frame);
 #endif
 
+  imageProcessing1(frame, colSelGr, imageProcessor);
+
 /*
     printWorldCoords(POINT_1, 1, imageProcessor);
     imageProcessor.drawPoint(POINT_1);
@@ -127,9 +133,12 @@ int main(int argc, char** argv)
     printWorldCoords(POINT_3, 3, imageProcessor);
     frame = imageProcessor.drawPoint(POINT_3);
 */
+/*
     ROS_INFO("H low: %d", colSelGr.getLowH());
     ROS_INFO("S high: %d", colSelGr.getHighS());
-
+*/
+/*
+    // overwrite with plain 2D image
     imageProcessor.setImage(frame, HSV);
     Mat greenFiltered = imageProcessor.filterColor(Scalar(colSelGr.getLowH(), colSelGr.getLowS(), colSelGr.getLowV()),
                                             Scalar(colSelGr.getHighH(), colSelGr.getHighS(), colSelGr.getHighV()));
@@ -139,13 +148,15 @@ int main(int argc, char** argv)
     Point2i trajPoint = imageProcessor.singleTrajPoint(40, 100);
     ROS_INFO("Calculated traj point.");
     imshow("traj point", imageProcessor.drawPoint(trajPoint));
+*/
 /*
     Mat edgesDetected = imageProcessor.edgeDetection(colSelGr.getLowCannyThresh(), colSelGr.getHighCannyThresh());
     imshow("edges detected", greenFiltered);
 */
     //imshow("CameraFrame", frame);
     waitKey(1000); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
-    ROS_INFO("Showed frame.");
+    
+    //ROS_INFO("Showed frame.");
 
     // clear input/output buffers
     ros::spinOnce();
@@ -154,4 +165,26 @@ int main(int argc, char** argv)
   }
 
   ros::spin();
+}
+
+Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc) {
+  Mat output;
+  proc.setImage(input, HSV);
+  output = proc.transformTo2D();
+  imshow("2D input", output);
+  output = proc.filterColor(Scalar(sel.getLowH(), sel.getLowS(), sel.getLowV()),
+                                            Scalar(sel.getHighH(), sel.getHighS(), sel.getHighV()));
+  imshow("green filtered", output);
+  output = proc.removeNoise(5,5);
+  imshow("green with noise removed", output);
+
+/*
+  // noise removal
+  output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
+  imshow("edges detected", output);
+*/
+  Point2i trajPoint = proc.singleTrajPoint(40, 100);
+  imshow("traj point", proc.drawPoint(trajPoint));
+
+  return output;
 }
