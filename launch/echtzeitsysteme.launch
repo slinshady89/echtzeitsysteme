@@ -4,7 +4,7 @@
 
 	<rosparam command="load" file="$(find echtzeitsysteme)/launch/parameter.yaml" /> 
 
-	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" />
+	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" output="screen"/>
 
 	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" />
 
