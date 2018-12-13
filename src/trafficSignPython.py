@@ -33,7 +33,7 @@ def onMouse(event, x, y, flags, param):
 # default Kamera 0 ansonsten andere Zahl waehlen >0 
 # Standard Quelle (/dev/videoN)
 #videocapture cameraCapture = VideoCapture(0)
-cameraCapture = cv2.VideoCapture(1) 
+cameraCapture = cv2.VideoCapture(0) 
 
 ########## Aufloesung reduzieren ################################
 #cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 800)

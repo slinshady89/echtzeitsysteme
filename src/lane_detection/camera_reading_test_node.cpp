@@ -13,7 +13,7 @@ using namespace cv;
 #define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
 
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
@@ -169,9 +169,11 @@ int main(int argc, char** argv)
 
 Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc) {
   Mat output;
-  proc.setImage(input, HSV);
+  proc.setImage(input, BGR);
   output = proc.transformTo2D();
   imshow("2D input", output);
+  ROS_INFO("H_low: %d, S_low: %d, V_low: %d, H_high: %d, S_high: %d, V_high: %d", sel.getLowH(), sel.getLowS(), sel.getLowV(), sel.getHighH(), sel.getHighS(), sel.getHighV());
+  proc.convertToHSV();
   output = proc.filterColor(Scalar(sel.getLowH(), sel.getLowS(), sel.getLowV()),
                                             Scalar(sel.getHighH(), sel.getHighS(), sel.getHighV()));
   imshow("green filtered", output);

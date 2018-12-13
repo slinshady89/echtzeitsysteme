@@ -77,6 +77,9 @@ Mat ImageProcessor::transformTo2D() {
 }
 
 Mat ImageProcessor::filterColor(Scalar lowHSVColor, Scalar highHSVColor) {
+    if (colorType != HSV) {
+        convertToHSV();
+    }
     inRange(image, lowHSVColor, highHSVColor, image);
     return image;
 }
