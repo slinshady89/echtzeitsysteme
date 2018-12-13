@@ -10,7 +10,7 @@ using namespace cv;
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_calibration_1.jpg"
-#define TEST_PICTURE_PATH "camera_reading_test/images/my_photo-2.jpg"
+#define TEST_PICTURE_PATH "echtzeitsysteme/images/my_photo-2.jpg"
 
 
 #define USE_TEST_PICTURE

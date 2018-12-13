@@ -2,8 +2,8 @@
 #include <geometry_msgs/Point.h>
 #include <echtzeitsysteme/points.h>
 #include <opencv2/opencv.hpp>
-#include <CameraReader.hpp>
-#include <image_processor.hpp>
+#include <lane_detection/CameraReader.hpp>
+#include <lane_detection/image_processor.hpp>
 #include <stdio.h>
 
 using namespace cv;
