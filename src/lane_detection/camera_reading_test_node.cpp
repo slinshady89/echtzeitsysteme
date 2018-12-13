@@ -7,10 +7,17 @@
 
 using namespace cv;
 
+<<<<<<< HEAD
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_calibration_1.jpg"
 #define TEST_PICTURE_PATH "echtzeitsysteme/images/my_photo-2.jpg"
+=======
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/calibration_test_2.jpg"
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/track_straight.jpg"
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/track_calibration_1.jpg"
+#define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
+>>>>>>> 3150fd30546f4383719a04f439b1997b2489c046
 
 
 #define USE_TEST_PICTURE
