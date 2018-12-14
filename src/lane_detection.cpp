@@ -162,7 +162,9 @@ int main(int argc, char **argv)
 
     ROS_INFO("Calculated traj point.");
 #ifdef SHOW_IMAGES
-    imshow("traj point", imageProcessor.drawPoint(trajPoint));
+    if (trajPoint.x >= 0 && trajPoint.y >=0) {
+      imshow("traj point", imageProcessor.drawPoint(trajPoint));
+    }
 #endif
 
     // clear points array every loop
