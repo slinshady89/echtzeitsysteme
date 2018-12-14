@@ -152,12 +152,14 @@ Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm) {
 
     int y = image.rows - pxHeight;
     int width = image.cols;
-    Mat imageRow = image.row(y);
-    for (int i=width-1; i>=0; i--) {
-        Scalar pixel = imageRow.at<uchar>(0,i);
+    if (y>=0 && y<image.rows) { // validity check
+        Mat imageRow = image.row(y);
+        for (int i=width-1; i>=0; i--) {
+            Scalar pixel = imageRow.at<uchar>(0,i);
 
-        if (pixel.val[0]!=0) {
-            return Point2i(i-pxDistLane,y);
+            if (pixel.val[0]!=0) {
+                return Point2i(i-pxDistLane,y);
+            }
         }
     }
     std::cerr << "No trajectory point found." << std::endl;

@@ -6,6 +6,7 @@
 #include <lane_detection/image_processor.hpp>
 #include <stdio.h>
 #include <echtzeitsysteme/ImageProcessingConfig.h>
+#include <dynamic_reconfigure/server.h>
 
 using namespace cv;
 
@@ -13,7 +14,7 @@ using namespace cv;
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-#define TEST_PICTURE_PATH "echtzeitsysteme/images/my_photo-2.jpg"
+#define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
 
 
 //#define USE_TEST_PICTURE
@@ -25,6 +26,9 @@ using namespace cv;
 
 // my_photo-2.jpg
 #define PARAMS_3 59.0,84.0,20,180,180,Point(549,799),Point(1384,786),Point(1129,490),Point(800,493),5
+// photo from 15.12.
+#define PARAMS_4 59.0,84.0,22,180,180,Point(384,895),Point(1460,900),Point(1128,472),Point(760,460),5
+
 
 const Point2i POINT_1 = Point2i(320,0);
 const Point2i POINT_2 = Point2i(320,990);
@@ -41,7 +45,7 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   low_H = config.low_H;
   low_S = config.low_S;
   low_V = config.low_V;
-  high_H = config.high_V;
+  high_H = config.high_H;
   high_S = config.high_S;
   high_V = config.high_V;
   y_dist_cm = config.y_dist_cm;
@@ -77,6 +81,15 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   Mat frame;
 
+  /* dynamic reconfigure commands */
+
+  dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig> server;
+  dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig>::CallbackType f;
+
+  f = boost::bind(&configCallback, _1, _2);
+  server.setCallback(f);
+
+
 #ifdef USE_TEST_PICTURE
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
   if (frame.empty())
@@ -93,14 +106,15 @@ int main(int argc, char **argv)
   CameraReader reader;
   ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
   //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
+  frame = reader.readImage();
 #endif
   
   // TODO: for more meaningful testing, move object creation in the loop
 
-  frame = reader.readImage();
+  
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
-  imageProcessor.calibrateCameraImage(PARAMS_3);
+  imageProcessor.calibrateCameraImage(PARAMS_4);
   ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
 
@@ -165,6 +179,7 @@ int main(int argc, char **argv)
     if (trajPoint.x >= 0 && trajPoint.y >=0) {
       imshow("traj point", imageProcessor.drawPoint(trajPoint));
     }
+    waitKey(100);
 #endif
 
     // clear points array every loop
@@ -214,7 +229,7 @@ Mat processImage(Mat input, ImageProcessor& proc) {
 #ifdef SHOW_IMAGES
   imshow("green filtered", output);
 #endif
-
+  ROS_INFO("remove noise...");
   output = proc.removeNoise(5,5);
 #ifdef SHOW_IMAGES
   imshow("green with noise removed", output);
