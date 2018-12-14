@@ -10,16 +10,13 @@ from scipy.stats import itemfreq
 
 
 
-
-
 # Hilfsfunktion um den maximalen Farbanteil/groesstes Aufkommen einer Farbe in einem Bild zu erhalten
 # https://stackoverflow.com/questions/43111029/how-to-find-the-average-colour-of-an-image-in-python-with-opencv#43111221
 def get_dominant_color(image, n_colors):
     pixels = np.float32(image).reshape((-1, 3))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, .1)
     flags = cv2.KMEANS_RANDOM_CENTERS
-    flags, labels, centroids = cv2.kmeans(
-        pixels, n_colors, None, criteria, 10, flags)
+    flags, labels, centroids = cv2.kmeans(pixels, n_colors, None, criteria, 10, flags)
     palette = np.uint8(centroids)
     return palette[np.argmax(itemfreq(labels)[:, -1])]
 
@@ -33,17 +30,17 @@ def onMouse(event, x, y, flags, param):
 # default Kamera 0 ansonsten andere Zahl waehlen >0 
 # Standard Quelle (/dev/videoN)
 #videocapture cameraCapture = VideoCapture(0)
-cameraCapture = cv2.VideoCapture(1) 
+cameraCapture = cv2.VideoCapture(0) 
 
 ########## Aufloesung reduzieren ################################
-#cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
-#cameraCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
-#cameraCapture.set(cv2.CAP_PROP_FPS, 10)
+cameraCapture.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+cameraCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
+cameraCapture.set(cv2.CAP_PROP_FPS, 10)
 #########
 
 #Kamera oeffnen 
 cv2.namedWindow('Kamerabild')
-cv2.setMouseCallback('Kamera', onMouse)
+cv2.setMouseCallback('KameraMouse', onMouse)
 
 # Frames kontinuerlich in einer Schleife einlesen/aktualisieren
 success, frame = cameraCapture.read()
@@ -51,10 +48,13 @@ while success and not clicked:
     cv2.waitKey(1)
     success, frame = cameraCapture.read()
 
+    
+
     # Eingehendes Bild in den Grauen Farbraum transferieren
     # erhoeht die Geschwindigkeit der Erkennung
     # kein Unterschied ob das Schild grau oder bunt ist
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
 
 
     # medianBlur() -> Rauschunterdrueckung des Streams um falsche Kreiserkennung zu verhindern 
@@ -73,8 +73,10 @@ while success and not clicked:
     # https://docs.opencv.org/3.1.0/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
     #
     circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,1, 50, param1=120, param2=40)
-
-
+   
+    # Demo zwecke darstellung mehrer Kreise
+    #circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,1, 50, param1=120, param2=40)
+    
 
     if not circles is None:
         circles = np.uint16(np.around(circles))
@@ -88,7 +90,7 @@ while success and not clicked:
                 max_r = circles[:, :, 2][0][i]
         x, y, r = circles[:, :, :][0][max_i]
 
-        
+
         # Out of Bounds verhindern
         # Zugriff auf einen Index ausserhalb der Elipse/Kreises verhindern, da fuer die weitere
         # Verarbeitung der Ausschnitt nur benoetigt wird
@@ -113,8 +115,7 @@ while success and not clicked:
                 # educates guess:  erkannter Kreis/Schild in 3 Zonen aufteilen
 
                 # linke Zone
-                zone_0 = square[square.shape[0]*3//8:square.shape[0]
-                                * 5//8, square.shape[1]*1//8:square.shape[1]*3//8]
+                zone_0 = square[square.shape[0]*3//8:square.shape[0] * 5//8, square.shape[1]*1//8:square.shape[1]*3//8]
                 zone_0_color = get_dominant_color(zone_0, 1)
 
                 # mittlere Zone
@@ -149,6 +150,11 @@ while success and not clicked:
             cv2.circle(frame, (i[0], i[1]), i[2], (0, 255, 0), 2)
             cv2.circle(frame, (i[0], i[1]), 2, (0, 0, 255), 3)
     cv2.imshow('Kamera', frame)
+
+    # zusaetzlicher Output
+    cv2.imshow('gray', gray)
+    cv2.imshow('img', img)
+   
 
 
 # offene Fenster schliessen
