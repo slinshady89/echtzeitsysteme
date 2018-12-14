@@ -11,8 +11,6 @@
 #include <array>
 #include "ros/ros.h"
 #include "geometry_msgs/Point.h"
-#include "y_interp.h"//...................................yInterp,<cmath>{sin()}
-#include <cstdio>//.....................................................printf()
 
 #include "controller.h"
 #include "../safety.h"
@@ -23,8 +21,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "alglib/cpp/src/interpolation.h"
-#include "alglib/cpp/src/stdafx.h"
 
 
 class CPoint{
