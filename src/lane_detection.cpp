@@ -172,7 +172,10 @@ int main(int argc, char **argv)
     drawGrid(frame);
 #endif
     Mat processedImage = processImage(frame, imageProcessor);
-    Point2i trajPoint = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm);
+    Point2i trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm);
+    Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint);
+    Point2i trajPoint = Point2i(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
+
 
     ROS_INFO("Calculated traj point.");
 #ifdef SHOW_IMAGES
