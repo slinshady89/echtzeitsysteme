@@ -76,6 +76,9 @@ double computeVarErr(){
 // calculate trajectory here? 
 bool CController::ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _rangeUSR, sensor_msgs::Range _rangeUSF){
     double minDist = getUsMinDist();
+    if (_rangeUSF.range < 1.0)        ROS_INFO("US front: %f", range_usf);     
+    if (_rangeUSL.range < 1.0)        ROS_INFO("US left: %f", range_usl);     
+    if (_rangeUSR.range < 1.0)        ROS_INFO("US right: %f", range_usr); 
     if(range_usl.range <= minDist)      return false;
     if(range_usr.range <= minDist)      return false;
     if(range_usf.range <= minDist)      return false;
@@ -84,8 +87,13 @@ bool CController::ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _ran
 
 bool CController::ctrlLoop(double range_usl, double range_usr, double range_usf){
     double minDist = getUsMinDist();
+    if (range_usf < 1.0)        ROS_INFO("US front: %f", range_usf);     
+    if (range_usf < 1.0)        ROS_INFO("US left: %f", range_usl);     
+    if (range_usf < 1.0)        ROS_INFO("US right: %f", range_usr); 
+    
     if(range_usl <= minDist || range_usr <= minDist || range_usf <= minDist)
         return false;
+    
 
     return true;
 };

@@ -1,20 +1,19 @@
 #include <ros/ros.h>
-#include <geometry_msgs/Point.h>
-#include <echtzeitsysteme/points.h>
 #include <opencv2/opencv.hpp>
-#include <lane_detection/CameraReader.hpp>
-#include <lane_detection/image_processor.hpp>
+#include <CameraReader.hpp>
+#include <image_processor.hpp>
 #include <gui/color_selector.hpp>
 #include <stdio.h>
 
 using namespace cv;
 
-//#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
-//#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-#define TEST_PICTURE_PATH "echtzeitsysteme/images/my_photo-2.jpg"
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/calibration_test_2.jpg"
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/track_straight.jpg"
+//#define TEST_PICTURE_PATH "Echtzeitsysteme/images/track_calibration_1.jpg"
+#define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
 
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
@@ -24,9 +23,12 @@ using namespace cv;
 // my_photo-2.jpg
 #define PARAMS_3 59.0,84.0,20,180,180,Point(549,799),Point(1384,786),Point(1129,490),Point(800,493),5
 
+
 const Point2i POINT_1 = Point2i(320,0);
 const Point2i POINT_2 = Point2i(320,990);
 const Point2i POINT_3 = Point2i(20,460);
+
+Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc);
 
 // for calibration / centering the car
 void drawGrid(Mat& mat) {
@@ -42,28 +44,12 @@ void printWorldCoords(Point2i pxPoint, int pointId, ImageProcessor& proc) {
   ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
 }
 
-/**
- * Here comes the real magic
- */
-int main(int argc, char **argv)
-{
-  /**
-   * The ros::init() function needs to see argc and argv so that it can perform
-   * any ROS arguments and name remapping that were provided at the command line.
-   * For programmatic remappings you can use a different version of init() which takes
-   * remappings directly, but for most command-line programs, passing argc and argv is
-   * the easiest way to do it.  The third argument to init() is the name of the node.
-   *
-   * You must call one of the versions of ros::init() before using any other
-   * part of the ROS system.
-   */
-  ros::init(argc, argv, "lane_detection");
 
-  /**
-   * NodeHandle is the main access point to communications with the ROS system.
-   * The first NodeHandle constructed will fully initialize this node, and the last
-   * NodeHandle destructed will close down the node.
-   */
+int main(int argc, char** argv)
+{
+  // init this node
+  ros::init(argc, argv, "camera_reading_test_node");
+
   ros::NodeHandle nh;
   Mat frame;
 
@@ -71,8 +57,7 @@ int main(int argc, char **argv)
 
 #ifdef USE_TEST_PICTURE
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
-  if (frame.empty())
-  {
+  if (frame.empty()) {
     ROS_ERROR("Test image could not be opened!");
   }
 #endif
@@ -83,7 +68,10 @@ int main(int argc, char **argv)
 
 #ifndef USE_TEST_PICTURE
   CameraReader reader;
+
+
   ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
+  frame = reader.readImage();
   //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
 #endif
   
@@ -91,8 +79,10 @@ int main(int argc, char **argv)
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
   imageProcessor.calibrateCameraImage(PARAMS_3);
-
+/*
   imshow("CameraFrame", frame);
+  waitKey(0);
+*/
 
 /*
   frame = imageProcessor.resize(800,450);
@@ -107,40 +97,19 @@ int main(int argc, char **argv)
   waitKey(0);
 */
 
+/*
   frame = imageProcessor.transformTo2D();
   imshow("2D", frame);
 
   frame = imageProcessor.removeNoise(5,5);
   imshow("2D denoised", frame);
+  
+  waitKey(0);
+ */ 
+  //namedWindow("CameraFrame", WINDOW_AUTOSIZE);
 
-  /**
-   * Init ROS Publisher here. Can set to be a fixed array
-   */
-  echtzeitsysteme::points trajectory;
-  trajectory.points.clear();
-  float counter = 0.0;
-
-  /**
-   * The advertise() function is how you tell ROS that you want to
-   * publish on a given topic name. This invokes a call to the ROS
-   * master node, which keeps a registry of who is publishing and who
-   * is subscribing. After this advertise() call is made, the master
-   * node will notify anyone who is trying to subscribe to this topic name,
-   * and they will in turn negotiate a peer-to-peer connection with this
-   * node.  advertise() returns a Publisher object which allows you to
-   * publish messages on that topic through a call to publish().  Once
-   * all copies of the returned Publisher object are destroyed, the topic
-   * will be automatically unadvertised.
-   *
-   * The second parameter to advertise() is the size of the message queue
-   * used for publishing messages.  If messages are published more quickly
-   * than we can send them, the number here specifies how many messages to
-   * buffer up before throwing some away.
-   */
-  ros::Publisher trajectory_pub = nh.advertise<echtzeitsysteme::points>("trajectory", 1);  //TODO: change buffer size
-
-  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ); //TODO: Hz anpassen
-
+  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ);
+  ROS_INFO("Enter while loop...");
   while (ros::ok())
   {
     //reader.readImage();
@@ -154,17 +123,22 @@ int main(int argc, char **argv)
     drawGrid(frame);
 #endif
 
-    /*
+  imageProcessing1(frame, colSelGr, imageProcessor);
+
+/*
     printWorldCoords(POINT_1, 1, imageProcessor);
     imageProcessor.drawPoint(POINT_1);
     printWorldCoords(POINT_2, 2, imageProcessor);
     imageProcessor.drawPoint(POINT_2);
     printWorldCoords(POINT_3, 3, imageProcessor);
     frame = imageProcessor.drawPoint(POINT_3);
-    */
+*/
+/*
     ROS_INFO("H low: %d", colSelGr.getLowH());
     ROS_INFO("S high: %d", colSelGr.getHighS());
-
+*/
+/*
+    // overwrite with plain 2D image
     imageProcessor.setImage(frame, HSV);
     Mat greenFiltered = imageProcessor.filterColor(Scalar(colSelGr.getLowH(), colSelGr.getLowS(), colSelGr.getLowV()),
                                             Scalar(colSelGr.getHighH(), colSelGr.getHighS(), colSelGr.getHighV()));
@@ -174,55 +148,45 @@ int main(int argc, char **argv)
     Point2i trajPoint = imageProcessor.singleTrajPoint(40, 100);
     ROS_INFO("Calculated traj point.");
     imshow("traj point", imageProcessor.drawPoint(trajPoint));
+*/
 /*
     Mat edgesDetected = imageProcessor.edgeDetection(colSelGr.getLowCannyThresh(), colSelGr.getHighCannyThresh());
     imshow("edges detected", greenFiltered);
 */
     //imshow("CameraFrame", frame);
-    //waitKey(1000); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
-    ROS_INFO("Showed frame.");
-
-    printWorldCoords(POINT_1, 1, imageProcessor);
-    imageProcessor.drawPoint(POINT_1);
-    printWorldCoords(POINT_2, 2, imageProcessor);
-    imageProcessor.drawPoint(POINT_2);
-    printWorldCoords(POINT_3, 3, imageProcessor);
-    frame = imageProcessor.drawPoint(POINT_3);
-
-
-    imshow("CameraFrame", frame);
-    //waitKey(1); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
-    ROS_INFO("Showed frame.");
-
-    // clear points array every loop
-    trajectory.points.clear();
-
-    /**
-     * create geometry_msgs/Point message for every entry in custom points msg and push it
-     */
-    geometry_msgs::Point point1;
-    point1.x = trajPoint.x;
-    point1.y = trajPoint.y;
-
-    trajectory.points.push_back(point1);
-
-    /**
-     * The publish() function is how you send messages. The parameter
-     * is the message object. The type of this object must agree with the type
-     * given as a template parameter to the advertise<>() call, as was done
-     * in the constructor above.
-     */
-    trajectory_pub.publish(trajectory);
-
-    ++counter;
+    waitKey(1000); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
+    
+    //ROS_INFO("Showed frame.");
 
     // clear input/output buffers
     ros::spinOnce();
-
     // this is needed to ensure a const. loop rate
     loop_rate.sleep();
   }
 
+  ros::spin();
+}
 
-  return 0;
+Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc) {
+  Mat output;
+  proc.setImage(input, BGR);
+  output = proc.transformTo2D();
+  imshow("2D input", output);
+  ROS_INFO("H_low: %d, S_low: %d, V_low: %d, H_high: %d, S_high: %d, V_high: %d", sel.getLowH(), sel.getLowS(), sel.getLowV(), sel.getHighH(), sel.getHighS(), sel.getHighV());
+  proc.convertToHSV();
+  output = proc.filterColor(Scalar(sel.getLowH(), sel.getLowS(), sel.getLowV()),
+                                            Scalar(sel.getHighH(), sel.getHighS(), sel.getHighV()));
+  imshow("green filtered", output);
+  output = proc.removeNoise(5,5);
+  imshow("green with noise removed", output);
+
+/*
+  // noise removal
+  output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
+  imshow("edges detected", output);
+*/
+  Point2i trajPoint = proc.singleTrajPoint(40, 100);
+  imshow("traj point", proc.drawPoint(trajPoint));
+
+  return output;
 }

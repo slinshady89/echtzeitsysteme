@@ -1,0 +1,6 @@
+v_mops: 300.0
+K_P: 17.5
+K_I: 3.5
+K_D: 0.0
+dt: 0.1
+steeringLimitAbs: 800.0

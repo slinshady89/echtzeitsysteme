@@ -1,6 +1,9 @@
 #ifndef CAMERA_READER_HPP_
 #define CAMERA_READER_HPP_
 
+#define INIT_VIDEO_WIDTH 1920
+#define INIT_VIDEO_HEIGHT 1080
+
 // read a file "test.mp4" instead of the webcam input if active
 //#define DEBUG
 
@@ -11,13 +14,7 @@ using namespace cv;
 class CameraReader {
     public:
 
-        CameraReader(): cap(
-#ifdef DEBUG
-            VideoCapture("test.mp4")
-#else
-            VideoCapture(0)
-#endif
-            ){};
+        CameraReader();
         ~CameraReader(){};
 
 
