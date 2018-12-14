@@ -223,8 +223,6 @@ Mat processImage(Mat input, ImageProcessor& proc) {
   output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
   imshow("edges detected", output);
 */
-  Point2i trajPoint = proc.singleTrajPoint(40, 100);
-  imshow("traj point", proc.drawPoint(trajPoint));
 
   return output;
 }
