@@ -62,7 +62,7 @@ class ImageProcessor {
         /**
          * Calculates a single (inaccurate) trajectory point by using a fixed distance to the right lane in the given distance (y_cm).
          */
-        Point2i singleTrajPoint(int rightLaneDist_cm, int y_cm);
+        Point2i singleTrajPoint(int rightLaneDist_cm, int y_cm, int colorThreshold);
 
         // debugging methods
         Mat drawPoint(Point2i point);

@@ -17,7 +17,7 @@ using namespace cv;
 #define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
 
 
-//#define USE_TEST_PICTURE
+#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
@@ -38,6 +38,7 @@ const Point2i POINT_3 = Point2i(20,460);
 int low_H, low_S, low_V, high_H, high_S, high_V;
 double y_dist_cm, lane_dist_cm;
 int loop_rate;
+int laneColorThreshold;
 
 Mat processImage(Mat input, ImageProcessor& proc);
 
@@ -51,6 +52,7 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   y_dist_cm = config.y_dist_cm;
   lane_dist_cm = config.lane_dist_cm;
   loop_rate = config.loop_rate;
+  laneColorThreshold = config.colorThreshold;
 
   ROS_INFO("Updated configuration.");
 }
@@ -172,8 +174,8 @@ int main(int argc, char **argv)
     drawGrid(frame);
 #endif
     Mat processedImage = processImage(frame, imageProcessor);
-    Point2i trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm);
-    Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint);
+    Point2i trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
+    Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
     Point2i trajPoint = Point2i(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
 

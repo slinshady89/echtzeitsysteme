@@ -1,4 +1,4 @@
-#include <image_processor.hpp>
+#include <lane_detection/image_processor.hpp>
 
 void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, double offsetToOrigin_cm,
                                     int targetWidth, int targetHeight,
@@ -146,7 +146,7 @@ void ImageProcessor::setImage(Mat img, ColorType type) {
     colorType = type;
 }
 
-Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm) {
+Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm, int colorThreshold) {
     int pxHeight = (y_cm - offset_cm) * height_px_per_cm;
     int pxDistLane = rightLaneDist_cm * width_px_per_cm;
 
@@ -157,7 +157,7 @@ Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm) {
         for (int i=width-1; i>=0; i--) {
             Scalar pixel = imageRow.at<uchar>(0,i);
 
-            if (pixel.val[0]!=0) {
+            if (pixel.val[0]>colorThreshold) {
                 return Point2i(i-pxDistLane,y);
             }
         }
