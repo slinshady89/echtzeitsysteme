@@ -96,10 +96,12 @@ int main(int argc, char **argv)
 #endif
   
   // TODO: for more meaningful testing, move object creation in the loop
+
+  frame = reader.readImage();
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
   imageProcessor.calibrateCameraImage(PARAMS_3);
-
+  ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
 
 /*
