@@ -176,9 +176,8 @@ double CController::computeSteering(double& _err)
 
 
 bool CController::ctrlDone(){
-    for (size_t i = 0; i < arraySize ; i++){
-
-    }
+ //   for (size_t i = 0; i < arraySize ; i++){   }
+    return true;
 }
 
 void CController::setCtrlParams(double P, double I, double D, double t, double lim){
@@ -188,8 +187,13 @@ void CController::setCtrlParams(double P, double I, double D, double t, double l
     dt = t;
     limit = lim;
 }
+void CController::setCtrlParams(double P, double I, double D){
+    K_P = P;
+    K_I = I;
+    K_D = D;
+}
 
 CController::~CController()
 {
-    //implement destructor
+    integral = 0;
 }

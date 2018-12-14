@@ -17,9 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
   nav_msgs
+  dynamic_reconfigure
 )
 
 find_package(OpenCV REQUIRED)
+#add dynamic reconfigure api
 #find_package(Alglib REQUIRED)
 
 #set(CMAKE_AUTOMOC ON)
@@ -102,10 +104,10 @@ find_package(OpenCV REQUIRED)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/controller.cfg
+  #...
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -126,10 +128,12 @@ catkin_package(
 ## Build ##
 ###########
 #FIND_LIBRARY(ALG_LIB /usr/include/libalglib)
-#LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/usr/include/libalglib)
+LINK_DIRECTORIES(/usr/lib/x86_64-linux-gnu/)
 #message(STATUS /usr/include/libalglib)
 
-
+set(ALGLIB_INCLUDES
+  /usr/include/libalglib/
+)
 
 #LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/usr/lib/x86_64-linux-gnu)
 
@@ -145,7 +149,7 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
-  #${ALGLIB_INCLUDES}
+  ${ALGLIB_INCLUDES}
 )
 
 #set(hdrs
@@ -183,6 +187,11 @@ add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.c
                                     src/lane_detection/image_processor.cpp
                                     src/gui/color_selector.cpp)
 
+
+# make sure configure headers are built before any node using them
+add_dependencies(trajectory_planning ${PROJECT_NAME}_gencfg)
+
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -218,7 +227,7 @@ target_link_libraries(trajectory_planning
   controller 
   safety
   ${catkin_LIBRARIES}
-  #${ALGLIB_INCLUDES}
+  alglib
 )
 
 target_link_libraries(camera_reading_test
@@ -288,4 +297,6 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
+
 

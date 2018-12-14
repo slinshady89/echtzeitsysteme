@@ -44,12 +44,24 @@ void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
 }
 
 
+void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl) {
+  ROS_INFO("Reconfigure Request: %f %f %f %d", 
+            config.K_P, config.K_I, 
+            config.K_D, 
+            config.size);
+  ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
+}
+
 
 /**
  * Here comes the tracejtory planning magic
  */
 int main(int argc, char **argv)
 {
+
+
+
+
   size_t i = 0;
   std::vector<double> sums, errors;
   double looptime = .2;
@@ -59,16 +71,6 @@ int main(int argc, char **argv)
 
   velocity.data = 0;
   steering.data = 0;
-
-
-  // tests for trajectory
-
-  //double X[20];/*<-*/for(int i=0;i<20;++i)X[i]=5*i/20.+5;
-  //double Y[20];/*<-*/for(int i=0;i<20;++i)Y[i]=sin(2*3.14159*X[i]/5)+1;
-  //double x=7.18;
-  //int i=yInterp::BinarySearch(X+1,X+19,x)-X;
-  //double y=yInterp::CubeInterp(X+i,Y+i,x,0.,0.);
-  //printf("At x=%.3f, y is approximately %.3f.\n",x,y);
 
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
@@ -81,6 +83,12 @@ int main(int argc, char **argv)
    * part of the ROS system.
    */
   ros::init(argc, argv, "trajectory_planning");
+
+
+
+  dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig> server;
+  dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig>::CallbackType f;
+
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -151,11 +159,14 @@ int main(int argc, char **argv)
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);
-  
-  while (ros::ok())
-  {
 
-    
+  f = boost::bind(&ctrlParamCallback, _1, &ctrl);
+  server.setCallback(f);
+  
+
+
+  while (ros::ok())
+  {  
 
     // some validation check should be done!
     /*
@@ -172,10 +183,8 @@ int main(int argc, char **argv)
       i++;
       //ROS_INFO("error: %.4f", err2);
       steering.data = (int16_t) ctrl.computeSteering( err2 );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
-      //ROS_INFO("calculated Steering: %.4f\n", steering.data);   
+      //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);   
     }
-
-
 
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);
