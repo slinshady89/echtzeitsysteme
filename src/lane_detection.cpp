@@ -4,17 +4,19 @@
 #include <opencv2/opencv.hpp>
 #include <lane_detection/CameraReader.hpp>
 #include <lane_detection/image_processor.hpp>
-#include <gui/color_selector.hpp>
 #include <stdio.h>
+#include <echtzeitsysteme/ImageProcessingConfig.h>
 
 using namespace cv;
+
+#define SHOW_IMAGES
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
 #define TEST_PICTURE_PATH "echtzeitsysteme/images/my_photo-2.jpg"
 
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
@@ -28,19 +30,27 @@ const Point2i POINT_1 = Point2i(320,0);
 const Point2i POINT_2 = Point2i(320,990);
 const Point2i POINT_3 = Point2i(20,460);
 
-// for calibration / centering the car
-void drawGrid(Mat& mat) {
-  int width = mat.cols;
-  int height = mat.rows;
-  line(mat, Point(0, (height-1)/2), Point(width-1, (height-1)/2), Scalar(0,0,255), 1);
-  line(mat, Point((width-1)/2, 0), Point((width-1)/2, height-1), Scalar(0,0,255), 1);
+/* configuration parameters */
+int low_H, low_S, low_V, high_H, high_S, high_V;
+double y_dist_cm, lane_dist_cm;
+int loop_rate;
+
+Mat processImage(Mat input, ImageProcessor& proc);
+
+void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level) {
+  low_H = config.low_H;
+  low_S = config.low_S;
+  low_V = config.low_V;
+  high_H = config.high_V;
+  high_S = config.high_S;
+  high_V = config.high_V;
+  y_dist_cm = config.y_dist_cm;
+  lane_dist_cm = config.lane_dist_cm;
+  loop_rate = config.loop_rate;
+
+  ROS_INFO("Updated configuration.");
 }
 
-// for debugging
-void printWorldCoords(Point2i pxPoint, int pointId, ImageProcessor& proc) {
-  Point2d worldCoords1 = proc.getWorldCoordinates(pxPoint);
-  ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
-}
 
 /**
  * Here comes the real magic
@@ -67,8 +77,6 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   Mat frame;
 
-  ColorSelector colSelGr("greenSelector");
-
 #ifdef USE_TEST_PICTURE
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
   if (frame.empty())
@@ -76,7 +84,7 @@ int main(int argc, char **argv)
     ROS_ERROR("Test image could not be opened!");
   }
 #endif
-  ROS_INFO("VIDEO READING TEST");
+  ROS_INFO("LANE DETECTION NODE");
   char dir_name[100];
   getcwd(dir_name, 100);
   ROS_INFO("Current directory is: %s", dir_name);
@@ -107,12 +115,6 @@ int main(int argc, char **argv)
   waitKey(0);
 */
 
-  frame = imageProcessor.transformTo2D();
-  imshow("2D", frame);
-
-  frame = imageProcessor.removeNoise(5,5);
-  imshow("2D denoised", frame);
-
   /**
    * Init ROS Publisher here. Can set to be a fixed array
    */
@@ -139,7 +141,7 @@ int main(int argc, char **argv)
    */
   ros::Publisher trajectory_pub = nh.advertise<echtzeitsysteme::points>("trajectory", 1);  //TODO: change buffer size
 
-  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ); //TODO: Hz anpassen
+  ros::Rate loop_rate(loop_rate); //TODO: Hz anpassen
 
   while (ros::ok())
   {
@@ -153,46 +155,13 @@ int main(int argc, char **argv)
 #ifdef DRAW_GRID
     drawGrid(frame);
 #endif
+    Mat processedImage = processImage(frame, imageProcessor);
+    Point2i trajPoint = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm);
 
-    /*
-    printWorldCoords(POINT_1, 1, imageProcessor);
-    imageProcessor.drawPoint(POINT_1);
-    printWorldCoords(POINT_2, 2, imageProcessor);
-    imageProcessor.drawPoint(POINT_2);
-    printWorldCoords(POINT_3, 3, imageProcessor);
-    frame = imageProcessor.drawPoint(POINT_3);
-    */
-    ROS_INFO("H low: %d", colSelGr.getLowH());
-    ROS_INFO("S high: %d", colSelGr.getHighS());
-
-    imageProcessor.setImage(frame, HSV);
-    Mat greenFiltered = imageProcessor.filterColor(Scalar(colSelGr.getLowH(), colSelGr.getLowS(), colSelGr.getLowV()),
-                                            Scalar(colSelGr.getHighH(), colSelGr.getHighS(), colSelGr.getHighV()));
-    greenFiltered = imageProcessor.removeNoise(5,5);
-    imshow("green", greenFiltered);
-
-    Point2i trajPoint = imageProcessor.singleTrajPoint(40, 100);
     ROS_INFO("Calculated traj point.");
+#ifdef SHOW_IMAGES
     imshow("traj point", imageProcessor.drawPoint(trajPoint));
-/*
-    Mat edgesDetected = imageProcessor.edgeDetection(colSelGr.getLowCannyThresh(), colSelGr.getHighCannyThresh());
-    imshow("edges detected", greenFiltered);
-*/
-    //imshow("CameraFrame", frame);
-    //waitKey(1000); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
-    ROS_INFO("Showed frame.");
-
-    printWorldCoords(POINT_1, 1, imageProcessor);
-    imageProcessor.drawPoint(POINT_1);
-    printWorldCoords(POINT_2, 2, imageProcessor);
-    imageProcessor.drawPoint(POINT_2);
-    printWorldCoords(POINT_3, 3, imageProcessor);
-    frame = imageProcessor.drawPoint(POINT_3);
-
-
-    imshow("CameraFrame", frame);
-    //waitKey(1); // set to 0 for manual continuation (key-press) or specify auto-delay in milliseconds
-    ROS_INFO("Showed frame.");
+#endif
 
     // clear points array every loop
     trajectory.points.clear();
@@ -225,4 +194,35 @@ int main(int argc, char **argv)
 
 
   return 0;
+}
+
+Mat processImage(Mat input, ImageProcessor& proc) {
+  Mat output;
+  proc.setImage(input, BGR);
+  output = proc.transformTo2D();
+#ifdef SHOW_IMAGES
+  imshow("2D input", output);
+#endif
+  ROS_INFO("H_low: %d, S_low: %d, V_low: %d, H_high: %d, S_high: %d, V_high: %d", low_H, low_S, low_V, high_H, high_S, high_V);
+  proc.convertToHSV();
+  output = proc.filterColor(Scalar(low_H, low_S, low_V),
+                                            Scalar(high_H, high_S, high_V));
+#ifdef SHOW_IMAGES
+  imshow("green filtered", output);
+#endif
+
+  output = proc.removeNoise(5,5);
+#ifdef SHOW_IMAGES
+  imshow("green with noise removed", output);
+#endif
+
+/*
+  // noise removal
+  output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
+  imshow("edges detected", output);
+*/
+  Point2i trajPoint = proc.singleTrajPoint(40, 100);
+  imshow("traj point", proc.drawPoint(trajPoint));
+
+  return output;
 }
