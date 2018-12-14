@@ -17,7 +17,7 @@ using namespace cv;
 #define TEST_PICTURE_PATH "Echtzeitsysteme/images/my_photo-2.jpg"
 
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
