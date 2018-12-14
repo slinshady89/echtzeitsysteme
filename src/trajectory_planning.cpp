@@ -22,8 +22,6 @@ void trajectoryCallback(const echtzeitsysteme::points::ConstPtr& msg)
 {
   trajectory[0].x = (double) msg->points[0].x;
   trajectory[0].y = (double) msg->points[0].y;
-  //trajectory[1].x = msg->points[1].x;
-  //trajectory[1].y = msg->points[1].y;
   ROS_INFO("trajectory planning is hearing %f %f ", trajectory[0].x, trajectory[0].y);
 }
 
@@ -178,7 +176,7 @@ int main(int argc, char **argv)
     }else*/
     {
       //ctrl.setCtrlParams(serverK_P, serverK_I, serverK_D, 0.1, 1000);
-      velocity.data = 500;
+      //velocity.data = 500;
       //ROS_INFO("error: %.4f", 0.2*sin(2*M_PI/20.0*i));
       //double err = (0.2*sin(2*M_PI/20.0*i++));
       //double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
