@@ -5,7 +5,7 @@
 #include <trajectory_planning/trajectory.h>
 
 
-int velocity = 0;
+int vel = 0;
 struct point
 {
   double x;
@@ -49,7 +49,7 @@ void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *c
             config.vel, 
             config.size);
   ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
-  velocity = config.vel;
+  vel = config.vel;
 }
 
 
@@ -182,10 +182,12 @@ int main(int argc, char **argv)
       //double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
       //i++;
       //ROS_INFO("error: %.4f", err2);
-      steering.data = (int16_t) ctrl.computeSteering( trajectory[0].y );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
+      steering.data = (int16_t) -ctrl.computeSteering( trajectory[0].y );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
       //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);   
     }
-
+	ROS_INFO("calculated Steering: %.2f\n", (float) steering.data); 
+velocity.data = vel;
+	ROS_INFO("vel: %d\n",  velocity.data); 
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);
     // clear input/output buffers

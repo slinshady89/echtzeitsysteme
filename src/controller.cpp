@@ -150,6 +150,7 @@ double CController::computeSteering(double& _err)
     else                                        integral -= dt*_err;
     
     if(_err < FLT_EPSILON && integral > FLT_EPSILON) errCnt++;
+    else errCnt = 0;
     if(errCnt > 5) integral = 0.0; 
 
     // maybe dont use err but kappa directly instead?
