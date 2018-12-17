@@ -14,10 +14,10 @@ using namespace cv;
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-//#define TEST_PICTURE_PATH "/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
+#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
 
 
-//#define USE_TEST_PICTURE
+#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
