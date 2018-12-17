@@ -96,7 +96,7 @@ Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
 
 Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
     // TODO: implement
-    return Point2i(-1,-1);
+    return Point2d(-1,-1);
 }
 
 // debugging
@@ -146,9 +146,9 @@ void ImageProcessor::setImage(Mat img, ColorType type) {
     colorType = type;
 }
 
-Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm, int colorThreshold) {
+Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold) {
     int pxHeight = (y_cm - offset_cm) * height_px_per_cm;
-    int pxDistLane = rightLaneDist_cm * width_px_per_cm;
+    int pxDistLane = int(rightLaneDist_cm * width_px_per_cm);
 
     int y = image.rows - pxHeight;
     int width = image.cols;
@@ -158,10 +158,10 @@ Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm, int colo
             Scalar pixel = imageRow.at<uchar>(0,i);
 
             if (pixel.val[0]>colorThreshold) {
-                return Point2i(i-pxDistLane,y);
+                return Point2d(i-pxDistLane,y);
             }
         }
     }
     std::cerr << "No trajectory point found." << std::endl;
-    return Point2i(-1,-1);
+    return Point2d(-1,-1);
 }

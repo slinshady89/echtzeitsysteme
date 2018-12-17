@@ -138,7 +138,6 @@ int main(int argc, char **argv)
    */
   echtzeitsysteme::points trajectory;
   trajectory.points.clear();
-  float counter = 0.0;
 
   /**
    * The advertise() function is how you tell ROS that you want to
@@ -174,9 +173,9 @@ int main(int argc, char **argv)
     drawGrid(frame);
 #endif
     Mat processedImage = processImage(frame, imageProcessor);
-    Point2i trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
+    Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
     Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
-    Point2i trajPoint = Point2i(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
+    Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
 
     ROS_INFO("Calculated traj point.");
@@ -206,8 +205,6 @@ int main(int argc, char **argv)
      * in the constructor above.
      */
     trajectory_pub.publish(trajectory);
-
-    ++counter;
 
     // clear input/output buffers
     ros::spinOnce();
