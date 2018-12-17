@@ -2,6 +2,7 @@
 #define IMAGE_PROCESSOR_HPP_
 
 #include <opencv2/opencv.hpp>
+#include <chrono>
 
 using namespace cv;
 
