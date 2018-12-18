@@ -8,6 +8,8 @@
 #include <echtzeitsysteme/ImageProcessingConfig.h>
 #include <dynamic_reconfigure/server.h>
 
+#include <time.h>
+
 using namespace cv;
 
 #define SHOW_IMAGES
@@ -55,9 +57,11 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
 #ifndef USE_TIMER
 #define USE_TIMER
 
-std::chrono::steady_clock::time_point lane_detection_start;
 
-std::chrono::steady_clock::time_point lane_detection_looptimer;
+ros::Time lane_detection_start, lane_detection_looptimer;
+
+
+
 /**
  * Here comes the real magic
  */
@@ -73,16 +77,8 @@ int main(int argc, char **argv)
    * You must call one of the versions of ros::init() before using any other
    * part of the ROS system.
    */
-  #ifdef USE_TIMER
-  std::chrono::steady_clock::time_point time_now;
-  lane_detection_start = std::chrono::steady_clock::now();
-  #endif
   ros::init(argc, argv, "lane_detection");
 
-  #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME FOR ROS_INIT %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000 ).count());
-  #endif
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -94,20 +90,33 @@ int main(int argc, char **argv)
 
   /* dynamic reconfigure commands */
 
+
   dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig> server;
   dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig>::CallbackType f;
 
   f = boost::bind(&configCallback, _1, _2);
   server.setCallback(f);
 
+  ros::Time time_now;
+
 
 #ifdef USE_TEST_PICTURE
+  #ifdef USE_TIMER
+  lane_detection_start = ros::Time::now();
+  #endif
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
   if (frame.empty())
   {
     ROS_ERROR("Test image could not be opened!");
-  }
+  }  
+  #ifdef USE_TIMER
+  time_now = ros::Time::now();
+  float time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME to read test Image %f ms", time);
+  #endif
 #endif
+
+
   ROS_INFO("LANE DETECTION NODE");
   char dir_name[100];
   getcwd(dir_name, 100);
@@ -115,7 +124,7 @@ int main(int argc, char **argv)
 
 #ifndef USE_TEST_PICTURE
   #ifdef USE_TIMER
-  lane_detection_start = std::chrono::steady_clock::now();
+  lane_detection_start = ros::Time::now();
   #endif
   CameraReader reader;
   ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
@@ -123,8 +132,9 @@ int main(int argc, char **argv)
   frame = reader.readImage();
 
   #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME reading image: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000).count());
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME to read cam_img %f ms", time);
   #endif
 
 #endif
@@ -132,9 +142,8 @@ int main(int argc, char **argv)
   // TODO: for more meaningful testing, move object creation in the loop
 
   #ifdef USE_TIMER
-  lane_detection_start = std::chrono::steady_clock::now();
+  lane_detection_start = ros::Time::now();
   #endif
-
 
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
@@ -142,10 +151,10 @@ int main(int argc, char **argv)
   ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
 
-
   #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME calibrating image: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000).count());
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME transform img %f ms", time);
   #endif
 
 /*
@@ -192,14 +201,15 @@ int main(int argc, char **argv)
   {
   #ifndef LOOPTIMER_INIT
   #define LOOPTIMER_INIT
-  lane_detection_looptimer = std::chrono::steady_clock::now();
+  lane_detection_looptimer = ros::Time::now();
   #endif //LOOPTIMER_INIT
 
   #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME loop: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_looptimer- time_now)/1000).count());
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
+  ROS_INFO("TIME LOOP %f ms", time);
   #endif
-  lane_detection_looptimer  = std::chrono::steady_clock::now();
+  lane_detection_looptimer  = ros::Time::now();
 
 
     //reader.readImage();
@@ -214,7 +224,7 @@ int main(int argc, char **argv)
 #endif  
 
 #ifdef USE_TIMER
-  lane_detection_start = std::chrono::steady_clock::now();
+  lane_detection_start = ros::Time::now();
   #endif
 
     Mat processedImage = processImage(frame, imageProcessor);
@@ -223,9 +233,10 @@ int main(int argc, char **argv)
     Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
 
-  #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME calibrating: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000).count());
+  #ifdef USE_TIMER  
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME for img_process %f ms", time);
   #endif
 
     ROS_INFO("Calculated traj point.");
@@ -235,7 +246,7 @@ int main(int argc, char **argv)
 #ifdef SHOW_IMAGES
 
   #ifdef USE_TIMER
-  lane_detection_start = std::chrono::steady_clock::now();
+  lane_detection_start = ros::Time::now();
   #endif
     if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
       imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
@@ -243,13 +254,14 @@ int main(int argc, char **argv)
     waitKey(100);
 
   #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME show traj image: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000).count());
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME draw traj img %f ms", time);
   #endif
 #endif
 
   #ifdef USE_TIMER
-  lane_detection_start = std::chrono::steady_clock::now();
+  lane_detection_start = ros::Time::now();
   #endif
     // clear points array every loop
     trajectory.points.clear();
@@ -271,8 +283,9 @@ int main(int argc, char **argv)
      */
     trajectory_pub.publish(trajectory);
   #ifdef USE_TIMER
-  time_now = std::chrono::steady_clock::now();
-  ROS_INFO("TIME publish traj: %d ms", std::chrono::duration_cast<std::chrono::microseconds>((lane_detection_start- time_now)/1000).count());
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("TIME to publish traj %f ms", time);
   #endif
     // clear input/output buffers
     ros::spinOnce();
