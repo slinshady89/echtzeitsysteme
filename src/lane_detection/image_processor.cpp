@@ -68,10 +68,28 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
                                 dstP1_px, dstP2_px, dstP3_px, dstP4_px);
 }
 
+#include <ros/ros.h>
+#include <time.h>
+
 Mat ImageProcessor::transformTo2D() {
+
+  ros::Time lane_detection_start = ros::Time::now();
     transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
+
+  ros::Time time_now = ros::Time::now();
+  float time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  lane_detection_start = ros::Time::now();
+  ROS_INFO("getPerspectiveTransform %f ms", time);
+  
+
     Mat output = Mat::zeros(Size(dstWidth,dstHeight),image.type());
     warpPerspective(image, output, transformMatr, output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
+    
+    
+    time_now = ros::Time::now();
+   time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("warpPerspective %f ms", time);
+    
     image = output;
     return image;
 }

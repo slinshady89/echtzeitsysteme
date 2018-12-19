@@ -12,7 +12,7 @@
 
 using namespace cv;
 
-#define SHOW_IMAGES
+//#define SHOW_IMAGES
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
@@ -55,7 +55,7 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
 }
 
 #ifndef USE_TIMER
-#define USE_TIMER
+//#define USE_TIMER
 
 
 ros::Time lane_detection_start, lane_detection_looptimer;
@@ -204,12 +204,6 @@ int main(int argc, char **argv)
   lane_detection_looptimer = ros::Time::now();
   #endif //LOOPTIMER_INIT
 
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
-  ROS_INFO("TIME LOOP %f ms", time);
-  #endif
-  lane_detection_looptimer  = ros::Time::now();
 
 
     //reader.readImage();
@@ -228,8 +222,11 @@ int main(int argc, char **argv)
   #endif
 
     Mat processedImage = processImage(frame, imageProcessor);
+
     Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
+
     Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
+
     Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
 
@@ -290,18 +287,52 @@ int main(int argc, char **argv)
     // clear input/output buffers
     ros::spinOnce();
 
+  #ifdef USE_TIMER
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
+  ROS_INFO("TIME LOOP befor sleep %f ms", time);
+  #endif
+
     // this is needed to ensure a const. loop rate
     loop_rate.sleep();
   }
 
+  #ifdef USE_TIMER
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
+  ROS_INFO("end main %f ms", time);
+  #endif
 
   return 0;
 }
 
-Mat processImage(Mat input, ImageProcessor& proc) {
+Mat processImage(Mat input, ImageProcessor& proc) 
+{
+
   Mat output;
+
+  #ifdef USE_TIMER
+  ros::Time lane_detection_start = ros::Time::now();
+  #endif
+
   proc.setImage(input, BGR);
+
+  #ifdef USE_TIMER
+  ros::Time time_now = ros::Time::now();
+  float time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  lane_detection_start = ros::Time::now();
+  ROS_INFO("setImage %f ms", time);
+  #endif
+
   output = proc.transformTo2D();
+
+  #ifdef USE_TIMER
+  time_now = ros::Time::now();
+  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  lane_detection_start = ros::Time::now();
+  ROS_INFO("transformTo2D %f ms", time);
+  #endif
+
 #ifdef SHOW_IMAGES
   imshow("2D input", output);
 #endif
