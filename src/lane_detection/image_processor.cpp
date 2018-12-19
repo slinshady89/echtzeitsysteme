@@ -88,9 +88,16 @@ Mat ImageProcessor::transformTo2D() {
     
     time_now = ros::Time::now();
    time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  lane_detection_start = ros::Time::now();
   ROS_INFO("warpPerspective %f ms", time);
     
-    image = output;
+    //image = output;
+return output;
+
+    time_now = ros::Time::now();
+   time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  ROS_INFO("copy image %f ms", time);
+
     return image;
 }
 

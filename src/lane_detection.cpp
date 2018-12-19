@@ -12,11 +12,12 @@
 
 using namespace cv;
 
-//#define SHOW_IMAGES
+#define SHOW_IMAGES
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
+//#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
+#define TEST_PICTURE_PATH "echtzeitsysteme/include/lane_detection/images/2018-12-05-220157.jpg"
 
 
 #define USE_TEST_PICTURE
