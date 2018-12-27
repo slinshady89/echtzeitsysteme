@@ -56,9 +56,6 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   ROS_INFO("Updated configuration.");
 }
 
-#ifndef USE_TIMER
-#define USE_TIMER
-
 
 ros::Time lane_detection_start, lane_detection_looptimer;
 
@@ -359,5 +356,3 @@ Mat processImage(Mat input, ImageProcessor& proc)
 
   return output;
 }
-
-#endif //USE_TIMER
