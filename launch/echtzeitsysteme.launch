@@ -4,9 +4,11 @@
 
 	<rosparam command="load" file="$(find echtzeitsysteme)/launch/parameter.yaml" /> 
 
-	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" output="screen"/>
+	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" output="screen"
+launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.lane_detection.%p' " />
 
-	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" />
+	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" 
+launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.trajectory_planning.%p' " />
 
 	<node pkg="pses_ucbridge" type="uc_bridge" name="uc_bridge" output="screen">
       <param name="config_path" value="$(find pses_ucbridge)/config/" />
