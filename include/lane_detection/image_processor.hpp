@@ -73,6 +73,7 @@ class ImageProcessor {
     private:
         Mat image;
         Mat transformMatr;
+        Mat invTransformMatr;
         ColorType colorType;
         bool calibrated = false;
 

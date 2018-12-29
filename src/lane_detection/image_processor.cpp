@@ -43,6 +43,10 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
     dstP3 = dstP3_px;
     dstP4 = dstP4_px;
 
+    // compute transformation matrix for perspective warping + inverse matrix
+    transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
+    invTransformMatr = transformMatr.inv();
+
     calibrated = true;
 }
 void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, double offsetToOrigin_cm,
@@ -73,13 +77,13 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
 
 Mat ImageProcessor::transformTo2D() {
     TIMER_INIT
+    /*
+    TIMER_INIT
     TIMER_START
     transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
     TIMER_STOP
     TIMER_EVALUATE(getPerspectiveTransform)
-
-    startTime = ros::Time::now();
-  
+    */  
     TIMER_START
     Mat output = Mat::zeros(Size(dstWidth,dstHeight),image.type());
     warpPerspective(image, output, transformMatr, output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
