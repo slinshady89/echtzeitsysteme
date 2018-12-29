@@ -67,6 +67,11 @@ class ImageProcessor {
          */
         Point2d singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold);
 
+        Point2i firstMatchFromRight(Scalar lowHSV, Scalar highHSV, int pxY);
+        Point2i firstMatchFromLeft(Scalar lowHSV, Scalar highHSV, int pxY);
+        /* searches for the next white pixel around the x-position of the previous match */
+        Point2i nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2i lastMatch);
+
         // debugging methods
         Mat drawPoint(Point2i point);
 

@@ -102,6 +102,7 @@ Mat ImageProcessor::filterColor(Scalar lowHSVColor, Scalar highHSVColor) {
     TIMER_INIT
     TIMER_START
     if (colorType != HSV) {
+        ROS_WARN("Image was not in HSV color! Converting to HSV...");
         convertToHSV();
     }
     inRange(image, lowHSVColor, highHSVColor, image);
@@ -218,4 +219,50 @@ Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, in
     TIMER_STOP
     TIMER_EVALUATE(singleTrajPoint)
     return Point2d(-1,-1);
+}
+
+Point2i ImageProcessor::firstMatchFromRight(Scalar lowHSV, Scalar highHSV, int pxY) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    uchar* data = image.ptr<uchar>(pxY);
+    for (int x=image.cols-1; x>=0; x--) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::firstMatchFromLeft(Scalar lowHSV, Scalar highHSV, int pxY) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    uchar* data = image.ptr<uchar>(pxY);
+    for (int x=0; x<image.cols; x++) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2i lastMatch) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    int startX = lastMatch.x;
+    uchar* data = image.ptr<uchar>(pxY);
+    // search right
+    for (int x=startX; x<image.cols; x++) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    // search left
+    for (int x=startX-1; x>=0; x--) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+
 }
