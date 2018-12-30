@@ -251,16 +251,12 @@ Point2i ImageProcessor::nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2
     }
     int startX = lastMatch.x;
     uchar* data = image.ptr<uchar>(pxY);
-    // search right
-    for (int x=startX; x<image.cols; x++) {
-        if (data[x] != 0) {
-            return Point2i(x, pxY);
+    for (int i=startX; i<image.cols-startX || i<=startX-1; i++) {
+        if (data[startX+i] != 0) {
+            return Point2i(startX+i, pxY);
         }
-    }
-    // search left
-    for (int x=startX-1; x>=0; x--) {
-        if (data[x] != 0) {
-            return Point2i(x, pxY);
+        if (data[startX-1-i] != 0) {
+            return Point2i(startX-1-i, pxY);
         }
     }
     return Point2i(-1, -1);
