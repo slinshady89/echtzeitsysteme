@@ -9,6 +9,7 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <time.h>
+#include "lane_detection/time_profiling.hpp"
 
 using namespace cv;
 
@@ -99,22 +100,19 @@ int main(int argc, char **argv)
   server.setCallback(f);
 
   ros::Time time_now;
+  double time;
 
+  TIMER_INIT
 
 #ifdef USE_TEST_PICTURE
-  #ifdef USE_TIMER
-  lane_detection_start = ros::Time::now();
-  #endif
+  TIMER_START
   frame = imread(TEST_PICTURE_PATH, IMREAD_COLOR);
   if (frame.empty())
   {
     ROS_ERROR("Test image could not be opened!");
   }  
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  float time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  ROS_INFO("TIME to read test Image %f ms", time);
-  #endif
+  TIMER_STOP
+  TIMER_EVALUATE(<main>:read test image)
 #endif
 
 
@@ -142,9 +140,7 @@ int main(int argc, char **argv)
   
   // TODO: for more meaningful testing, move object creation in the loop
 
-  #ifdef USE_TIMER
-  lane_detection_start = ros::Time::now();
-  #endif
+  TIMER_START
 
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
@@ -152,11 +148,9 @@ int main(int argc, char **argv)
   ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
 
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  ROS_INFO("TIME transform img %f ms", time);
-  #endif
+  TIMER_STOP
+  TIMER_EVALUATE(transform img %f ms)
+
 
 /*
   frame = imageProcessor.resize(800,450);
@@ -200,16 +194,9 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      #ifndef LOOPTIMER_INIT
-      #define LOOPTIMER_INIT
-      lane_detection_looptimer = ros::Time::now();
-      #endif //LOOPTIMER_INIT
+        lane_detection_looptimer = ros::Time::now();
 
-
-
-        //reader.readImage();
-        //ROS_INFO("Number of frames: %f", reader.getNumberOfFrames());
-        
+        TIMER_START
         ROS_INFO("Show frame.");
     #ifndef USE_TEST_PICTURE
         frame = reader.readImage();
@@ -218,9 +205,7 @@ int main(int argc, char **argv)
         drawGrid(frame);
     #endif  
 
-    #ifdef USE_TIMER
-      lane_detection_start = ros::Time::now();
-      #endif
+        TIMER_START
 
         Mat processedImage = processImage(frame, imageProcessor);
 
@@ -230,12 +215,8 @@ int main(int argc, char **argv)
 
         Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
-
-      #ifdef USE_TIMER  
-      time_now = ros::Time::now();
-      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-      ROS_INFO("TIME for img_process %f ms", time);
-      #endif
+        TIMER_STOP
+        TIMER_EVALUATE(<main>:<while>:imageProcessing)
 
         ROS_INFO("Calculated traj point.");
 
@@ -243,24 +224,17 @@ int main(int argc, char **argv)
 
     #ifdef SHOW_IMAGES
 
-      #ifdef USE_TIMER
-      lane_detection_start = ros::Time::now();
-      #endif
-        if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
-          imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
-        }
-        waitKey(100);
+      TIMER_START
+      if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
+        imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
+      }
+      waitKey(100);
 
-      #ifdef USE_TIMER
-      time_now = ros::Time::now();
-      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-      ROS_INFO("TIME draw traj img %f ms", time);
-      #endif
+      TIMER_STOP
+      TIMER_EVALUATE(<main>:<while>:draw trajectory point + 100ms wait)
     #endif
 
-      #ifdef USE_TIMER
-      lane_detection_start = ros::Time::now();
-      #endif
+        TIMER_START
         // clear points array every loop
         trajectory.points.clear();
 
@@ -280,11 +254,8 @@ int main(int argc, char **argv)
          * in the constructor above.
          */
         trajectory_pub.publish(trajectory);
-      #ifdef USE_TIMER
-      time_now = ros::Time::now();
-      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-      ROS_INFO("TIME to publish traj %f ms", time);
-      #endif
+        TIMER_STOP
+        TIMER_EVALUATE(<main>:<while>:publish trajectory point)
         // clear input/output buffers
         ros::spinOnce();
 
@@ -309,46 +280,48 @@ int main(int argc, char **argv)
 
 Mat processImage(Mat input, ImageProcessor& proc) 
 {
+  TIMER_INIT
 
   Mat output;
 
-  #ifdef USE_TIMER
-  ros::Time lane_detection_start = ros::Time::now();
-  #endif
-
+  TIMER_START
   proc.setImage(input, BGR);
+  TIMER_STOP
+  TIMER_EVALUATE(<processImage>:setImage) 
 
-  #ifdef USE_TIMER
-  ros::Time time_now = ros::Time::now();
-  float time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  lane_detection_start = ros::Time::now();
-  ROS_INFO("setImage %f ms", time);
-  #endif
-
+  TIMER_START
   output = proc.transformTo2D();
-
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  lane_detection_start = ros::Time::now();
-  ROS_INFO("transformTo2D %f ms", time);
-  #endif
+  TIMER_STOP
+  TIMER_EVALUATE(<processImage>:transformTo2D)
 
 #ifdef SHOW_IMAGES
   imshow("2D input", output);
 #endif
+
   ROS_INFO("H_low: %d, S_low: %d, V_low: %d, H_high: %d, S_high: %d, V_high: %d", low_H, low_S, low_V, high_H, high_S, high_V);
+  TIMER_START
   proc.convertToHSV();
+  TIMER_STOP
+  TIMER_EVALUATE(<processImage>:convertToHSV)
+
+  TIMER_START
   output = proc.filterColor(Scalar(low_H, low_S, low_V),
                                             Scalar(high_H, high_S, high_V));
+  TIMER_STOP
+  TIMER_EVALUATE(<processImage>:filterColor)                                            
+  
 #ifdef SHOW_IMAGES
   imshow("green filtered", output);
 #endif
   ROS_INFO("remove noise...");
-  output = proc.removeNoise(5,5);
-#ifdef SHOW_IMAGES
-  imshow("green with noise removed", output);
-#endif
+
+//  TIMER_START
+//  output = proc.removeNoise(5,5);
+//  TIMER_STOP
+//  TIMER_EVALUATE(processImage:removeNoise)
+//#ifdef SHOW_IMAGES
+//  imshow("green with noise removed", output);
+//#endif
 
 /*
   // noise removal
