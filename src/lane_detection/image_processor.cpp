@@ -262,3 +262,22 @@ Point2i ImageProcessor::nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2
     return Point2i(-1, -1);
 
 }
+
+Point2i ImageProcessor::lastMatchLeft(Point2i start) {
+    uchar* data = image.ptr<uchar>(start.y);
+    for (int x=start.x; x>=0; x--) {
+        if (data[x] == 0) { // black pixel found
+            return Point2i(x+1, start.y);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::lastMatchRight(Point2i start) {
+    uchar* data = image.ptr<uchar>(start.y);
+    for (int x=start.x; x<image.cols; x++) {
+        if (data[x] == 0) {
+            return Point2i(x-1, start.y);
+        }
+    }
+    return Point2i(-1, -1);
+}

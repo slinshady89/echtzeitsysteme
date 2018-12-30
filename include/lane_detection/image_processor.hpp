@@ -72,6 +72,10 @@ class ImageProcessor {
         /* searches for the next white pixel around the x-position of the previous match */
         Point2i nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2i lastMatch);
 
+        /* search for the last pixel in left / right direction from start that is still white */
+        Point2i lastMatchLeft(Point2i start);
+        Point2i lastMatchRight(Point2i start);
+
         // debugging methods
         Mat drawPoint(Point2i point);
 
