@@ -18,7 +18,9 @@ using namespace cv;
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
 //#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "echtzeitsysteme/include/lane_detection/images/2018-12-05-220157.jpg"
-#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
+
+// NOTE: run from inside "catkin_ws" folder to find test photo
+#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
 
 
 #define USE_TEST_PICTURE
@@ -146,7 +148,7 @@ int main(int argc, char **argv)
 
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
-  imageProcessor.calibrateCameraImage(PARAMS_4);
+  imageProcessor.calibrateCameraImage(PARAMS_3);
   ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
 
@@ -198,102 +200,102 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-  #ifndef LOOPTIMER_INIT
-  #define LOOPTIMER_INIT
-  lane_detection_looptimer = ros::Time::now();
-  #endif //LOOPTIMER_INIT
+      #ifndef LOOPTIMER_INIT
+      #define LOOPTIMER_INIT
+      lane_detection_looptimer = ros::Time::now();
+      #endif //LOOPTIMER_INIT
 
 
 
-    //reader.readImage();
-    //ROS_INFO("Number of frames: %f", reader.getNumberOfFrames());
-    
-    ROS_INFO("Show frame.");
-#ifndef USE_TEST_PICTURE
-    frame = reader.readImage();
-#endif
-#ifdef DRAW_GRID
-    drawGrid(frame);
-#endif  
+        //reader.readImage();
+        //ROS_INFO("Number of frames: %f", reader.getNumberOfFrames());
+        
+        ROS_INFO("Show frame.");
+    #ifndef USE_TEST_PICTURE
+        frame = reader.readImage();
+    #endif
+    #ifdef DRAW_GRID
+        drawGrid(frame);
+    #endif  
 
-#ifdef USE_TIMER
-  lane_detection_start = ros::Time::now();
-  #endif
+    #ifdef USE_TIMER
+      lane_detection_start = ros::Time::now();
+      #endif
 
-    Mat processedImage = processImage(frame, imageProcessor);
+        Mat processedImage = processImage(frame, imageProcessor);
 
-    Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
+        Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
 
-    Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
+        Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
 
-    Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
-
-
-  #ifdef USE_TIMER  
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  ROS_INFO("TIME for img_process %f ms", time);
-  #endif
-
-    ROS_INFO("Calculated traj point.");
+        Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
 
+      #ifdef USE_TIMER  
+      time_now = ros::Time::now();
+      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+      ROS_INFO("TIME for img_process %f ms", time);
+      #endif
 
-#ifdef SHOW_IMAGES
+        ROS_INFO("Calculated traj point.");
 
-  #ifdef USE_TIMER
-  lane_detection_start = ros::Time::now();
-  #endif
-    if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
-      imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
-    }
-    waitKey(100);
 
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  ROS_INFO("TIME draw traj img %f ms", time);
-  #endif
-#endif
 
-  #ifdef USE_TIMER
-  lane_detection_start = ros::Time::now();
-  #endif
-    // clear points array every loop
-    trajectory.points.clear();
+    #ifdef SHOW_IMAGES
 
-    /**
-     * create geometry_msgs/Point message for every entry in custom points msg and push it
-     */
-    geometry_msgs::Point point1;
-    point1.x = trajPoint.x;
-    point1.y = trajPoint.y;
+      #ifdef USE_TIMER
+      lane_detection_start = ros::Time::now();
+      #endif
+        if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
+          imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
+        }
+        waitKey(100);
 
-    trajectory.points.push_back(point1);
+      #ifdef USE_TIMER
+      time_now = ros::Time::now();
+      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+      ROS_INFO("TIME draw traj img %f ms", time);
+      #endif
+    #endif
 
-    /**
-     * The publish() function is how you send messages. The parameter
-     * is the message object. The type of this object must agree with the type
-     * given as a template parameter to the advertise<>() call, as was done
-     * in the constructor above.
-     */
-    trajectory_pub.publish(trajectory);
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
-  ROS_INFO("TIME to publish traj %f ms", time);
-  #endif
-    // clear input/output buffers
-    ros::spinOnce();
+      #ifdef USE_TIMER
+      lane_detection_start = ros::Time::now();
+      #endif
+        // clear points array every loop
+        trajectory.points.clear();
 
-  #ifdef USE_TIMER
-  time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
-  ROS_INFO("TIME LOOP befor sleep %f ms", time);
-  #endif
+        /**
+         * create geometry_msgs/Point message for every entry in custom points msg and push it
+         */
+        geometry_msgs::Point point1;
+        point1.x = trajPoint.x;
+        point1.y = trajPoint.y;
 
-    // this is needed to ensure a const. loop rate
-    loop_rate.sleep();
+        trajectory.points.push_back(point1);
+
+        /**
+         * The publish() function is how you send messages. The parameter
+         * is the message object. The type of this object must agree with the type
+         * given as a template parameter to the advertise<>() call, as was done
+         * in the constructor above.
+         */
+        trajectory_pub.publish(trajectory);
+      #ifdef USE_TIMER
+      time_now = ros::Time::now();
+      time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+      ROS_INFO("TIME to publish traj %f ms", time);
+      #endif
+        // clear input/output buffers
+        ros::spinOnce();
+
+      #ifdef USE_TIMER
+      time_now = ros::Time::now();
+      time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
+      ROS_INFO("TIME LOOP befor sleep %f ms", time);
+      #endif
+
+        // this is needed to ensure a const. loop rate
+        loop_rate.sleep();
   }
 
   #ifdef USE_TIMER
