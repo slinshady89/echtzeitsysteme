@@ -221,7 +221,7 @@ Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, in
     return Point2d(-1,-1);
 }
 
-Point2i ImageProcessor::firstMatchFromRight(Scalar lowHSV, Scalar highHSV, int pxY) {
+Point2i ImageProcessor::firstMatchFromRight(int pxY) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
     }
@@ -233,7 +233,7 @@ Point2i ImageProcessor::firstMatchFromRight(Scalar lowHSV, Scalar highHSV, int p
     }
     return Point2i(-1, -1);
 }
-Point2i ImageProcessor::firstMatchFromLeft(Scalar lowHSV, Scalar highHSV, int pxY) {
+Point2i ImageProcessor::firstMatchFromLeft(int pxY) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
     }
@@ -245,7 +245,7 @@ Point2i ImageProcessor::firstMatchFromLeft(Scalar lowHSV, Scalar highHSV, int px
     }
     return Point2i(-1, -1);
 }
-Point2i ImageProcessor::nextMatch(Scalar lowHSV, Scalar highHSV, int pxY, Point2i lastMatch) {
+Point2i ImageProcessor::nextMatch(int pxY, Point2i lastMatch) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
     }
