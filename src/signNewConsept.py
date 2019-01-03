@@ -3,6 +3,7 @@
 #import
 from __future__ import print_function
 from scipy.stats import itemfreq
+from math import sqrt
 import cv2
 print (cv2.__version__)
 import numpy as np
@@ -11,8 +12,9 @@ import argparse
 
 
 # Konstanten
-#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg'
-filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/2018-12-05-220138.jpg'
+filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg'
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg'
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/2018-12-05-220138.jpg'
 
 
 
@@ -108,6 +110,7 @@ if circles is not None:
     
 
 ######################### Detection SURF (unstable and no official Module) ###############
+"""
 imgGerade = cv2.imread('/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeaus.jpg')
 
 imgObjectReference = imgGerade  # Reference
@@ -170,12 +173,59 @@ cv.line(img_matches, (int(scene_corners[3,0,0] + imgObjectReference.shape[1]), i
 
 # Output Show detected matches
 cv.imshow('Matches form Input and Libary & Object detection', img_matches)
+"""
 
 
-
-################################# Detection AKAZE 
+################################# Detection AKAZE ###########################
 ### compare two images Input & Reference -> get Matches and then deside which sign it could be
+imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechts.jpg", cv2.IMREAD_GRAYSCALE)
+imgCompare = gray #cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg", cv2.IMREAD_GRAYSCALE)
+#imgCompare = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg", cv2.IMREAD_GRAYSCALE)
+if imgRef is None or imgCompare is None:
+    print('Could not open or find the images!')
+    exit(0)
+fs = cv2.FileStorage("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/Homography1to3p.xml", cv2.FILE_STORAGE_READ)
+homography = fs.getFirstTopLevelNode().mat()
 
+akaze = cv2.AKAZE_create()
+kpts1, desc1 = akaze.detectAndCompute(imgRef, None)
+kpts2, desc2 = akaze.detectAndCompute(imgCompare, None)
+matcher = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_BRUTEFORCE_HAMMING)
+nn_matches = matcher.knnMatch(desc1, desc2, 2)
+matched1 = []
+matched2 = []
+nn_match_ratio = 0.8 # Nearest neighbor matching ratio
+for m, n in nn_matches:
+    if m.distance < nn_match_ratio * n.distance:
+        matched1.append(kpts1[m.queryIdx])
+        matched2.append(kpts2[m.trainIdx])
+inliers1 = []
+inliers2 = []
+good_matches = []
+inlier_threshold = 2.5 # Default 2.5 # Distance threshold to identify inliers with homography check
+for i, m in enumerate(matched1):
+    col = np.ones((3,1), dtype=np.float64)
+    col[0:2,0] = m.pt
+    col = np.dot(homography, col)
+    col /= col[2,0]
+    dist = sqrt(pow(col[0,0] - matched2[i].pt[0], 2) +\
+                pow(col[1,0] - matched2[i].pt[1], 2))
+    if dist < inlier_threshold:
+        good_matches.append(cv.DMatch(len(inliers1), len(inliers2), 0))
+        inliers1.append(matched1[i])
+        inliers2.append(matched2[i])
+res = np.empty((max(imgRef.shape[0], imgCompare.shape[0]), imgRef.shape[1]+imgCompare.shape[1], 3), dtype=np.uint8)
+cv2.drawMatches(imgRef, inliers1, imgCompare, inliers2, good_matches, res)
+cv2.imwrite("akaze_result.png", res)
+inlier_ratio = len(inliers1) / float(len(matched1))
+print('A-KAZE Matching Results')
+print('*******************************')
+print('# Keypoints Reference:                        \t', len(kpts1))
+print('# Keypoints Compare:                        \t', len(kpts2))
+print('# Matches:                            \t', len(matched1))
+print('# Inliers:                            \t', len(inliers1))
+print('# Inliers in Ratio:                      \t', inlier_ratio)
+cv2.imshow('AKAZE result', res)
 
 
 
