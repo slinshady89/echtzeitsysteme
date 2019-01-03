@@ -11,8 +11,8 @@ import argparse
 
 
 # Konstanten
-filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg'
-#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/2018-12-05-220138.jpg'
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg'
+filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/2018-12-05-220138.jpg'
 
 
 
@@ -77,7 +77,7 @@ def CannyThreshold(val):
 
 
 # hough circle Transform
-
+imgCircles = img
 # medianBlur() -> Rauschunterdrueckung des Streams um falsche Kreiserkennung zu verhindern 
     # https://docs.opencv.org/3.1.0/d4/d13/tutorial_py_filtering.html
 imgBlurCircles = cv2.medianBlur(gray, 5)
@@ -87,31 +87,106 @@ rows = imgBlurCircles.shape[0]
     # minDist: minimaler euklidischer Abstand zwischen Mittelpunkt des erkannten Kreises und dessen Rand/Kanten
     #           -> nur ein Schild immer erkennen 
     # cv2.HOUGH_GRADIENT: Vector mit erkannten Raendern (Kreis)
-    # parameter1: Anzahl zu erkennende Kreise kann durch den Wert erhoeht werden
-    # parameter2: Je hoeher desto geringer die Fehlerkennung
-    # parameter1 > parameter2 !!!
+    # parameter1: upper threshold for the INTERNAL CANNY EDGE DETECTOR # Anzahl zu erkennende Kreise kann durch den Wert erhoeht werden
+    # parameter2: threshold for center detection # Je hoeher desto geringer die Fehlerkennung
+    # parameter1 > parameter2 !!!   
+    # min_radius = Minimum radius to be detected  ' if unknown "= 0"
+    # max_radius = Maximum radius to be detected  ' if unknown "= 0"
     # https://docs.opencv.org/3.1.0/dd/d1a/group__imgproc__feature.html#ga47849c3be0d0406ad3ca45db65a25d2d
     #
-circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows/8, param1=120, param2=40, minRadius=1, maxRadius=30)
+circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows/8, param1=120, param2=40, minRadius=1, maxRadius=70)
+# default 100, 30,1, 30
 if circles is not None:
     circles = np.uint16(np.around(circles))
-    for i in circles [0, :]:
+    for i in circles [0, :]:  # draw the detected circles
         center = (i[0], i[1])
-        # circle center
-        cv2.circle(img, center, 1, (0, 100, 100), 3)
-        # circle outline
+        # circle center draw green point
+        cv2.circle(imgCircles, center, 1, (0, 100, 100), 3)
+        # circle outline draw red
         radius = i[2]
-        cv2.circle(img, center, radius, (255, 0, 255), 3)
+        cv2.circle(imgCircles, center, radius, (255, 0, 255), 3)
     
-    
+
+######################### Detection SURF (unstable and no official Module) ###############
+imgGerade = cv2.imread('/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeaus.jpg')
+
+imgObjectReference = imgGerade  # Reference
+imgDetectionInput = img         # finde Referenz in Bild zum vergleichen
+
+# Nr.1  SURF Detection to detect the keypoints # compute the descriptors
+minimalHessian = 400
+detector = cv2.xfeatures2d_SURF.create(hessianThreshold=minimalHessian)
+keypoints_obj, descriptors_obj = detector.detectAndCompute(imgObjectReference, None)
+keypoints_scene, descriptors_scene = detector.detectAndCompute(imgDetectionInput, None)
+
+# Nr.2  Matching descriptor vectors with a FLANN based matcher
+    # Since SURF is a floating-point descriptor NORM_L2 is used
+matcher = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
+knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
+
+# Nr.3  Filter matches using the Lowe's ratio test
+ratio_thresh = 0.75
+good_matches = []
+for m,n in knn_matches:
+    if m.distance < ratio_thresh * n.distance:
+        good_matches.append(m)
+
+# Nr.4  Draw matches
+img_matches = np.empty((max(imgObjectReference.shape[0], imgDetectionInput.shape[0]), imgObjectReference.shape[1]+imgDetectionInput.shape[1], 3), dtype=np.uint8)
+cv2.drawMatches(imgObjectReference, keypoints_obj, imgDetectionInput, keypoints_scene, good_matches, img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+
+# Nr.5 Localize the object
+obj = np.empty((len(good_matches),2), dtype=np.float32)
+scene = np.empty((len(good_matches),2), dtype=np.float32)
+for i in range(len(good_matches)):
+    #-- Get the keypoints from the good matches
+    obj[i,0] = keypoints_obj[good_matches[i].queryIdx].pt[0]
+    obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
+    scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
+    scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
+H, _ =  cv.findHomography(obj, scene, cv.RANSAC)
+
+# Nr.6 Get the corners from the image_1 ( the object to be "detected" )
+obj_corners = np.empty((4,1,2), dtype=np.float32)
+obj_corners[0,0,0] = 0
+obj_corners[0,0,1] = 0
+obj_corners[1,0,0] = img_object.shape[1]
+obj_corners[1,0,1] = 0
+obj_corners[2,0,0] = img_object.shape[1]
+obj_corners[2,0,1] = img_object.shape[0]
+obj_corners[3,0,0] = 0
+obj_corners[3,0,1] = img_object.shape[0]
+scene_corners = cv.perspectiveTransform(obj_corners, H)
+
+# Nr.7 Draw lines between the corners (the mapped object in the scene - image_2 )
+cv.line(img_matches, (int(scene_corners[0,0,0] + imgObjectReference.shape[1]), int(scene_corners[0,0,1])),\
+    (int(scene_corners[1,0,0] + imgObjectReference.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
+cv.line(img_matches, (int(scene_corners[1,0,0] + imgObjectReference.shape[1]), int(scene_corners[1,0,1])),\
+    (int(scene_corners[2,0,0] + imgObjectReference.shape[1]), int(scene_corners[2,0,1])), (0,255,0), 4)
+cv.line(img_matches, (int(scene_corners[2,0,0] + imgObjectReference.shape[1]), int(scene_corners[2,0,1])),\
+    (int(scene_corners[3,0,0] + imgObjectReference.shape[1]), int(scene_corners[3,0,1])), (0,255,0), 4)
+cv.line(img_matches, (int(scene_corners[3,0,0] + imgObjectReference.shape[1]), int(scene_corners[3,0,1])),\
+    (int(scene_corners[0,0,0] + imgObjectReference.shape[1]), int(scene_corners[0,0,1])), (0,255,0), 4)
+
+# Output Show detected matches
+cv.imshow('Matches form Input and Libary & Object detection', img_matches)
+
+
+
+################################# Detection AKAZE 
+### compare two images Input & Reference -> get Matches and then deside which sign it could be
+
+
+
+
 
 
 
 
 ################### Ausgabe ##############
 # Show Image 
-#cv2.imshow("Input", img)
-cv2.imshow("detected circles", img)
+cv2.imshow("Input", img)
+cv2.imshow("detected circles", imgCircles)
 
 
 cv2.namedWindow('Contrast/Brightness', cv2.WINDOW_AUTOSIZE)
