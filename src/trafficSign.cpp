@@ -1,9 +1,7 @@
-// Language: Denglisch     C++
-
-//include Files
 #include "ros/ros.h"
 #include "opencv2/opencv.hpp"   // noch hinzufügen
 
+/* Language: Denglisch     C++ */
 
 //namespace
 using namespace cv;

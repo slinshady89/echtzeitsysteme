@@ -4,7 +4,9 @@
 # Befehl:     sudo apt-get install python-scipy
 
 #import
+
 import cv2
+print (cv2.__version__)
 import numpy as np
 from scipy.stats import itemfreq
 
@@ -13,6 +15,9 @@ from scipy.stats import itemfreq
 # Hilfsfunktion um den maximalen Farbanteil/groesstes Aufkommen einer Farbe in einem Bild zu erhalten
 # https://stackoverflow.com/questions/43111029/how-to-find-the-average-colour-of-an-image-in-python-with-opencv#43111221
 def get_dominant_color(image, n_colors):
+    #zIn = image.reshape(-1,3))  #
+   # pixels = np.float32(zIn)    #
+    # konvertieren zu  np.float
     pixels = np.float32(image).reshape((-1, 3))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, .1)
     flags = cv2.KMEANS_RANDOM_CENTERS
@@ -39,8 +44,8 @@ cameraCapture.set(cv2.CAP_PROP_FPS, 10)
 #########
 
 #Kamera oeffnen 
-cv2.namedWindow('Kamerabild')
-cv2.setMouseCallback('KameraMouse', onMouse)
+#cv2.namedWindow('Kamerabild')
+#cv2.setMouseCallback('KameraMouse', onMouse)
 
 # Frames kontinuerlich in einer Schleife einlesen/aktualisieren
 success, frame = cameraCapture.read()
@@ -89,29 +94,37 @@ while success and not clicked:
                 max_i = i
                 max_r = circles[:, :, 2][0][i]
         x, y, r = circles[:, :, :][0][max_i]
-
+        
 
         # Out of Bounds verhindern
         # Zugriff auf einen Index ausserhalb der Elipse/Kreises verhindern, da fuer die weitere
         # Verarbeitung der Ausschnitt nur benoetigt wird
         if y > r and x > r:
             square = frame[y-r:y+r, x-r:x+r]
+            ## Kreis Bildauschnitt vom Original zur uebergabe an 'get_dominant_color()'
+
 
             # dominierende Farbe erhalten
+            # 0 = blau
+            # 1 = weiss
+            # 2 = rot
             dominant_color = get_dominant_color(square, 2)
             # unterteilung der Verkehrszeichen in 2 Farbkategorien
             #   rot -> Stopschild
             #   blau -> Richtungsweisende Schilder
+            
 
             # STOP Schild ist als einizges Rot, Vergleich ob hoher Rotanteil im erkannten Kreis
             if dominant_color[2] > 100:
+                # Ursprung 100
                 # Zuordnung des Verkehrszeichens zu seiner Bedeutung
                 print("STOP")                       ##### // Problem alles rote wird als STOP erkannt
 
             # Richtungsweisende Schilder die nur Blau sein koennen
             # Vergleich ob hoher Blauanteil im erkannten Kreis
             # python elif = elseif
-            elif dominant_color[0] > 80:
+            elif (dominant_color[0] > 80)    :
+                # Ursprung > 80
                 # educates guess:  erkannter Kreis/Schild in 3 Zonen aufteilen
 
                 # linke Zone
@@ -126,30 +139,38 @@ while success and not clicked:
                 zone_2 = square[square.shape[0]*3//8:square.shape[0] * 5//8, square.shape[1]*5//8:square.shape[1]*7//8]
                 zone_2_color = get_dominant_color(zone_2, 1)
 
+                                
 
                 # Zuordnung der Verkehrszeichen zu ihrer Bedeutung
                 if zone_1_color[2] < 60:
                     if sum(zone_0_color) > sum(zone_2_color):
                         print("Links")
+                        
                     else:
                         print("Rechts")
+                        
                 else:
                     if sum(zone_1_color) > sum(zone_0_color) and sum(zone_1_color) > sum(zone_2_color):
                         print("Gerade aus")
+                        
                     # python elif = elseif
                     elif sum(zone_0_color) > sum(zone_2_color):
                         print("Gerade aus und Links")
+                        
                     else:
                         print("Gerade aus und Rechts")
+                        
             else:
                 # Unbekanntes Schild Behandlung
                 print("unbekannt")
+            
 
         # Ausgabe der erkannten Verkehrszeichen auf dem Bildschirm mit jeweiliger Typbezeichnung
         for i in circles[0, :]:
             cv2.circle(frame, (i[0], i[1]), i[2], (0, 255, 0), 2)
             cv2.circle(frame, (i[0], i[1]), 2, (0, 0, 255), 3)
     cv2.imshow('Kamera', frame)
+   
 
     # zusaetzlicher Output
     cv2.imshow('gray', gray)
