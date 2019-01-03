@@ -1,4 +1,4 @@
-#include <image_processor.hpp>
+#include <lane_detection/image_processor.hpp>
 
 void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, double offsetToOrigin_cm,
                                     int targetWidth, int targetHeight,
@@ -43,6 +43,10 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
     dstP3 = dstP3_px;
     dstP4 = dstP4_px;
 
+    // compute transformation matrix for perspective warping + inverse matrix
+    transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
+    invTransformMatr = transformMatr.inv();
+
     calibrated = true;
 }
 void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, double offsetToOrigin_cm,
@@ -68,19 +72,42 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
                                 dstP1_px, dstP2_px, dstP3_px, dstP4_px);
 }
 
+#include <ros/ros.h>
+#include <time.h>
+
 Mat ImageProcessor::transformTo2D() {
+    TIMER_INIT
+    /*
+    TIMER_INIT
+    TIMER_START
     transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
+    TIMER_STOP
+    TIMER_EVALUATE(getPerspectiveTransform)
+    */  
+    TIMER_START
     Mat output = Mat::zeros(Size(dstWidth,dstHeight),image.type());
     warpPerspective(image, output, transformMatr, output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
+    TIMER_STOP
+    TIMER_EVALUATE(warpPerspective)
+    
+    TIMER_START
     image = output;
+    TIMER_STOP
+    TIMER_EVALUATE(copy image)
+
     return image;
 }
 
 Mat ImageProcessor::filterColor(Scalar lowHSVColor, Scalar highHSVColor) {
+    TIMER_INIT
+    TIMER_START
     if (colorType != HSV) {
+        ROS_WARN("Image was not in HSV color! Converting to HSV...");
         convertToHSV();
     }
     inRange(image, lowHSVColor, highHSVColor, image);
+    TIMER_STOP
+    TIMER_EVALUATE(filterColor)
     return image;
 }
 
@@ -90,18 +117,28 @@ Mat ImageProcessor::edgeDetection(int lowThresh, int highThresh) {
 }
 
 Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
+    TIMER_INIT
+    TIMER_START
     Point2i unscaledCoordinates = Point2i(imageCoordinates.x - (image.cols/2), image.rows - imageCoordinates.y - px_os_bottom);
-    return Point2d(unscaledCoordinates.x * width_cm_per_px, (unscaledCoordinates.y * height_cm_per_px) + offset_cm);
+    double x = unscaledCoordinates.x * width_cm_per_px;
+    double y = (unscaledCoordinates.y * height_cm_per_px) + offset_cm;
+    TIMER_STOP
+    TIMER_EVALUATE(getWorldCoordinates)
+    return Point2d(x, y);
 }
 
 Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
     // TODO: implement
-    return Point2i(-1,-1);
+    return Point2d(-1,-1);
 }
 
 // debugging
 Mat ImageProcessor::drawPoint(Point2i point) {
+    TIMER_INIT
+    TIMER_START
     circle(image, point, 4, Scalar(255,255,255), -1);
+    TIMER_STOP
+    TIMER_EVALUATE(drawPoint)
     return image;
 }
 
@@ -111,9 +148,13 @@ Mat& ImageProcessor::getImage() {
 }
 
 Mat ImageProcessor::resize(int width, int height) {
+    TIMER_INIT
+    TIMER_START
     Mat resized;
     cv::resize(image, resized, Size(width, height), 0, 0, INTER_LINEAR); //size is variable
     image = resized;
+    TIMER_STOP
+    TIMER_EVALUATE(resize)
     return image;
 }
 
@@ -127,17 +168,25 @@ Mat ImageProcessor::getTransformMatr() {
 }
 
 Mat ImageProcessor::removeNoise(int kwidth, int kheight) {
+    TIMER_INIT
+    TIMER_START
     blur(image, image, Size(kwidth, kheight));
+    TIMER_STOP
+    TIMER_EVALUATE(removeNoise)
     return image;
 }
 
 Mat ImageProcessor::convertToHSV() {
+    TIMER_INIT
+    TIMER_START
     if (!colorType==BGR) {
         std::cerr << "Conversion to HSV not possible!" << std::endl;
         return image;
     }
     cvtColor(image, image, COLOR_BGR2HSV);
     colorType = HSV;
+    TIMER_STOP
+    TIMER_EVALUATE(convertToHSV)
     return image;
 }
 
@@ -146,20 +195,89 @@ void ImageProcessor::setImage(Mat img, ColorType type) {
     colorType = type;
 }
 
-Point2i ImageProcessor::singleTrajPoint(int rightLaneDist_cm, int y_cm) {
+Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold) {
+    TIMER_INIT
+    TIMER_START
     int pxHeight = (y_cm - offset_cm) * height_px_per_cm;
-    int pxDistLane = rightLaneDist_cm * width_px_per_cm;
+    int pxDistLane = int(rightLaneDist_cm * width_px_per_cm);
 
     int y = image.rows - pxHeight;
     int width = image.cols;
-    Mat imageRow = image.row(y);
-    for (int i=width-1; i>=0; i--) {
-        Scalar pixel = imageRow.at<uchar>(0,i);
+    if (y>=0 && y<image.rows) { // validity check
+        Mat imageRow = image.row(y);
+        for (int i=width-1; i>=0; i--) {
+            Scalar pixel = imageRow.at<uchar>(0,i);
 
-        if (pixel.val[0]!=0) {
-            return Point2i(i-pxDistLane,y);
+            if (pixel.val[0]>colorThreshold) {
+                TIMER_STOP
+                TIMER_EVALUATE(singleTrajPoint)
+                return Point2d(i-pxDistLane,y);
+            }
         }
     }
     std::cerr << "No trajectory point found." << std::endl;
-    return Point2i(-1,-1);
+    TIMER_STOP
+    TIMER_EVALUATE(singleTrajPoint)
+    return Point2d(-1,-1);
+}
+
+Point2i ImageProcessor::firstMatchFromRight(int pxY) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    uchar* data = image.ptr<uchar>(pxY);
+    for (int x=image.cols-1; x>=0; x--) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::firstMatchFromLeft(int pxY) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    uchar* data = image.ptr<uchar>(pxY);
+    for (int x=0; x<image.cols; x++) {
+        if (data[x] != 0) {
+            return Point2i(x, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::nextMatch(int pxY, Point2i lastMatch) {
+    if (image.channels()!=1) {
+        ROS_WARN("Pixel match search for a non-grayscale image!");
+    }
+    int startX = lastMatch.x;
+    uchar* data = image.ptr<uchar>(pxY);
+    for (int i=startX; i<image.cols-startX || i<=startX-1; i++) {
+        if (data[startX+i] != 0) {
+            return Point2i(startX+i, pxY);
+        }
+        if (data[startX-1-i] != 0) {
+            return Point2i(startX-1-i, pxY);
+        }
+    }
+    return Point2i(-1, -1);
+
+}
+
+Point2i ImageProcessor::lastMatchLeft(Point2i start) {
+    uchar* data = image.ptr<uchar>(start.y);
+    for (int x=start.x; x>=0; x--) {
+        if (data[x] == 0) { // black pixel found
+            return Point2i(x+1, start.y);
+        }
+    }
+    return Point2i(-1, -1);
+}
+Point2i ImageProcessor::lastMatchRight(Point2i start) {
+    uchar* data = image.ptr<uchar>(start.y);
+    for (int x=start.x; x<image.cols; x++) {
+        if (data[x] == 0) {
+            return Point2i(x-1, start.y);
+        }
+    }
+    return Point2i(-1, -1);
 }

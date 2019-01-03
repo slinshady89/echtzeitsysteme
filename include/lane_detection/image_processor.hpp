@@ -2,6 +2,9 @@
 #define IMAGE_PROCESSOR_HPP_
 
 #include <opencv2/opencv.hpp>
+#include <chrono>
+#include <ros/ros.h>
+#include "lane_detection/time_profiling.hpp"
 
 using namespace cv;
 
@@ -62,7 +65,16 @@ class ImageProcessor {
         /**
          * Calculates a single (inaccurate) trajectory point by using a fixed distance to the right lane in the given distance (y_cm).
          */
-        Point2i singleTrajPoint(int rightLaneDist_cm, int y_cm);
+        Point2d singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold);
+
+        Point2i firstMatchFromRight(int pxY);
+        Point2i firstMatchFromLeft(int pxY);
+        /* searches for the next white pixel around the x-position of the previous match */
+        Point2i nextMatch(int pxY, Point2i lastMatch);
+
+        /* search for the last pixel in left / right direction from start that is still white */
+        Point2i lastMatchLeft(Point2i start);
+        Point2i lastMatchRight(Point2i start);
 
         // debugging methods
         Mat drawPoint(Point2i point);
@@ -70,6 +82,7 @@ class ImageProcessor {
     private:
         Mat image;
         Mat transformMatr;
+        Mat invTransformMatr;
         ColorType colorType;
         bool calibrated = false;
 

@@ -4,6 +4,8 @@
 #include <array>
 #include <sensor_msgs/Range.h>
 #include "ros/ros.h"
+#include <echtzeitsysteme/ControllerConfig.h>
+#include <dynamic_reconfigure/server.h>
 
 static const size_t arraySize = 5;
 
@@ -19,8 +21,8 @@ public:
                 K_P(_K_P = 0.0),
                 K_I(_K_I = 0.0),
                 K_D(_K_D = 0.0),
-                dt(_dt = 2.0),
-                limit(_limit = 0.0),
+                dt(_dt = 0.1),
+                limit(_limit = 1000),
                 dErrorLast(0.0), 
                 dErrorAct(0.0),
                 deratingWeightFact(0.8),
@@ -38,12 +40,14 @@ public:
     double computeSteering(std::array<double,arraySize> _arrTrajErrors);
     double computeSteering(double& err);
     void setCtrlParams(double P, double I, double D, double t, double lim);
+    void setCtrlParams(double P, double I, double D);
     double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
     bool ctrlLoop(double _rangeUSL, double _rangeUSR, double _rangeUSF);
     bool ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _rangeUSR, sensor_msgs::Range _rangeUSF);
     bool ctrlDone();
-    
+    //void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, uint32_t level);
+
     double getUsMinDist(){        return usMinDist;    };
     void setUsMinDist(double _dist){      usMinDist = _dist;    };
 

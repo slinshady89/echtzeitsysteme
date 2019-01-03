@@ -3,16 +3,16 @@
 #include <geometry_msgs/Point.h>
 #include <echtzeitsysteme/points.h>
 #include <trajectory_planning/trajectory.h>
-#include "y_interp.h"//...................................yInterp,<cmath>{sin()}
-#include <cstdio>//.....................................................printf()
 
 
-
+int vel = 0;
 struct point
 {
-  float x;
-  float y;
-} trajectory[100]; // size can be changed
+  double x;
+  double y;
+} trajectory[1]; // size can be changed
+
+
 
 /*
  * callback function fpr trajectory custom points message
@@ -20,11 +20,9 @@ struct point
  */
 void trajectoryCallback(const echtzeitsysteme::points::ConstPtr& msg)
 {
-  trajectory[0].x = msg->points[0].x;
-  trajectory[0].y = msg->points[0].y;
-  trajectory[1].x = msg->points[1].x;
-  trajectory[1].y = msg->points[1].y;
-  ROS_INFO("trajectory planning is hearing %f %f %f %f", trajectory[0].x, trajectory[0].y, trajectory[1].x, trajectory[1].y);
+  trajectory[0].x = (double) msg->points[0].x;
+  trajectory[0].y = (double) msg->points[0].y;
+  ROS_INFO("trajectory planning is hearing %f %f ", trajectory[0].x, trajectory[0].y);
 }
 
 
@@ -44,12 +42,26 @@ void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
 }
 
 
+void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl) {
+  ROS_INFO("Reconfigure Request: %f %f %f %d %d", 
+            config.K_P, config.K_I, 
+            config.K_D,
+            config.vel, 
+            config.size);
+  ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
+  vel = config.vel;
+}
+
 
 /**
  * Here comes the tracejtory planning magic
  */
 int main(int argc, char **argv)
 {
+
+
+
+
   size_t i = 0;
   std::vector<double> sums, errors;
   double looptime = .2;
@@ -59,16 +71,6 @@ int main(int argc, char **argv)
 
   velocity.data = 0;
   steering.data = 0;
-
-
-  // tests for trajectory
-
-  //double X[20];/*<-*/for(int i=0;i<20;++i)X[i]=5*i/20.+5;
-  //double Y[20];/*<-*/for(int i=0;i<20;++i)Y[i]=sin(2*3.14159*X[i]/5)+1;
-  //double x=7.18;
-  //int i=yInterp::BinarySearch(X+1,X+19,x)-X;
-  //double y=yInterp::CubeInterp(X+i,Y+i,x,0.,0.);
-  //printf("At x=%.3f, y is approximately %.3f.\n",x,y);
 
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
@@ -81,6 +83,12 @@ int main(int argc, char **argv)
    * part of the ROS system.
    */
   ros::init(argc, argv, "trajectory_planning");
+
+
+
+  dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig> server;
+  dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig>::CallbackType f;
+
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -147,15 +155,18 @@ int main(int argc, char **argv)
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
 
-  CController ctrl(serverK_P, serverK_I, serverK_D, server_dt, steeringLimitAbs);
+  CController ctrl(17.5, 3.5, 0.1, 0.1, 1000);
 
   // Loop starts here:
   ros::Rate loop_rate(1/looptime);
-  
-  while (ros::ok())
-  {
 
-    
+  f = boost::bind(&ctrlParamCallback, _1, &ctrl);
+  server.setCallback(f);
+  
+
+
+  while (ros::ok())
+  {  
 
     // some validation check should be done!
     /*
@@ -164,19 +175,19 @@ int main(int argc, char **argv)
       velocity.data = 0;
     }else*/
     {
-      ctrl.setCtrlParams(serverK_P, serverK_I, serverK_D, server_dt, steeringLimitAbs);
-      velocity.data = 500;
+      //ctrl.setCtrlParams(serverK_P, serverK_I, serverK_D, 0.1, 1000);
+      //velocity.data = 500;
       //ROS_INFO("error: %.4f", 0.2*sin(2*M_PI/20.0*i));
-      double err = (0.2*sin(2*M_PI/20.0*i++));
-      double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
-      i++;
+      //double err = (0.2*sin(2*M_PI/20.0*i++));
+      //double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
+      //i++;
       //ROS_INFO("error: %.4f", err2);
-      steering.data = (int16_t) ctrl.computeSteering( err2 );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
-      //ROS_INFO("calculated Steering: %.4f\n", steering.data);   
+      steering.data = (int16_t) -ctrl.computeSteering( trajectory[0].y );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
+      //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);   
     }
-
-
-
+	ROS_INFO("calculated Steering: %.2f\n", (float) steering.data); 
+velocity.data = vel;
+	ROS_INFO("vel: %d\n",  velocity.data); 
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);
     // clear input/output buffers

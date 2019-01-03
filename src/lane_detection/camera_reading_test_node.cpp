@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <opencv2/opencv.hpp>
 #include <CameraReader.hpp>
-#include <image_processor.hpp>
+#include <lane_detection/image_processor.hpp>
 #include <gui/color_selector.hpp>
 #include <stdio.h>
 
@@ -185,7 +185,7 @@ Mat imageProcessing1(Mat input, ColorSelector& sel, ImageProcessor& proc) {
   output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
   imshow("edges detected", output);
 */
-  Point2i trajPoint = proc.singleTrajPoint(40, 100);
+  Point2i trajPoint = proc.singleTrajPoint(40, 100, 180);
   imshow("traj point", proc.drawPoint(trajPoint));
 
   return output;

@@ -13,6 +13,13 @@ do "catkin_make" in the catkin_ws directory to invoke build process with the res
 * Node mit GDB debuggen:
     * z.B. `rosrun --prefix 'gdb --args' echtzeitsysteme camera_reading_test`
 
+# Dynamic Reconfiguration von Parametern 
+
+## Starten des Fensters zum Ändern von Parametern
+
+Starten der Node und Öffnen des Fensters: `rosrun rqt_reconfigure rqt_reconfigure`
+
+## Erstellen von Konfigurationen für Nodes
 
 # camera_reading_test
 
