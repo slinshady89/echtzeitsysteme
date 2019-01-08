@@ -73,6 +73,7 @@ def CannyThreshold(val):
     detected_edges = cv2.Canny(imgBlurCanny, low_threshold, low_threshold*ratio, kernel_size)
     mask = detected_edges != 0
     dst = img * (mask[:,:,None].astype(img.dtype))
+    # dst     -->   ausgeschnittenes Bild nur Kreise       Schwellwert 21 optimal        ####################
     cv2.imshow(window_name, dst)
 
 
@@ -84,6 +85,8 @@ imgCircles = img
     # https://docs.opencv.org/3.1.0/d4/d13/tutorial_py_filtering.html
 imgBlurCircles = cv2.medianBlur(gray, 5)
 rows = imgBlurCircles.shape[0]
+
+
 # HoughCircles(InputArray Bild, OutputArray cv2.HOUGH_GRADIENT, int methode, double minDist, ) 
     # Hough Transformation um Kreise in einem grayscale Bild zu finden
     # minDist: minimaler euklidischer Abstand zwischen Mittelpunkt des erkannten Kreises und dessen Rand/Kanten
