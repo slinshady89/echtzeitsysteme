@@ -13,9 +13,9 @@ import argparse
 
 # Konstanten
 #TrafficOnWayBilder
-#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechts1.jpg'                    # 1-2
-#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechtsGerade1.jpg'              # 1-3
-filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadEinfahrtVerboten3.jpg'         # 1-3
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechts2.jpg'                    # 1-2
+filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechtsGerade3.jpg'              # 1-3
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadEinfahrtVerboten3.jpg'         # 1-3
 
 
 
@@ -190,12 +190,13 @@ cv.imshow('Matches form Input and Libary & Object detection', img_matches)
 
 ########## auf weissen Hintergrund Referenz
 #imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechts.jpg", cv2.IMREAD_GRAYSCALE)                  # rechts
-#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechts.jpg", cv2.IMREAD_GRAYSCALE)         # gerade aus rechts
-imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverboten.jpg", cv2.IMREAD_GRAYSCALE)         # einfahrt verboten
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechts.jpg", cv2.IMREAD_GRAYSCALE)         # gerade aus rechts #576 ref keypoints Match 88
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverboten.jpg", cv2.IMREAD_GRAYSCALE)         # einfahrt verboten
 
 ########## Bildaufnahme Referenz
 #imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverbotenRoadref1.jpg", cv2.IMREAD_GRAYSCALE) # 1-2
-
+imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)  # 1-4       #1 926 keypoints Match 110
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)           # 1-3
 
 imgCompare = gray #cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg", cv2.IMREAD_GRAYSCALE)
 #imgCompare = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg", cv2.IMREAD_GRAYSCALE)
