@@ -278,6 +278,13 @@ target_link_libraries(camera_reading_test
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_pses_lane_detector.cpp)
+
+if(CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+	catkin_add_gtest(firstTest test/firstTest.cpp)
+	target_link_libraries(firstTest ${catkin_LIBRARIES})
+endif()
+
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
