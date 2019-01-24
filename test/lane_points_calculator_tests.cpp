@@ -1,17 +1,8 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
+#include "lane_detection/lane_points_calculator.hpp"
 
-void foo1(int& i) {
-    ROS_INFO("%d", i);
-}
-int& foo2() {
-    int i = 5;
-    return i;
-}
-TEST(FirstTestSuite, firstTestCase) {
-    // dummy, just for demonstration
-    ASSERT_TRUE(true);
-}
+
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

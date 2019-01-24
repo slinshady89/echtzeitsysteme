@@ -282,7 +282,9 @@ target_link_libraries(camera_reading_test
 if(CATKIN_ENABLE_TESTING)
 	find_package(rostest REQUIRED)
 	catkin_add_gtest(firstTest test/firstTest.cpp)
+    catkin_add_gtest(lane_points_calculator_tests test/lane_points_calculator_tests.cpp)
 	target_link_libraries(firstTest ${catkin_LIBRARIES})
+    target_link_libraries(lane_points_calculator_tests ${catkin_LIBRARIES})
 endif()
 
 # if(TARGET ${PROJECT_NAME}-test)
