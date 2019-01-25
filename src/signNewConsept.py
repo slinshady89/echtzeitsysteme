@@ -79,7 +79,7 @@ def CannyThreshold(val):
     detected_edges = cv2.Canny(imgBlurCanny, low_threshold, low_threshold*ratio, kernel_size)
     mask = detected_edges != 0
     dst = img * (mask[:,:,None].astype(img.dtype))
-    # dst     -->   ausgeschnittenes Bild nur Kreise       Schwellwert 21 optimal        ####################
+    # dst     -->   ausgeschnittenes Bild nur Kreise       Schwellwert val=21 optimal        ####################
     cv2.imshow(window_name, dst)
 
 
@@ -198,8 +198,12 @@ cv.imshow('Matches form Input and Libary & Object detection', img_matches)
 imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)  # 1-4       #1 926 keypoints Match 110
 #imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)           # 1-3
 
+
+
+#### Bild von Webcam
 imgCompare = gray #cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg", cv2.IMREAD_GRAYSCALE)
 #imgCompare = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg", cv2.IMREAD_GRAYSCALE)
+
 if imgRef is None or imgCompare is None:
     print('Could not open or find the images!')
     exit(0)
