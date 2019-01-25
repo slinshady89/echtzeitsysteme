@@ -17,9 +17,11 @@
 
 
 // alglib
+#include "stdafx.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "interpolation.h"
 
 
 
@@ -38,12 +40,12 @@ private:
 class CTrajectory : CPoint
 {
 public:
-    CTrajectory(CPoint point, double acc = 0.0, double curv = 0.0, 
-                 double theta = 0.0, double s = 0, double t = 0 )
+    CTrajectory(CPoint point, double acc = 0.0, double curvature = 0.0,
+                 double theta = 0.0, double s = 0.0, double t = 0.0 )
     {
         m_point = point;    
         m_acceleration = acc;
-        m_curvature = curv;
+        m_curvature = curvature;
         m_theta = theta;
         m_s = s;
         m_t = t;

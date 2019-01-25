@@ -122,7 +122,7 @@ double CController::computeSteering(std::array<double,arraySize> _errs)
     if(abs(dErrorAct) >= abs(dErrorLast))      integral += dt*err;
     else                                    integral -= dt*err;
     
-    // maybe dont use err but kappa directly instead?
+    // maybe don't use err but kappa directly instead?
     double Pout = K_P * err;
     double Iout = K_I * integral;
     double derivate = 0.0;
@@ -145,7 +145,7 @@ double CController::computeSteering(double& _err)
     double steer = 0.0;
 
     dErrorAct = (_err - preError);
-    // limit to the I-part of the controller so it stops raising if a countersteering onto the traj is detected
+    // limit to the I-part of the controller so it stops raising if a counter-steering onto the traj is detected
     if(abs(dErrorAct) >= abs(dErrorLast))       integral += dt*_err;
     else                                        integral -= dt*_err;
     
@@ -153,14 +153,14 @@ double CController::computeSteering(double& _err)
     else errCnt = 0;
     if(errCnt > 5) integral = 0.0; 
 
-    // maybe dont use err but kappa directly instead?
-    double Pout = K_P *_err;
-    double Iout = K_I * integral;
-    double derivate = 0.0;
-    if(dt != 0.0) derivate = dErrorAct / dt;
-    double Dout = K_D *derivate; 
+    // maybe don't use err but kappa directly instead?
+    double p_out = K_P *_err;
+    double i_out = K_I * integral;
+    double d_err(0.0);
+    if(dt != 0.0) d_err = dErrorAct / dt;
+    double d_out = K_D * d_err;
    
-    steer = Pout + Iout + Dout;
+    steer = p_out + i_out + d_out;
 
     if(steer > limit)   steer = limit;
     if(steer < -limit)  steer = -limit;
@@ -169,7 +169,7 @@ double CController::computeSteering(double& _err)
 
     preError = _err;
     ctrlDone();
-    ROS_INFO("error: %f   ==>   P: %f  I: %f  D: %f   ==>  steer: %f", _err, Pout, Iout, Dout, steer);  
+    ROS_INFO("error: %f   ==>   P: %f  I: %f  D: %f   ==>  steer: %f", _err, p_out, i_out, d_out, steer);
     return steer;
 };
 

@@ -12,7 +12,13 @@ import argparse
 
 
 # Konstanten
-filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg'
+#TrafficOnWayBilder
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechts2.jpg'                    # 1-2
+filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechtsGerade3.jpg'              # 1-3
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadEinfahrtVerboten3.jpg'         # 1-3
+
+
+
 #filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg'
 #filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/2018-12-05-220138.jpg'
 
@@ -181,7 +187,17 @@ cv.imshow('Matches form Input and Libary & Object detection', img_matches)
 
 ################################# Detection AKAZE ###########################
 ### compare two images Input & Reference -> get Matches and then deside which sign it could be
-imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechts.jpg", cv2.IMREAD_GRAYSCALE)
+
+########## auf weissen Hintergrund Referenz
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechts.jpg", cv2.IMREAD_GRAYSCALE)                  # rechts
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechts.jpg", cv2.IMREAD_GRAYSCALE)         # gerade aus rechts #576 ref keypoints Match 88
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverboten.jpg", cv2.IMREAD_GRAYSCALE)         # einfahrt verboten
+
+########## Bildaufnahme Referenz
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverbotenRoadref1.jpg", cv2.IMREAD_GRAYSCALE) # 1-2
+imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)  # 1-4       #1 926 keypoints Match 110
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)           # 1-3
+
 imgCompare = gray #cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/signs.jpg", cv2.IMREAD_GRAYSCALE)
 #imgCompare = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/ErgebnisTmp.jpg", cv2.IMREAD_GRAYSCALE)
 if imgRef is None or imgCompare is None:

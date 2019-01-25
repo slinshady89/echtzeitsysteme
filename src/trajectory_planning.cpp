@@ -10,8 +10,12 @@ struct point
 {
   double x;
   double y;
-} trajectory[1]; // size can be changed
+} trajectory[10]; // size can be changed
 
+struct trajLeft{
+  alglib::real_1d_array x;
+  alglib::real_1d_array y;
+};
 
 
 /*
@@ -43,10 +47,10 @@ void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
 
 
 void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl) {
-  ROS_INFO("Reconfigure Request: %f %f %f %d %d", 
-            config.K_P, config.K_I, 
+  ROS_INFO("Reconfigure Request: %f %f %f %d %d",
+            config.K_P, config.K_I,
             config.K_D,
-            config.vel, 
+            config.vel,
             config.size);
   ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
   vel = config.vel;
@@ -60,14 +64,12 @@ int main(int argc, char **argv)
 {
 
 
-
-
   size_t i = 0;
   std::vector<double> sums, errors;
   double looptime = .2;
 
   std_msgs::Int16 velocity, steering;
-  sensor_msgs::Range usr, usf, usl;  
+  sensor_msgs::Range usr, usf, usl;
 
   velocity.data = 0;
   steering.data = 0;
@@ -162,11 +164,11 @@ int main(int argc, char **argv)
 
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
-  
+
 
 
   while (ros::ok())
-  {  
+  {
 
     // some validation check should be done!
     /*
@@ -182,12 +184,12 @@ int main(int argc, char **argv)
       //double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
       //i++;
       //ROS_INFO("error: %.4f", err2);
-      steering.data = (int16_t) -ctrl.computeSteering( trajectory[0].y );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );    
-      //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);   
+      steering.data = (int16_t) -ctrl.computeSteering( trajectory[0].y );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );
+      //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);
     }
-	ROS_INFO("calculated Steering: %.2f\n", (float) steering.data); 
+  ROS_INFO("calculated Steering: %.2f\n", (float) steering.data);
 velocity.data = vel;
-	ROS_INFO("vel: %d\n",  velocity.data); 
+  ROS_INFO("vel: %d\n",  velocity.data);
     motorCtrl.publish(velocity);
     steeringCtrl.publish(steering);
     // clear input/output buffers
