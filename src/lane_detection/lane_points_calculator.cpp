@@ -1,3 +1,6 @@
+
+#include <lane_detection/lane_points_calculator.hpp>
+
 #include "lane_detection/lane_points_calculator.hpp"
 
 
@@ -57,6 +60,14 @@ std::vector<Point2i> LanePointsCalculator::trajPointsSimple(int *rows, int rows_
         if (x>=0 && x<proc.getImage().cols) {
             results.push_back(Point2i(x,firstLanePoint.y));
         }
+    }
+    return results;
+}
+
+std::vector<Point2i> LanePointsCalculator::lanePoints(int *rows, int rows_size, Direction searchDir, ImageProcessor &proc) {
+    std::vector<Point2i> results;
+    for (int i=0; i<rows_size; i++) {
+        results.push_back(innerLanePoint(searchDir, rows[i], proc));
     }
     return results;
 }
