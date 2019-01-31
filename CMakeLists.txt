@@ -181,7 +181,9 @@ add_library(image_processing src/lane_detection/image_processor.cpp)
 add_executable(lane_detection src/lane_detection.cpp
                               src/lane_detection/CameraReader.cpp
                               src/lane_detection/image_processor.cpp
-                              src/gui/color_selector.cpp)
+                              src/gui/color_selector.cpp
+                                src/lane_detection/lane_points_calculator.cpp
+        )
 add_executable(trajectory_planning src/trajectory_planning.cpp)
 add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
                                     src/lane_detection/CameraReader.cpp
