@@ -4,7 +4,6 @@
 //
 
 #include "trajectory_planning/trajectory.h"
-#include <cmath>
 
 void CTrajectory::calcLinLength(std::vector<double> _x, std::vector<double> _y)
 {
@@ -64,28 +63,3 @@ CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double
     return CTrajectory(new_x, new_y);
 }
 
-// example trajectory calculation
-{
-    std::vector<double> left_line_x, left_line_y;
-    std::vector<double> right_line_x, right_line_y;
-
-    left_line_x = {0.1, 0.21, 0.30, 0.42, 0.5, 0.65};
-    left_line_y = {0.2, 0.25, 0.33, 0.41, 0.48, 0.54};
-    right_line_x = {0.11, 0.2, 0.32, 0.43, 0.52, 0.66};
-    right_line_y = {-0.2, -0.17, -0.11, -0.02, 0.09, 0.14};
-
-    CTrajectory left_line(left_line_x, left_line_y);
-    CTrajectory right_line(right_line_x, right_line_y);
-
-    CTrajectory traj = left_line.calcTraj(right_line, 0.0, 0.0);
-
-    std::vector<double> spline_x, spline_y;
-
-    spline_x.reserve(left_line_x.size());
-    spline_y.reserve(left_line_x.size());
-    for (auto it : traj.getVecWaypointDists())
-    {
-        spline_x.emplace_back(alglib::spline1dcalc(traj.getSplineInterpolant('x'), it));
-        spline_y.emplace_back(alglib::spline1dcalc(traj.getSplineInterpolant('y'), it));
-    }
-}
