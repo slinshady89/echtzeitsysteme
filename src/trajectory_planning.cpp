@@ -94,38 +94,7 @@ int main(int argc, char **argv)
   ros::Publisher motorCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
-  double v_mops = 0;
-  double serverK_P(0.0); // range: 0...100
-  double serverK_I(0.0); // range: 0...50
-  double serverK_D(0.0); // range: 0...100
-  double server_dt(0.0);
-  double steeringLimitAbs(1000); // range: 0...1000
-
-  if (nh.getParam("v_mops", v_mops))
-  {
-    ROS_INFO("v_mops = %f", v_mops);
-  }
-  if (nh.getParam("K_P", serverK_P))
-  {
-    ROS_INFO("K_P = %f", serverK_P);
-  }
-  if (nh.getParam("K_I", serverK_I))
-  {
-    ROS_INFO("K_I = %f", serverK_I);
-  }
-  if (nh.getParam("K_D", serverK_D))
-  {
-    ROS_INFO("K_D = %f", serverK_D);
-  }
-  if (nh.getParam("dt", server_dt))
-  {
-    ROS_INFO("dt = %f", server_dt);
-  }
-  if (nh.getParam("steeringLimitAbs", steeringLimitAbs))
-  {
-    ROS_INFO("steeringLimitAbs = %f", steeringLimitAbs);
-  }
-
+ 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
    * on a given topic.  This invokes a call to the ROS
