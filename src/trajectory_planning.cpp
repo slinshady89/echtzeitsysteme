@@ -4,61 +4,66 @@
 #include <echtzeitsysteme/points.h>
 #include <trajectory_planning/trajectory.h>
 
+
 int vel = 0;
+int steer = 0;
 struct point
 {
   double x;
   double y;
 } trajectory[10]; // size can be changed
 
-struct trajLeft
-{
-  alglib::real_1d_array x;
-  alglib::real_1d_array y;
-};
+
+
 
 /*
  * callback function fpr trajectory custom points message
  * iterate over each Point in msg and save it in trajectory
  */
-void trajectoryCallback(const echtzeitsysteme::points::ConstPtr &msg)
+void trajectoryCallback(const echtzeitsysteme::points::ConstPtr& msg)
 {
-  trajectory[0].x = (double)msg->points[0].x;
-  trajectory[0].y = (double)msg->points[0].y;
+  trajectory[0].x = (double) msg->points[0].x;
+  trajectory[0].y = (double) msg->points[0].y;
   ROS_INFO("trajectory planning is hearing %f %f ", trajectory[0].x, trajectory[0].y);
 }
 
-void uslCallback(sensor_msgs::Range::ConstPtr uslMsg, sensor_msgs::Range *usl)
+
+void uslCallback(sensor_msgs::Range::ConstPtr uslMsg, sensor_msgs::Range* usl)
 {
   *usl = *uslMsg;
 }
 
-void usfCallback(sensor_msgs::Range::ConstPtr usfMsg, sensor_msgs::Range *usf)
+void usfCallback(sensor_msgs::Range::ConstPtr usfMsg, sensor_msgs::Range* usf)
 {
   *usf = *usfMsg;
 }
 
-void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range *usr)
+void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range* usr)
 {
   *usr = *usrMsg;
 }
 
-void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl)
-{
-  ROS_INFO("Reconfigure Request: %f %f %f %d %d",
-           config.K_P, config.K_I,
-           config.K_D,
-           config.vel,
-           config.size);
+
+void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl) {
+  ROS_INFO("Reconfigure Request: %f %f %f %d %d %d",
+            config.K_P, config.K_I,
+            config.K_D,
+            config.vel,
+            config.steering,
+            config.size);
   ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
   vel = config.vel;
+  steer = config.steering;
+
 }
+
 
 /**
  * Here comes the tracejtory planning magic
  */
 int main(int argc, char **argv)
 {
+
 
   size_t i = 0;
   std::vector<double> sums, errors;
@@ -82,8 +87,11 @@ int main(int argc, char **argv)
    */
   ros::init(argc, argv, "trajectory_planning");
 
+
+
   dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig> server;
   dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig>::CallbackType f;
+
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -94,7 +102,41 @@ int main(int argc, char **argv)
   ros::Publisher motorCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
-   /**
+  double v_mops = 0;
+  double serverK_P(0.0);  // range: 0...100
+  double serverK_I(0.0);  // range: 0...50
+  double serverK_D(0.0);  // range: 0...100
+  double server_dt (0.0);
+  double steeringLimitAbs(1000);  // range: 0...1000
+
+  if(nh.getParam("v_mops", v_mops))
+  {
+    ROS_INFO("v_mops = %f", v_mops);
+  }
+   if(nh.getParam("K_P", serverK_P))
+  {
+    ROS_INFO("K_P = %f", serverK_P);
+  }
+ if(nh.getParam("K_I", serverK_I))
+  {
+    ROS_INFO("K_I = %f", serverK_I);
+  }
+ if(nh.getParam("K_D", serverK_D))
+  {
+    ROS_INFO("K_D = %f", serverK_D);
+  }
+ if(nh.getParam("dt", server_dt))
+  {
+    ROS_INFO("dt = %f", server_dt);
+  }
+ if(nh.getParam("steeringLimitAbs", steeringLimitAbs))
+  {
+    ROS_INFO("steeringLimitAbs = %f", steeringLimitAbs);
+  }
+
+
+
+  /**
    * The subscribe() call is how you tell ROS that you want to receive messages
    * on a given topic.  This invokes a call to the ROS
    * master node, which keeps a registry of who is publishing and who
@@ -112,46 +154,23 @@ int main(int argc, char **argv)
   ros::Subscriber sub = nh.subscribe("trajectory", 1, trajectoryCallback);
 
   // generate subscriber for us-sensor messages
-  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 5, boost::bind(usrCallback, _1, &usr));
-  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5, boost::bind(uslCallback, _1, &usl));
-  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5, boost::bind(usfCallback, _1, &usf));
+  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 5,  boost::bind( usrCallback, _1, &usr ));
+  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5,  boost::bind( uslCallback, _1, &usl ));
+  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5,  boost::bind( usfCallback, _1, &usf ));
 
   CController ctrl(17.5, 3.5, 0.1, 0.1, 1000);
 
   // Loop starts here:
-  ros::Rate loop_rate(1 / looptime);
+  ros::Rate loop_rate(1/looptime);
 
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
 
+
+
   while (ros::ok())
   {
 
-    // example trajectory calculation
-    {
-      std::vector<double> left_line_x, left_line_y;
-      std::vector<double> right_line_x, right_line_y;
-
-      left_line_x = {0.1, 0.21, 0.30, 0.42, 0.5, 0.65};
-      left_line_y = {0.2, 0.25, 0.33, 0.41, 0.48, 0.54};
-      right_line_x = {0.11, 0.2, 0.32, 0.43, 0.52, 0.66};
-      right_line_y = {-0.2, -0.17, -0.11, -0.02, 0.09, 0.14};
-
-      CTrajectory left_line(left_line_x, left_line_y);
-      CTrajectory right_line(right_line_x, right_line_y);
-
-      CTrajectory traj = left_line.calcTraj(right_line, 0.0, 0.0);
-
-      std::vector<double> spline_x, spline_y;
-
-      spline_x.reserve(left_line_x.size());
-      spline_y.reserve(left_line_x.size());
-      for (auto it : traj.getVecWaypointDists())
-      {
-        spline_x.emplace_back(alglib::spline1dcalc(traj.getSplineInterpolant('x'), it));
-        spline_y.emplace_back(alglib::spline1dcalc(traj.getSplineInterpolant('y'), it));
-      }
-    }
     // some validation check should be done!
     /*
     if(!ctrl.ctrlLoop(usl, usr, usf))    {
@@ -166,19 +185,21 @@ int main(int argc, char **argv)
       //double err2 = 0.07*exp(1.0 - 1/20.0*(i - 10)*(i - 10));
       //i++;
       //ROS_INFO("error: %.4f", err2);
-      steering.data = (int16_t)-ctrl.computeSteering(trajectory[0].y); //std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );
+      steering.data = (int16_t) -ctrl.computeSteering( trajectory[0].x );//std::array<double, arraySize>{{0.0,.0,.0,.2,.1}} );
       //ROS_INFO("calculated Steering: %.4f\n", (float) steering.data);
     }
-    ROS_INFO("calculated Steering: %.2f\n", (float)steering.data);
-    velocity.data = vel;
-    ROS_INFO("vel: %d\n", velocity.data);
+  ROS_INFO("calculated Steering: %.2f\n", (float) steering.data);
+velocity.data = vel;
+  ROS_INFO("vel: %d\n",  velocity.data);
     motorCtrl.publish(velocity);
+  steering.data = steer;
     steeringCtrl.publish(steering);
     // clear input/output buffers
     ros::spinOnce();
     // this is needed to ensure a const. loop rate
     loop_rate.sleep();
   }
+
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all

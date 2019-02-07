@@ -9,12 +9,11 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <time.h>
-#include "utils/time_profiling.hpp"
+#include "lane_detection/time_profiling.hpp"
 
 using namespace cv;
 
-#define SHOW_IMAGES
-
+//#define SHOW_IMAGES
 
 //#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
 //#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
@@ -22,10 +21,10 @@ using namespace cv;
 //#define TEST_PICTURE_PATH "echtzeitsysteme/include/lane_detection/images/2018-12-05-220157.jpg"
 
 // NOTE: run from inside "catkin_ws" folder to find test photo
-#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
+//#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
 
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
