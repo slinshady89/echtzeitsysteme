@@ -91,7 +91,7 @@ int main(int argc, char **argv)
             myphoto2::BOTTOM_LEFT, myphoto2::BOTTOM_RIGHT, myphoto2::TOP_RIGHT, myphoto2::TOP_LEFT,
             TARGET_PX_PER_CM
             );
-    LanePointsCalculator lanePointsCalculator;
+    LanePointsCalculator& lanePointsCalculator = LanePointsCalculator::getInstance();
     ROS_INFO("Calibrated camera image.");
     // show source image in window "SourceImage"
     imshow("SourceImage", sourceImage);
