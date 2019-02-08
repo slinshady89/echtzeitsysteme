@@ -9,7 +9,7 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <time.h>
-#include "lane_detection/time_profiling.hpp"
+#include "utils/time_profiling.hpp"
 
 using namespace cv;
 
