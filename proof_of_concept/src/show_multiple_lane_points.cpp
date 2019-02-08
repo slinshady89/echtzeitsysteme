@@ -135,10 +135,10 @@ Mat processImage(ImageProcessor& proc, LanePointsCalculator& lpc)
     cvtColor(output, coloredOutput, COLOR_GRAY2BGR);
     proc.setImage(coloredOutput, BGR);
     for (int i=0; i<rightLanePoints.size(); i++) {
-        coloredOutput = proc.drawPoint(rightLanePoints.at(i), Scalar(0,255,255));
+        coloredOutput = proc.drawPoint(rightLanePoints.at(i), Scalar(0,0,255));
     }
     for (int i=0; i<leftLanePoints.size(); i++) {
-        coloredOutput = proc.drawPoint(leftLanePoints.at(i));
+        coloredOutput = proc.drawPoint(leftLanePoints.at(i), Scalar(0,255,0));
     }
     imshow("colored", coloredOutput);
 
