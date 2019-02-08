@@ -18,6 +18,11 @@ enum SearchMode
     MIDDLE_FALLBACK
 };
 
+/**
+ * This class offers methods to determine lane points and trajectory points derived from these
+ * in an image which is contained in an ImageProcessor.
+ *
+ */
 // TODO: make this class singleton?
 class LanePointsCalculator
 {
