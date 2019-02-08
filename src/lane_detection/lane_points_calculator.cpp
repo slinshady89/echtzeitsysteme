@@ -67,7 +67,10 @@ std::vector<Point2i> LanePointsCalculator::trajPointsSimple(int *rows, int rows_
 std::vector<Point2i> LanePointsCalculator::lanePoints(int *rows, int rows_size, Direction searchDir, ImageProcessor &proc) {
     std::vector<Point2i> results;
     for (int i=0; i<rows_size; i++) {
-        results.push_back(innerLanePoint(searchDir, rows[i], proc));
+        Point2i foundPoint = innerLanePoint(searchDir, rows[i], proc);
+        if (foundPoint.x >=0 && foundPoint.y >=0) {
+            results.push_back(foundPoint);
+        }
     }
     return results;
 }
