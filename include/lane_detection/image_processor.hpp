@@ -59,13 +59,14 @@ class ImageProcessor {
         Mat& getImage();    // TODO: remove? getter not necessary?
         void setImage(Mat img, ColorType type); // TODO: remove this method later when testing is over!
 
-
-        // methods for getting trajectory points
-        
         /**
          * Calculates a single (inaccurate) trajectory point by using a fixed distance to the right lane in the given distance (y_cm).
          */
+        // TODO: extract this method to own class - ImageProcessor should not be responsible for calculating trajectory or lane points!
         Point2d singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold);
+
+
+        // Methods for finding the position of white pixels in a grayscale / black-white image
 
         Point2i firstMatchFromRight(int pxY);
         Point2i firstMatchFromLeft(int pxY);
@@ -78,6 +79,7 @@ class ImageProcessor {
 
         // debugging methods
         Mat drawPoint(Point2i point);
+        Mat drawPoint(Point2i point, Scalar color);
 
     private:
         Mat image;

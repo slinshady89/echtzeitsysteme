@@ -122,6 +122,9 @@ Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
     Point2i unscaledCoordinates = Point2i(imageCoordinates.x - (image.cols/2), image.rows - imageCoordinates.y - px_os_bottom);
     double x = unscaledCoordinates.x * width_cm_per_px;
     double y = (unscaledCoordinates.y * height_cm_per_px) + offset_cm;
+
+
+
     TIMER_STOP
     TIMER_EVALUATE(getWorldCoordinates)
     return Point2d(x, y);
@@ -136,12 +139,17 @@ Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
 Mat ImageProcessor::drawPoint(Point2i point) {
     TIMER_INIT
     TIMER_START
-    circle(image, point, 4, Scalar(255,255,255), -1);
+    drawPoint(point, Scalar(255, 255, 255));
     TIMER_STOP
     TIMER_EVALUATE(drawPoint)
     return image;
 }
 
+
+Mat ImageProcessor::drawPoint(Point2i point, Scalar color) {
+    circle(image, point, 4, color, -1);
+    return Mat();
+}
 
 Mat& ImageProcessor::getImage() {
     return image;
@@ -220,7 +228,6 @@ Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, in
     TIMER_EVALUATE(singleTrajPoint)
     return Point2d(-1,-1);
 }
-
 Point2i ImageProcessor::firstMatchFromRight(int pxY) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
@@ -245,6 +252,7 @@ Point2i ImageProcessor::firstMatchFromLeft(int pxY) {
     }
     return Point2i(-1, -1);
 }
+
 Point2i ImageProcessor::nextMatch(int pxY, Point2i lastMatch) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
@@ -262,7 +270,6 @@ Point2i ImageProcessor::nextMatch(int pxY, Point2i lastMatch) {
     return Point2i(-1, -1);
 
 }
-
 Point2i ImageProcessor::lastMatchLeft(Point2i start) {
     uchar* data = image.ptr<uchar>(start.y);
     for (int x=start.x; x>=0; x--) {
@@ -272,6 +279,7 @@ Point2i ImageProcessor::lastMatchLeft(Point2i start) {
     }
     return Point2i(-1, -1);
 }
+
 Point2i ImageProcessor::lastMatchRight(Point2i start) {
     uchar* data = image.ptr<uchar>(start.y);
     for (int x=start.x; x<image.cols; x++) {
