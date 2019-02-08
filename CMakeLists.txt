@@ -184,15 +184,20 @@ add_executable(lane_detection src/lane_detection.cpp
                               src/gui/color_selector.cpp
                                 src/lane_detection/lane_points_calculator.cpp
         )
-add_executable(trajectory_planning src/trajectory_planning.cpp)
+add_executable(trajectory_planning src/trajectory_planning.cpp
+                src/trajectory.cpp)
 add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
                                     src/lane_detection/CameraReader.cpp
                                     src/lane_detection/image_processor.cpp
                                     src/gui/color_selector.cpp)
+add_executable(show_multiple_lane_points
+        proof_of_concept/src/show_multiple_lane_points.cpp
+        src/lane_detection/image_processor.cpp
+        src/lane_detection/lane_points_calculator.cpp)
 
 
 # make sure configure headers are built before any node using them
-add_dependencies(trajectory_planning ${PROJECT_NAME}_gencfg)
+# add_dependencies(trajectory_planning ${PROJECT_NAME}_gencfg)
 
 
 ## Rename C++ executable without prefix
@@ -227,7 +232,7 @@ target_link_libraries(lane_detection
 )
 
 target_link_libraries(trajectory_planning
-  controller 
+  controller
   safety
   ${catkin_LIBRARIES}
   alglib
@@ -238,10 +243,13 @@ target_link_libraries(camera_reading_test
   ${OpenCV_LIBS}
 )
 
+target_link_libraries(show_multiple_lane_points
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
 
-#############
+############
 ## Install ##
-#############
+############
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
