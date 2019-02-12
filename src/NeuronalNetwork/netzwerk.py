@@ -4,6 +4,9 @@ import scipy.special                                    # cmd: 'sudo apt-get ins
 # Bibliothek zur Darstellung der Array
 import matplotlib.pyplot
 #      %matplotlib inline
+import cv2
+print (cv2.__version__)
+
 
 
 # neural network class definition
@@ -207,7 +210,9 @@ for aufnehmen in ref_data_list:
 
     # konvergiert erste Element von String->int       
     # erste Element ist das soll Ergebnis des Outputs => wird auf 0.99 gesetzt
+    #targets[float(str(aufnehmen_all_values[0]))] = 0.99
     targets[int(aufnehmen_all_values[0])] = 0.99
+
 
     # Aufruf zum trainieren mit scalierten Inputwerten(0.01,1.0) und targets(Zielantwort)
     neuralNet.train(scaled_input, targets)
@@ -222,7 +227,8 @@ for aufnehmen in ref_data_list:
 ############# DATENSATZ ZUM ANWENDEN LADEN 
 # oeffne Datei
 # Pfad   -r=readonly
-anwenden_data_file = open("Handschrift_mnist_dataset/mnist_test_10.csv", 'r')
+# anwenden_data_file = open("Handschrift_mnist_dataset/mnist_test_10.csv", 'r')
+anwenden_data_file = open("/home/pses/catkin_ws/src/echtzeitsysteme/src/NeuronalNetwork/Handschrift_mnist_dataset/mnist_test_10.csv", 'r')
 
 # stellt die Datei zur verfuegung und liest sie ein (die Gesamte Datei in den Hauptspeicher - optimieren jeweils nur eine Zeile)
 anwenden_data_list = anwenden_data_file.readlines()
