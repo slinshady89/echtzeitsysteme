@@ -1,6 +1,7 @@
 #ifndef CAMERA_READER_HPP_
 #define CAMERA_READER_HPP_
 
+// default camera resolution
 #define INIT_VIDEO_WIDTH 1920
 #define INIT_VIDEO_HEIGHT 1080
 
@@ -11,10 +12,20 @@
 using namespace cv;
 
 
+/**
+ * Convenience class for opening an OpenCV video stream from a camera / webcam.
+ */
 class CameraReader {
     public:
 
-        CameraReader();
+        CameraReader() : CameraReader(INIT_VIDEO_WIDTH, INIT_VIDEO_HEIGHT) {};
+        /**
+         * Initializes an OpenCV VideoCapture object with the available (web)cam
+         * and also sets it to the desired frame resolution.
+         * @param width the resolution width
+         * @param height the resolution height
+         */
+        CameraReader(int width, int height);
         ~CameraReader(){};
 
 

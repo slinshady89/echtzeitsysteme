@@ -3,8 +3,7 @@
 #define FRAMES_TO_DISCARD 4
 
 
-
-CameraReader::CameraReader(): cap(
+CameraReader::CameraReader(int width, int height): cap(
 #ifdef DEBUG
             VideoCapture("test.mp4")
 #else
@@ -19,8 +18,8 @@ CameraReader::CameraReader(): cap(
     if (!cap.isOpened()) {
         std::cerr << "No video opened" << std::endl;
     }
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, INIT_VIDEO_WIDTH);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, INIT_VIDEO_HEIGHT);
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
 #endif
 }
 

@@ -27,6 +27,22 @@ namespace constants {
             const int TARGET_WIDTH = 180;
             const int TARGET_HEIGHT = 180;
         }
+        namespace calibrationtest2 {
+            const std::string RIGHT_CURVE = "2018-12-05-220033.jpg";
+            const std::string LEFT_CURVE = "2018-12-05-220138.jpg";
+            const std::string STRAIGHT_LEFT = "2018-12-05-220157.jpg";
+            const int SRC_WIDTH = 640;
+            const int SRC_HEIGHT = 480;
+            const cv::Vec2i BOTTOM_LEFT = cv::Vec2i(0,366);
+            const cv::Vec2i BOTTOM_RIGHT = cv::Vec2i(632,363);
+            const cv::Vec2i TOP_RIGHT = cv::Vec2i(404,238);
+            const cv::Vec2i TOP_LEFT = cv::Vec2i(237,237);
+            const double RECT_WIDTH =  59.0;
+            const double RECT_HEIGHT = 84.0;
+            const double OFFSET_ORIGIN = 30.0;
+            const int TARGET_WIDTH = 180;
+            const int TARGET_HEIGHT = 180;
+        }
     }
 }
 

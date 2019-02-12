@@ -68,7 +68,6 @@ public:
       y_.setcontent(_y.size(), &_y.front());
       calcLinLength(_x, _y);
       s_.setcontent(s_lin.size(), &s_lin.front());
-      auto test = s_.getcontent();
       alglib::spline1dbuildcubic(s_, x_, spline_x_);
       alglib::spline1dbuildcubic(s_, y_, spline_y_);
     }

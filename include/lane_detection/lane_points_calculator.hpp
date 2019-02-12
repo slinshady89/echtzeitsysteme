@@ -23,12 +23,13 @@ enum SearchMode
  * in an image which is contained in an ImageProcessor.
  *
  */
-// TODO: make this class singleton?
 class LanePointsCalculator
 {
   public:
-    LanePointsCalculator(){};
-    ~LanePointsCalculator(){};
+    static LanePointsCalculator& getInstance() {
+        static LanePointsCalculator instance;
+        return instance;
+    }
 
     /**
      * Calculates a point orthogonal to the line between start and end point,
@@ -78,6 +79,9 @@ class LanePointsCalculator
     std::vector<Point2i> lanePoints(int *rows, int rows_size, Direction searchDir, ImageProcessor &proc);
 
   private:
+    LanePointsCalculator(){};
+    LanePointsCalculator(LanePointsCalculator const&) = delete;
+    void operator=(LanePointsCalculator const&) = delete;
 };
 
 #endif // LANE_POINTS_CALCULATOR_HPP_

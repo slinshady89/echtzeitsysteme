@@ -137,18 +137,13 @@ Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
 
 // debugging
 Mat ImageProcessor::drawPoint(Point2i point) {
-    TIMER_INIT
-    TIMER_START
-    drawPoint(point, Scalar(255, 255, 255));
-    TIMER_STOP
-    TIMER_EVALUATE(drawPoint)
-    return image;
+    return drawPoint(point, Scalar(255, 255, 255));
 }
 
 
 Mat ImageProcessor::drawPoint(Point2i point, Scalar color) {
     circle(image, point, 4, color, -1);
-    return Mat();
+    return image;
 }
 
 Mat& ImageProcessor::getImage() {
