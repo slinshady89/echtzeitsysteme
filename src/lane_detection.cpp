@@ -23,18 +23,17 @@ using namespace cv;
 // NOTE: run from inside "catkin_ws" folder to find test photo
 //#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
 
-
 //#define USE_TEST_PICTURE
 #define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
-#define PARAMS_1 59.0,84.0,30.0,640,480,Point(0,366),Point(632,363),Point(404,238),Point(237,237),Point(151,639),Point(488,639),Point(488,0),Point(151,0)
-#define PARAMS_2 59.0,84.0,20,640,991,Point(43,387),Point(583,383),Point(404,189),Point(234,190),Point(95,990),Point(545,990),Point(545,350),Point(95,350)
+#define PARAMS_1 59.0, 84.0, 30.0, 640, 480, Point(0, 366), Point(632, 363), Point(404, 238), Point(237, 237), Point(151, 639), Point(488, 639), Point(488, 0), Point(151, 0)
+#define PARAMS_2 59.0, 84.0, 20, 640, 991, Point(43, 387), Point(583, 383), Point(404, 189), Point(234, 190), Point(95, 990), Point(545, 990), Point(545, 350), Point(95, 350)
 
 // my_photo-2.jpg
-#define PARAMS_3 59.0,84.0,20,180,180,Point(549,799),Point(1384,786),Point(1129,490),Point(800,493),5
+#define PARAMS_3 59.0, 84.0, 20, 180, 180, Point(549, 799), Point(1384, 786), Point(1129, 490), Point(800, 493), 5
 // photo from 15.12.
-#define PARAMS_4 59.0,84.0,22,180,180,Point(384,895),Point(1460,900),Point(1128,472),Point(760,460),5
+#define PARAMS_4 59.0, 84.0, 22, 180, 180, Point(384, 895), Point(1460, 900), Point(1128, 472), Point(760, 460), 5
 
 /* configuration parameters */
 int low_H, low_S, low_V, high_H, high_S, high_V;
@@ -42,9 +41,10 @@ double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
 
-Mat processImage(Mat input, ImageProcessor& proc);
+Mat processImage(Mat input, ImageProcessor &proc);
 
-void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level) {
+void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level)
+{
   low_H = config.low_H;
   low_S = config.low_S;
   low_V = config.low_V;
@@ -59,10 +59,7 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   ROS_INFO("Updated configuration.");
 }
 
-
 ros::Time lane_detection_start, lane_detection_looptimer;
-
-
 
 /**
  * Here comes the real magic
@@ -81,7 +78,6 @@ int main(int argc, char **argv)
    */
   ros::init(argc, argv, "lane_detection");
 
-
   /**
    * NodeHandle is the main access point to communications with the ROS system.
    * The first NodeHandle constructed will fully initialize this node, and the last
@@ -91,7 +87,6 @@ int main(int argc, char **argv)
   Mat frame;
 
   /* dynamic reconfigure commands */
-
 
   dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig> server;
   dynamic_reconfigure::Server<echtzeitsysteme::ImageProcessingConfig>::CallbackType f;
@@ -110,11 +105,11 @@ int main(int argc, char **argv)
   if (frame.empty())
   {
     ROS_ERROR("Test image could not be opened!");
-  }  
+  }
   TIMER_STOP
-  TIMER_EVALUATE(<main>:read test image)
+  TIMER_EVALUATE(<main>
+                 : read test image)
 #endif
-
 
   ROS_INFO("LANE DETECTION NODE");
   char dir_name[100];
@@ -122,22 +117,22 @@ int main(int argc, char **argv)
   ROS_INFO("Current directory is: %s", dir_name);
 
 #ifndef USE_TEST_PICTURE
-  #ifdef USE_TIMER
+#ifdef USE_TIMER
   lane_detection_start = ros::Time::now();
-  #endif
+#endif
   CameraReader reader;
   ROS_INFO("FPS: %f", reader.getVideoCapture().get(CV_CAP_PROP_FPS));
   //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
   frame = reader.readImage();
 
-  #ifdef USE_TIMER
+#ifdef USE_TIMER
   time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_start.toSec())*1000 ;
+  time = (time_now.toSec() - lane_detection_start.toSec()) * 1000;
   ROS_INFO("TIME to read cam_img %f ms", time);
-  #endif
+#endif
 
 #endif
-  
+
   // TODO: for more meaningful testing, move object creation in the loop
 
   TIMER_START
@@ -149,10 +144,9 @@ int main(int argc, char **argv)
   imshow("CameraFrame", frame);
 
   TIMER_STOP
-  TIMER_EVALUATE(transform img %f ms)
+  TIMER_EVALUATE(transform img % f ms)
 
-
-/*
+  /*
   frame = imageProcessor.resize(800,450);
   imshow("resized", frame);
   waitKey(0);
@@ -168,8 +162,10 @@ int main(int argc, char **argv)
   /**
    * Init ROS Publisher here. Can set to be a fixed array
    */
-  echtzeitsysteme::points trajectory;
-  trajectory.points.clear();
+  echtzeitsysteme::points right_line, left_line, center_line;
+  right_line.points.clear();
+  left_line.points.clear();
+  center_line.points.clear();
 
   /**
    * The advertise() function is how you tell ROS that you want to
@@ -188,97 +184,106 @@ int main(int argc, char **argv)
    * than we can send them, the number here specifies how many messages to
    * buffer up before throwing some away.
    */
-  ros::Publisher trajectory_pub = nh.advertise<echtzeitsysteme::points>("trajectory", 1);  //TODO: change buffer size
+  ros::Publisher right_line_pub = nh.advertise<echtzeitsysteme::points>("right_line", 10);   //TODO: change buffer size
+  ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 10);     //TODO: change buffer size
+  ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 10); //TODO: change buffer size
 
   ros::Rate loop_rate(loop_rate); //TODO: Hz anpassen
 
   while (ros::ok())
   {
-        lane_detection_looptimer = ros::Time::now();
+    lane_detection_looptimer = ros::Time::now();
 
-        TIMER_START
-        ROS_INFO("Show frame.");
-    #ifndef USE_TEST_PICTURE
-        frame = reader.readImage();
-    #endif
-    #ifdef DRAW_GRID
-        drawGrid(frame);
-    #endif  
+    TIMER_START
+    ROS_INFO("Show frame.");
+#ifndef USE_TEST_PICTURE
+    frame = reader.readImage();
+#endif
+#ifdef DRAW_GRID
+    drawGrid(frame);
+#endif
 
-        TIMER_START
+    TIMER_START
 
-        Mat processedImage = processImage(frame, imageProcessor);
+    Mat processedImage = processImage(frame, imageProcessor);
 
-        Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
+    Point2d trajPoint_px = imageProcessor.singleTrajPoint(lane_dist_cm, y_dist_cm, laneColorThreshold);
 
-        Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
+    Point2d worldCoords = imageProcessor.getWorldCoordinates(trajPoint_px);
 
-        Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
+    Point2d trajPoint(worldCoords.y, -worldCoords.x); // TODO: change method to return correct coordinates
 
-        TIMER_STOP
-        TIMER_EVALUATE(<main>:<while>:imageProcessing)
+    TIMER_STOP
+    TIMER_EVALUATE(<main>
+                   : <while>
+                   : imageProcessing)
 
-        ROS_INFO("Calculated traj point.");
+    ROS_INFO("Calculated traj point.");
 
+#ifdef SHOW_IMAGES
 
+    TIMER_START
+    if (trajPoint_px.x >= 0 && trajPoint_px.y >= 0)
+    {
+      imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
+    }
+    waitKey(100);
 
-    #ifdef SHOW_IMAGES
+    TIMER_STOP
+    TIMER_EVALUATE(<main>
+                   : <while>
+                   : draw right_line point + 100ms wait)
+#endif
 
-      TIMER_START
-      if (trajPoint_px.x >= 0 && trajPoint_px.y >=0) {
-        imshow("traj point", imageProcessor.drawPoint(trajPoint_px));
-      }
-      waitKey(100);
+    TIMER_START
+    // clear points array every loop
+    right_line.points.clear();
 
-      TIMER_STOP
-      TIMER_EVALUATE(<main>:<while>:draw trajectory point + 100ms wait)
-    #endif
-
-        TIMER_START
-        // clear points array every loop
-        trajectory.points.clear();
-
-        /**
+    /**
          * create geometry_msgs/Point message for every entry in custom points msg and push it
          */
-        geometry_msgs::Point point1;
-        point1.x = trajPoint.x;
-        point1.y = trajPoint.y;
+    geometry_msgs::Point point1;
+    point1.x = trajPoint.x;
+    point1.y = trajPoint.y;
 
-        trajectory.points.push_back(point1);
+    right_line.points.push_back(point1);
 
-        /**
+    /**
          * The publish() function is how you send messages. The parameter
          * is the message object. The type of this object must agree with the type
          * given as a template parameter to the advertise<>() call, as was done
          * in the constructor above.
          */
-        trajectory_pub.publish(trajectory);
-        TIMER_STOP
-        TIMER_EVALUATE(<main>:<while>:publish trajectory point)
-        // clear input/output buffers
-        ros::spinOnce();
+    right_line_pub.publish(right_line);
+    left_line_pub.publish(left_line);
+    center_line_pub.publish(center_line);
+    TIMER_STOP
+    TIMER_EVALUATE(<main>
+                   : <while>
+                   : publish lines point)
+    // clear input/output buffers
+    ros::spinOnce();
 
-      #ifdef USE_TIMER
-      time_now = ros::Time::now();
-      time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
-      ROS_INFO("TIME LOOP befor sleep %f ms", time);
-      #endif
+#ifdef USE_TIMER
+    time_now = ros::Time::now();
+    time = (time_now.toSec() - lane_detection_looptimer.toSec()) * 1000;
+    ROS_INFO("TIME LOOP befor sleep %f ms", time);
+#endif
 
-        // this is needed to ensure a const. loop rate
-        loop_rate.sleep();
+    // this is needed to ensure a const. loop rate
+    loop_rate.sleep();
   }
 
-  #ifdef USE_TIMER
+#ifdef USE_TIMER
   time_now = ros::Time::now();
-  time = (time_now.toSec()- lane_detection_looptimer.toSec())*1000 ;
+  time = (time_now.toSec() - lane_detection_looptimer.toSec()) * 1000;
   ROS_INFO("end main %f ms", time);
-  #endif
+#endif
 
   return 0;
 }
 
-Mat processImage(Mat input, ImageProcessor& proc) 
+Mat processImage(Mat input, ImageProcessor &proc)
 {
   TIMER_INIT
 
@@ -287,12 +292,14 @@ Mat processImage(Mat input, ImageProcessor& proc)
   TIMER_START
   proc.setImage(input, BGR);
   TIMER_STOP
-  TIMER_EVALUATE(<processImage>:setImage) 
+  TIMER_EVALUATE(<processImage>
+                 : setImage)
 
   TIMER_START
   output = proc.transformTo2D();
   TIMER_STOP
-  TIMER_EVALUATE(<processImage>:transformTo2D)
+  TIMER_EVALUATE(<processImage>
+                 : transformTo2D)
 
 #ifdef SHOW_IMAGES
   imshow("2D input", output);
@@ -302,28 +309,30 @@ Mat processImage(Mat input, ImageProcessor& proc)
   TIMER_START
   proc.convertToHSV();
   TIMER_STOP
-  TIMER_EVALUATE(<processImage>:convertToHSV)
+  TIMER_EVALUATE(<processImage>
+                 : convertToHSV)
 
   TIMER_START
   output = proc.filterColor(Scalar(low_H, low_S, low_V),
-                                            Scalar(high_H, high_S, high_V));
+                            Scalar(high_H, high_S, high_V));
   TIMER_STOP
-  TIMER_EVALUATE(<processImage>:filterColor)                                            
-  
+  TIMER_EVALUATE(<processImage>
+                 : filterColor)
+
 #ifdef SHOW_IMAGES
   imshow("green filtered", output);
 #endif
   ROS_INFO("remove noise...");
 
-//  TIMER_START
-//  output = proc.removeNoise(5,5);
-//  TIMER_STOP
-//  TIMER_EVALUATE(processImage:removeNoise)
-//#ifdef SHOW_IMAGES
-//  imshow("green with noise removed", output);
-//#endif
+  //  TIMER_START
+  //  output = proc.removeNoise(5,5);
+  //  TIMER_STOP
+  //  TIMER_EVALUATE(processImage:removeNoise)
+  //#ifdef SHOW_IMAGES
+  //  imshow("green with noise removed", output);
+  //#endif
 
-/*
+  /*
   // noise removal
   output = proc.edgeDetection(sel.getLowCannyThresh(), sel.getHighCannyThresh());
   imshow("edges detected", output);
