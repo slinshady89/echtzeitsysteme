@@ -76,38 +76,23 @@ void ImageProcessor::calibrateCameraImage(double testRectWidth_cm, double testRe
 #include <time.h>
 
 Mat ImageProcessor::transformTo2D() {
-    TIMER_INIT
     /*
-    TIMER_INIT
-    TIMER_START
     transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
-    TIMER_STOP
-    TIMER_EVALUATE(getPerspectiveTransform)
-    */  
-    TIMER_START
+    */
     Mat output = Mat::zeros(Size(dstWidth,dstHeight),image.type());
     warpPerspective(image, output, transformMatr, output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
-    TIMER_STOP
-    TIMER_EVALUATE(warpPerspective)
-    
-    TIMER_START
+
     image = output;
-    TIMER_STOP
-    TIMER_EVALUATE(copy image)
 
     return image;
 }
 
 Mat ImageProcessor::filterColor(Scalar lowHSVColor, Scalar highHSVColor) {
-    TIMER_INIT
-    TIMER_START
     if (colorType != HSV) {
         ROS_WARN("Image was not in HSV color! Converting to HSV...");
         convertToHSV();
     }
     inRange(image, lowHSVColor, highHSVColor, image);
-    TIMER_STOP
-    TIMER_EVALUATE(filterColor)
     return image;
 }
 
@@ -117,21 +102,16 @@ Mat ImageProcessor::edgeDetection(int lowThresh, int highThresh) {
 }
 
 Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
-    TIMER_INIT
-    TIMER_START
     Point2i unscaledCoordinates = Point2i(imageCoordinates.x - (image.cols/2), image.rows - imageCoordinates.y - px_os_bottom);
     double x = unscaledCoordinates.x * width_cm_per_px;
     double y = (unscaledCoordinates.y * height_cm_per_px) + offset_cm;
 
-
-
-    TIMER_STOP
-    TIMER_EVALUATE(getWorldCoordinates)
     return Point2d(x, y);
 }
 
 Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
-    // TODO: implement
+    // TODO: implement when needed
+    ROS_ERROR("ImageProcessor::getImageCoordinates() is not implemented!");
     return Point2d(-1,-1);
 }
 
@@ -151,13 +131,9 @@ Mat& ImageProcessor::getImage() {
 }
 
 Mat ImageProcessor::resize(int width, int height) {
-    TIMER_INIT
-    TIMER_START
     Mat resized;
     cv::resize(image, resized, Size(width, height), 0, 0, INTER_LINEAR); //size is variable
     image = resized;
-    TIMER_STOP
-    TIMER_EVALUATE(resize)
     return image;
 }
 
@@ -171,25 +147,17 @@ Mat ImageProcessor::getTransformMatr() {
 }
 
 Mat ImageProcessor::removeNoise(int kwidth, int kheight) {
-    TIMER_INIT
-    TIMER_START
     blur(image, image, Size(kwidth, kheight));
-    TIMER_STOP
-    TIMER_EVALUATE(removeNoise)
     return image;
 }
 
 Mat ImageProcessor::convertToHSV() {
-    TIMER_INIT
-    TIMER_START
     if (!colorType==BGR) {
         std::cerr << "Conversion to HSV not possible!" << std::endl;
         return image;
     }
     cvtColor(image, image, COLOR_BGR2HSV);
     colorType = HSV;
-    TIMER_STOP
-    TIMER_EVALUATE(convertToHSV)
     return image;
 }
 
@@ -199,8 +167,6 @@ void ImageProcessor::setImage(Mat img, ColorType type) {
 }
 
 Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold) {
-    TIMER_INIT
-    TIMER_START
     int pxHeight = (y_cm - offset_cm) * height_px_per_cm;
     int pxDistLane = int(rightLaneDist_cm * width_px_per_cm);
 
@@ -212,15 +178,11 @@ Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, in
             Scalar pixel = imageRow.at<uchar>(0,i);
 
             if (pixel.val[0]>colorThreshold) {
-                TIMER_STOP
-                TIMER_EVALUATE(singleTrajPoint)
                 return Point2d(i-pxDistLane,y);
             }
         }
     }
     std::cerr << "No trajectory point found." << std::endl;
-    TIMER_STOP
-    TIMER_EVALUATE(singleTrajPoint)
     return Point2d(-1,-1);
 }
 Point2i ImageProcessor::firstMatchFromRight(int pxY) {
