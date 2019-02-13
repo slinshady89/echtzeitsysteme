@@ -102,9 +102,12 @@ Mat ImageProcessor::edgeDetection(int lowThresh, int highThresh) {
 }
 
 Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
-    Point2i unscaledCoordinates = Point2i(imageCoordinates.x - (image.cols/2), image.rows - imageCoordinates.y - px_os_bottom);
-    double x = unscaledCoordinates.x * width_cm_per_px;
-    double y = (unscaledCoordinates.y * height_cm_per_px) + offset_cm;
+    // adapt pixel coordinates to the orientation and position of the world coordinate system
+    int x_unscaledLocal = image.rows - imageCoordinates.y - px_os_bottom;
+    int y_unscaledLocal = -(imageCoordinates.x - (image.cols/2));
+    // scale pixel coordinates to actual world units and add distance offset
+    double x = x_unscaledLocal * height_cm_per_px + offset_cm;
+    double y = (y_unscaledLocal * width_cm_per_px);
 
     return Point2d(x, y);
 }
