@@ -8,8 +8,10 @@
 #include <echtzeitsysteme/ImageProcessingConfig.h>
 #include <dynamic_reconfigure/server.h>
 #include <lane_detection/lane_points_calculator.hpp>
+#include <constants/constants.h>
 
 using namespace cv;
+using namespace constants::calibrations;
 
 #define SHOW_IMAGES
 
@@ -22,7 +24,6 @@ using namespace cv;
 #define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
 
 #define USE_TEST_PICTURE
-#define LOOP_RATE_IN_HERTZ 10
 //#define DRAW_GRID
 
 #define PARAMS_1 59.0, 84.0, 30.0, 640, 480, Point(0, 366), Point(632, 363), Point(404, 238), Point(237, 237), Point(151, 639), Point(488, 639), Point(488, 0), Point(151, 0)
@@ -35,6 +36,11 @@ using namespace cv;
 
 int IMAGE_ROWS[] = {100, 200, 300, 400, 500, 600, 700, 800, 900};
 int IMAGE_ROWS_SIZE = 9;
+
+const int TARGET_WIDTH = 120;
+const int TARGET_HEIGHT = 200;
+const int TARGET_PX_PER_CM = 5;
+const int LOOP_RATE_IN_HERTZ = 10;
 
 /* configuration parameters */
 int low_H, low_S, low_V, high_H, high_S, high_V;
@@ -108,7 +114,12 @@ int main(int argc, char **argv)
 
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
-  imageProcessor.calibrateCameraImage(PARAMS_3);
+    imageProcessor.calibrateCameraImage(
+            myphoto2::RECT_WIDTH, myphoto2::RECT_HEIGHT, myphoto2::OFFSET_ORIGIN,
+            TARGET_WIDTH, TARGET_HEIGHT,
+            myphoto2::BOTTOM_LEFT, myphoto2::BOTTOM_RIGHT, myphoto2::TOP_RIGHT, myphoto2::TOP_LEFT,
+            TARGET_PX_PER_CM
+    );
   ROS_INFO("Calibrated camera image.");
   imshow("CameraFrame", frame);
   waitKey(100);
@@ -124,7 +135,7 @@ int main(int argc, char **argv)
   ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 10);     //TODO: change buffer size
   ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 10); //TODO: change buffer size
 
-  ros::Rate loop_rate(10); //TODO: Hz anpassen
+  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ); //TODO: Hz anpassen
 
   while (ros::ok())
   {
