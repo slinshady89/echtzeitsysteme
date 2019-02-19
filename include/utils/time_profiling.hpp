@@ -10,7 +10,7 @@
  */
 
 // comment this line to not use time profiling
-#define USE_TIMER
+//#define USE_TIMER
 
 #ifdef USE_TIMER
     #define TIMER_INIT ros::Time startTime; ros::Time endTime; float millis;
