@@ -127,7 +127,7 @@ int main(int argc, char **argv)
       curv_traj = traj.calcCurvature(v / looptime);
     }
 
-    VehicleModel veh(20.0, 45.0, 1000, -1000, 1000);
+    VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
     std::vector<double> steering_deg;
     std::vector<int> steering_ctrl;

@@ -10,7 +10,14 @@
 class VehicleModel
 {
 public:
-  VehicleModel(double _width, double _length, int _maxVelPos, int _maxVelNeg, int _absMaxSteering) : width_(_width), length_(_length), maxVelPos_(_maxVelPos), maxVelNeg(_maxVelNeg), absMaxSteering_(_absMaxSteering){};
+  VehicleModel(double _width, double _length, int _maxVelPos, int _maxVelNeg, int _absMaxSteering) :
+  width_(_width),
+  length_(_length),
+  maxVelPos_(_maxVelPos),
+  maxVelNeg(_maxVelNeg),
+  absMaxSteering_(_absMaxSteering){
+    length_rear_axle_to_cog_ = _length * length_to_cog_fact;
+  };
 
   VehicleModel(double width_, double length_, int absMaxSteering_, int maxVelPos_);
 
@@ -44,10 +51,11 @@ private:
   int absMaxSteering_ = 1000;
   int maxVelPos_ = 1000;
   int maxVelNeg = -1000;
-  double length_rear_axle_to_cog_ = length_ / 2;
+  double length_rear_axle_to_cog_ = length_ * 2 / 3;
 
 protected:
   std::array<double, 6> polynom = {-0.0001, -0.0045, 0.0257, 0.9683, -44.0491, 57.8917};
+  double length_to_cog_fact _= 0.6078;
 };
 
 /**
