@@ -16,7 +16,7 @@ public:
   maxVelPos_(_maxVelPos),
   maxVelNeg(_maxVelNeg),
   absMaxSteering_(_absMaxSteering){
-    length_rear_axle_to_cog_ = _length * length_to_cog_fact;
+    length_rear_axle_to_cog_ = _length * length_to_cog_fact_;
   };
 
   VehicleModel(double width_, double length_, int absMaxSteering_, int maxVelPos_);
@@ -55,7 +55,7 @@ private:
 
 protected:
   std::array<double, 6> polynom = {-0.0001, -0.0045, 0.0257, 0.9683, -44.0491, 57.8917};
-  double length_to_cog_fact _= 0.6078;
+  double length_to_cog_fact_= 0.6078;
 };
 
 /**

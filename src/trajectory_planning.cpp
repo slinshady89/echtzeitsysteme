@@ -151,8 +151,8 @@ int main(int argc, char **argv)
     velocity.data = static_cast<short>(vel);
     ROS_INFO("vel: %d\n", velocity.data);
     motorCtrl.publish(velocity);
-
-    steeringCtrl.publish(steering_ctrl.front());
+    steering.data = static_cast<short>(steering_ctrl.front());
+    steeringCtrl.publish(steering);
     ros::spinOnce();
 
     loop_rate.sleep();
