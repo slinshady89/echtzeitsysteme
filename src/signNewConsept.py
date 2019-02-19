@@ -13,8 +13,8 @@ import argparse
 
 # Konstanten
 #TrafficOnWayBilder
-#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechts2.jpg'                    # 1-2
-filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechtsGerade3.jpg'              # 1-3
+filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechts2.jpg'                    # 1-2
+#filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadRechtsGerade3.jpg'              # 1-3
 #filename = '/home/pses/catkin_ws/src/echtzeitsysteme/images/TrafficOnWay/RoadEinfahrtVerboten3.jpg'         # 1-3
 
 
@@ -195,8 +195,8 @@ cv.imshow('Matches form Input and Libary & Object detection', img_matches)
 
 ########## Bildaufnahme Referenz
 #imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/einfahrtverbotenRoadref1.jpg", cv2.IMREAD_GRAYSCALE) # 1-2
-imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)  # 1-4       #1 926 keypoints Match 110
-#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)           # 1-3
+#imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/geradeausrechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)  # 1-4       #1 926 keypoints Match 110
+imgRef = cv2.imread("/home/pses/catkin_ws/src/echtzeitsysteme/images/DBSignCompare/rechtsRoadref1.jpg", cv2.IMREAD_GRAYSCALE)           # 1-3
 
 
 
