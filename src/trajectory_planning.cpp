@@ -144,14 +144,15 @@ int main(int argc, char **argv)
       steering_ctrl.emplace_back(veh.steeringAngleDegToSignal(it));
       //printf("steering_sig_ctrl : %.2f\n", steering_ctrl.back());
     }
+
     veh.setDesired_trajectory_(traj);
 
-    ROS_INFO("calculated Steering: %.2f\n", (float)steering.data);
-    velocity.data = vel;
+    ROS_INFO("calculated Steering: %.2f\n", (float)steering_ctrl.front());
+    velocity.data = static_cast<short>(vel);
     ROS_INFO("vel: %d\n", velocity.data);
     motorCtrl.publish(velocity);
 
-    steeringCtrl.publish(steering);
+    steeringCtrl.publish(steering_ctrl.front());
     ros::spinOnce();
 
     loop_rate.sleep();
