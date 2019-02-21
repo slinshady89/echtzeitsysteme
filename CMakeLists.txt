@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   nav_msgs
   dynamic_reconfigure
+  image_transport
 )
 
 find_package(OpenCV REQUIRED)
@@ -199,6 +200,12 @@ add_executable(show_multiple_lane_points
         src/lane_detection/image_processor.cpp
         src/lane_detection/lane_points_calculator.cpp)
 
+add_executable(webcam_publisher src/input_reading/webcam_publisher.cpp
+        src/lane_detection/CameraReader.cpp
+        )
+
+add_executable(image_viewer src/monitoring/image_viewer.cpp)
+
 
 # make sure configure headers are built before any node using them
 # add_dependencies(trajectory_planning ${PROJECT_NAME}_gencfg)
@@ -249,6 +256,14 @@ target_link_libraries(camera_reading_test
 )
 
 target_link_libraries(show_multiple_lane_points
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
+
+target_link_libraries(webcam_publisher
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS})
+
+target_link_libraries(image_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS})
 

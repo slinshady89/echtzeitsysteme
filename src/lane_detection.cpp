@@ -23,7 +23,7 @@ using namespace constants::calibrations;
 // NOTE: run from inside "catkin_ws" folder to find test photo
 #define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
 
-#define USE_TEST_PICTURE
+//#define USE_TEST_PICTURE
 //#define DRAW_GRID
 
 #define PARAMS_1 59.0, 84.0, 30.0, 640, 480, Point(0, 366), Point(632, 363), Point(404, 238), Point(237, 237), Point(151, 639), Point(488, 639), Point(488, 0), Point(151, 0)
