@@ -203,6 +203,7 @@ add_executable(show_multiple_lane_points
 add_executable(webcam_publisher src/input_reading/webcam_publisher.cpp
         src/lane_detection/CameraReader.cpp
         )
+add_executable(image_publisher src/input_reading/image_publisher.cpp)
 
 add_executable(image_viewer src/monitoring/image_viewer.cpp)
 
@@ -262,6 +263,10 @@ target_link_libraries(show_multiple_lane_points
 target_link_libraries(webcam_publisher
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS})
+
+target_link_libraries(image_publisher
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
 
 target_link_libraries(image_viewer
         ${catkin_LIBRARIES}
