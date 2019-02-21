@@ -13,17 +13,55 @@ do "catkin_make" in the catkin_ws directory to invoke build process with the res
 * Node mit GDB debuggen:
     * z.B. `rosrun --prefix 'gdb --args' echtzeitsysteme camera_reading_test`
 
-# Dynamic Reconfiguration von Parametern 
+# Nodes
+
+## lane_detection
+`rosrun echtzeitsysteme lane_detection`
+
+Liest Frames (der Webcam) vom Topic `camera/frame` aus, verarbeitet diese und published das verarbeitete Bild auf
+dem Topic `image_processing/fully_processed`. Erkannte Punkte der Fahrbahn werden auf den
+Topics `right_line`, `left_line` und `center_line` gepublished.
+
+## webcam_publisher
+`rosrun echtzeitsysteme webcam_publisher`
+
+Startet die Webcam und liest kontinuierlich Bilder ein, die über das Topic `camera/frame`
+gepublished werden.
+
+## image_publisher
+`rosrun echtzeitsysteme image_publisher`
+
+Liest ein Test-Bild ein und published dieses in regelmäßigen Abständen über das Topic `camera/frame`.
+
+(Nur zu Testzwecken.)
+
+## image_viewer
+`rosrun echtzeitsysteme image_viewer`
+
+Liest das Topic `camera/frame` aus und zeigt jedes neue Bild in einem Fenster an.
+
+## Starten der Test-Node
+
+* von "catkin_ws/src" aus: `rosrun echtzeitsysteme camera_reading_test` ausführen
+* alle Bilder sind im Ordner "images" im Echtzeitsysteme-Repo
+
+# Rekonfiguration von Parametern zur Laufzeit 
 
 ## Starten des Fensters zum Ändern von Parametern
 
 Starten der Node und Öffnen des Fensters: `rosrun rqt_reconfigure rqt_reconfigure`
 
 ## Erstellen von Konfigurationen für Nodes
+# Sonstiges
 
-# camera_reading_test
+* alle Test-Bilder sind im Ordner `images`
 
-## Starten der Test-Node
+## Kommunikation zwischen ROS-Nodes über das Netzwerk
 
-* von "catkin_ws/src" aus: `rosrun echtzeitsysteme camera_reading_test` ausführen
-* alle Bilder sind im Ordner "images" im Echtzeitsysteme-Repo
+* auf einem Gerät muss der Master laufen (roscore oder uc_bridge)
+    * verwaltet die Topics und Publisher und Subscriber
+* auf dem anderen Gerät (welches mit dem Master verbunden werden soll):
+    * Neusetzen der Master-ID (im Terminal des zweiten Geräts): `export ROS_MASTER_URI=http://[IP des ersten Geräts]:11311`
+    * danach können Nodes auf dem zweiten Gerät regulär mit dem Master kommunizieren
+    und über Topics publishen und subscriben (müssen über das gleiche Terminal ausgeführt
+    werden, in welchem die Variable gesetzt wurde)
