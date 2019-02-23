@@ -40,6 +40,14 @@ Liest ein Test-Bild ein und published dieses in regelmäßigen Abständen über 
 
 Liest das Topic `camera/frame` aus und zeigt jedes neue Bild in einem Fenster an.
 
+## drawGridOnCamera.py
+`rosrun echtzeitsysteme drawGridOnCamera.py`
+(Zuerst die Datei ausführbar machen mit `chmod +x drawGridOnCamera.py`)
+
+Liest das Topic `camera/frame` aus und zeigt das Bild mit einem eingezeichneten Grid an.
+Drücken einer beliebigen Taste nimmt ein Foto auf (wird unter `captured_frames` abgespeichert).
+
+
 ## Starten der Test-Node
 
 * von "catkin_ws/src" aus: `rosrun echtzeitsysteme camera_reading_test` ausführen
