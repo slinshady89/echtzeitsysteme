@@ -3,6 +3,8 @@
 // Created by nils on 2/3/19.
 //
 
+#include <trajectory_planning/trajectory.h>
+
 #include "trajectory_planning/trajectory.h"
 
 void CTrajectory::calcLinLength(std::vector<double> _x, std::vector<double> _y)
@@ -108,4 +110,11 @@ std::vector<double> CTrajectory::calcCurvature(double _stepsize)
   }
 
   return curv;
+}
+
+geometry_msgs::Point CTrajectory::getPointOnTrajAt(double _waypoint) {
+  geometry_msgs::Point point;
+  point.x = alglib::spline1dcalc(spline_x_, _waypoint);
+  point.y = alglib::spline1dcalc(spline_y_, _waypoint);
+  return point;
 }

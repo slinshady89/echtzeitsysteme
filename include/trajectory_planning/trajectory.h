@@ -11,6 +11,7 @@
 
 #include "controller.h"
 #include "../safety.h"
+#include <echtzeitsysteme/points.h>
 
 #include <vector>
 #include <array>
@@ -122,6 +123,8 @@ public:
   alglib::ae_int_t getNatural_bound_type_() const;
 
   void setNatural_bound_type_(alglib::ae_int_t natural_bound_type_);
+
+  geometry_msgs::Point getPointOnTrajAt(double _waypoint);
 
 private:
   std::vector<double> vec_x_, vec_y_;

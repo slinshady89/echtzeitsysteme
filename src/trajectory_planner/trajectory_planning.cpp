@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Int16.h>
 #include <geometry_msgs/Point.h>
-#include <echtzeitsysteme/points.h>
 #include <trajectory_planning/trajectory.h>
 #include <trajectory_planning/vehModel.h>
 
@@ -86,6 +85,10 @@ int main(int argc, char **argv)
   ros::Subscriber rightLineSub = nh.subscribe("right_line", 1, rightLineCallback);
   ros::Subscriber centerLineSub = nh.subscribe("center_line", 1, centerLineCallback);
 
+
+  echtzeitsysteme::points trajectory_points;
+  ros::Publisher trajectory = nh.advertise<echtzeitsysteme::points>("trajectory", 10);   //TODO: change buffer size
+
   // generate subscriber for us-sensor messages
   ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 5, boost::bind(usrCallback, _1, &usr));
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5, boost::bind(uslCallback, _1, &usl));
@@ -151,6 +154,14 @@ int main(int argc, char **argv)
     velocity.data = static_cast<short>(vel);
     ROS_INFO("vel: %d\n", velocity.data);
     motorCtrl.publish(velocity);
+
+    trajectory_points.points.clear();
+    for(auto it : traj.getVecWaypointDists()){
+      trajectory_points.points.emplace_back(traj.getPointOnTrajAt(it));
+    }
+
+    trajectory.publish(trajectory_points);
+
     steering.data = static_cast<short>(steering_ctrl.front());
     steeringCtrl.publish(steering);
     ros::spinOnce();
