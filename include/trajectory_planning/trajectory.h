@@ -27,6 +27,12 @@ class CPoint
 {
 
 public:
+
+  CPoint () = default;
+  CPoint(CPoint && var) = default;
+  CPoint(const CPoint& var) = default;
+  CPoint& operator=( CPoint && var) = default;
+  CPoint& operator=(const CPoint& var) = default;
   CPoint(double x, double y) : m_x_(x), m_y_(y){};
 
 private:
@@ -37,6 +43,12 @@ private:
 class CTrajectoryPoint : public CPoint
 {
 public:
+
+  CTrajectoryPoint () = default;
+  CTrajectoryPoint(CTrajectoryPoint && var) = default;
+  CTrajectoryPoint(const CTrajectoryPoint& var) = default;
+  CTrajectoryPoint& operator=( CTrajectoryPoint && var) = default;
+  CTrajectoryPoint& operator=(const CTrajectoryPoint& var) = default;
   CTrajectoryPoint(double x, double y, double acc = 0.0, double curvature = 0.0, double theta = 0.0,
                    double s = 0.0, double t = 0.0) : CPoint(x, y),
                                                      m_point_(CPoint(x, y)),
@@ -60,7 +72,13 @@ private:
 class CTrajectory /*: public CTrajectoryPoint */
 {
 public:
-  CTrajectory(){};
+  CTrajectory () = default;
+  CTrajectory(CTrajectory && var) = default;
+  CTrajectory(const CTrajectory& var) = default;
+  CTrajectory& operator=( CTrajectory && var) = default;
+  CTrajectory& operator=(const CTrajectory& var) = default;
+  
+  
 
 
   CTrajectory(std::vector<double> &_x, std::vector<double> &_y, bool _boundaryType = 0) : vec_x_(_x), vec_y_(_y), natural_bound_type_(_boundaryType)
@@ -77,7 +95,7 @@ public:
     }
     else
     {
-      printf("                              NO SPLINE CALCULATED                                \n");
+      printf("                  NO SPLINE CALCULATED               \n");
       printf("number of points for x = %d and y = %d differ \n", int(_x.size()), int(_y.size()));
     }
   }

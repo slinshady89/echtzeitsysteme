@@ -13,6 +13,13 @@ static const size_t arraySize = 5;
 class CController
 {
 public:
+  CController () = default;
+  CController(CController && var) = default;
+  CController(const CController& var) = default;
+  CController& operator=( CController && var) = default;
+  CController& operator=(const CController& var) = default;
+  
+  
     CController(double _K_P /*direct gain to err*/, 
                 double _K_I /*gain of integrated err*/, 
                 double _K_D /*gain of derived err*/, 

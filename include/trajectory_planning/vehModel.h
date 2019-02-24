@@ -10,6 +10,14 @@
 class VehicleModel
 {
 public:
+
+  VehicleModel () = default;
+  VehicleModel(VehicleModel && var) = default;
+  VehicleModel(const VehicleModel& var) = default;
+  VehicleModel& operator=( VehicleModel && var) = default;
+  VehicleModel& operator=(const VehicleModel& var) = default;
+
+
   VehicleModel(double _width, double _length, int _maxVelPos, int _maxVelNeg, int _absMaxSteering) :
   width_(_width),
   length_(_length),
