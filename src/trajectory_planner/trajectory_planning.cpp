@@ -14,31 +14,31 @@ std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, righ
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  left_line_x.emplace_back((double)msg->points[0].x);
-  left_line_y.emplace_back((double)msg->points[0].y);
+  left_line_x.emplace_back(msg->points[0].x);
+  left_line_y.emplace_back(msg->points[0].y);
 }
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  right_line_x.emplace_back((double)msg->points[0].x);
-  right_line_y.emplace_back((double)msg->points[0].y);
+  right_line_x.emplace_back(msg->points[0].x);
+  right_line_y.emplace_back(msg->points[0].y);
 }
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  center_line_x.emplace_back((double)msg->points[0].x);
-  center_line_y.emplace_back((double)msg->points[0].y);
+  center_line_x.emplace_back(msg->points[0].x);
+  center_line_y.emplace_back(msg->points[0].y);
 }
 
-void uslCallback(sensor_msgs::Range::ConstPtr uslMsg, sensor_msgs::Range *usl)
+void uslCallback(const sensor_msgs::Range::ConstPtr &uslMsg, sensor_msgs::Range *usl)
 {
   *usl = *uslMsg;
 }
 
-void usfCallback(sensor_msgs::Range::ConstPtr usfMsg, sensor_msgs::Range *usf)
+void usfCallback(const sensor_msgs::Range::ConstPtr &usfMsg, sensor_msgs::Range *usf)
 {
   *usf = *usfMsg;
 }
 
-void usrCallback(sensor_msgs::Range::ConstPtr usrMsg, sensor_msgs::Range *usr)
+void usrCallback(const sensor_msgs::Range::ConstPtr &usrMsg, sensor_msgs::Range *usr)
 {
   *usr = *usrMsg;
 }
@@ -162,7 +162,12 @@ int main(int argc, char **argv)
 
     trajectory.publish(trajectory_points);
 
-    steering.data = static_cast<short>(steering_ctrl.front());
+    // publishs the steering input at the first
+    if (steering_ctrl.size() > 2)
+      steering.data = static_cast<short>(steering_ctrl.at(1));
+    else
+      steering.data = static_cast<short>(steering_ctrl.front());
+
     steeringCtrl.publish(steering);
     ros::spinOnce();
 

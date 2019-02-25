@@ -40,6 +40,13 @@ Liest ein Test-Bild ein und published dieses in regelmäßigen Abständen über 
 
 Liest das Topic `camera/frame` aus und zeigt jedes neue Bild in einem Fenster an.
 
+## trajectory_planning
+
+Liest die Punkte der erkannten Linien sowie die Distanzen der Ultraschallsensoren ein. Daraus wird eine Wunschtrajektorie
+berechnet. Mit Hilfe der Trajektorie wird über das Ackermannmodell der zu stellende Lenkwinkel bzw die entsprechende
+Stellgröße bestimmt.
+Sendet die 'trajectory' damit sie später in das Debugimage eingetragen werden kann.
+
 ## drawGridOnCamera.py
 `rosrun echtzeitsysteme drawGridOnCamera.py`
 (Zuerst die Datei ausführbar machen mit `chmod +x drawGridOnCamera.py`)
