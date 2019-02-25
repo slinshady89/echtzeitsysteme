@@ -43,7 +43,8 @@ class frame_processor:
                 captureFrame(frame)
             drawGrid(frame, self.hDist, self.vDist, self.width, self.height)
             drawCrosshairs(frame, self.width, self.height)
-            cv2.imshow('testframe', frame)
+            windowName = 'Width: %d, Height: %d' % (self.width, self.height)
+            cv2.imshow(windowName, frame)
 
         except CvBridgeError as err:
             print(err)
