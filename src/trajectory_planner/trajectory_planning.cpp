@@ -161,10 +161,17 @@ int main(int argc, char **argv)
     }
 
     trajectory.publish(trajectory_points);
+    // distance to first trajectory point
+    auto dist_x = trajectory_points.points.at(0).x;
+    auto dist_y = trajectory_points.points.at(0).y;
+    auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
 
+    ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()) );
     // publishs the steering input at the first
-    if (steering_ctrl.size() > 2)
+    if (steering_ctrl.size() > 2) {
+      auto dist_on_traj = (traj.getVecWaypointDists()).at(1);
       steering.data = static_cast<short>(steering_ctrl.at(1));
+    }
     else
       steering.data = static_cast<short>(steering_ctrl.front());
 
