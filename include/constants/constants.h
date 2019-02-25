@@ -43,6 +43,20 @@ namespace constants {
             const int TARGET_WIDTH = 180;
             const int TARGET_HEIGHT = 180;
         }
+        namespace calibration_02_25 {
+            const int SRC_WIDTH = 1280;
+            const int SRC_HEIGHT = 720;
+            const cv::Vec2i BOTTOM_LEFT = cv::Vec2i(345,513);
+            const cv::Vec2i BOTTOM_RIGHT = cv::Vec2i(918,521);
+            const cv::Vec2i TOP_RIGHT = cv::Vec2i(747,311);
+            const cv::Vec2i TOP_LEFT = cv::Vec2i(522,308);
+            const double RECT_WIDTH =  59.0;
+            const double RECT_HEIGHT = 84.0;
+            const double OFFSET_ORIGIN = 37.0;
+            const int TARGET_WIDTH = 180;
+            const int TARGET_HEIGHT = 180;
+
+        }
     }
 }
 

@@ -103,9 +103,9 @@ int main(int argc, char **argv)
   ImageProcessor imageProcessor(frame, BGR);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
     imageProcessor.calibrateCameraImage(
-            myphoto2::RECT_WIDTH, myphoto2::RECT_HEIGHT, myphoto2::OFFSET_ORIGIN,
+            calibration_02_25::RECT_WIDTH, calibration_02_25::RECT_HEIGHT, calibration_02_25::OFFSET_ORIGIN,
             TARGET_WIDTH, TARGET_HEIGHT,
-            myphoto2::BOTTOM_LEFT, myphoto2::BOTTOM_RIGHT, myphoto2::TOP_RIGHT, myphoto2::TOP_LEFT,
+            calibration_02_25::BOTTOM_LEFT, calibration_02_25::BOTTOM_RIGHT, calibration_02_25::TOP_RIGHT, calibration_02_25::TOP_LEFT,
             TARGET_PX_PER_CM
     );
   /**
