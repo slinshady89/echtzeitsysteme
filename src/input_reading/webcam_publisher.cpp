@@ -4,6 +4,10 @@
 #include <cv_bridge/cv_bridge.h>    // TODO: add to package.xm
 #include <lane_detection/CameraReader.hpp>
 
+#define WIDTH 1280
+#define HEIGHT 720
+
+
 const int PUBLISH_RATE = 20;
 const int PUBLISHER_QUEUE = 1;
 
@@ -14,7 +18,7 @@ int main(int argc, char** argv) {
     image_transport::Publisher framePublisher = it.advertise("camera/frame", PUBLISHER_QUEUE);    // TODO: change queue size
     sensor_msgs::ImagePtr imageMessage;
 
-    CameraReader cameraReader;
+    CameraReader cameraReader(WIDTH, HEIGHT);
     ros::Rate loop_rate(PUBLISH_RATE);
     ROS_INFO("Publish %d webcam frames per second...", PUBLISH_RATE);
     while(ros::ok()) {
