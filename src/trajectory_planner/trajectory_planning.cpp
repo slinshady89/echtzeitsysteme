@@ -6,7 +6,11 @@
 
 int vel = 0;
 int steer = 0;
+int ctrl_dist = 0;
 std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, right_line_x, right_line_y;
+
+void clearLineVecs();
+
 
 /*
  * callback function fpr trajectory custom points message
@@ -14,18 +18,24 @@ std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, righ
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  left_line_x.emplace_back(msg->points[0].x);
-  left_line_y.emplace_back(msg->points[0].y);
+  for(auto it : msg->points) {
+    left_line_x.emplace_back(it.x);
+    left_line_y.emplace_back(it.y);
+  }
 }
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  right_line_x.emplace_back(msg->points[0].x);
-  right_line_y.emplace_back(msg->points[0].y);
+  for(auto it : msg->points) {
+    right_line_x.emplace_back(it.x);
+    right_line_y.emplace_back(it.y);
+  }
 }
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  center_line_x.emplace_back(msg->points[0].x);
-  center_line_y.emplace_back(msg->points[0].y);
+  for(auto it : msg->points) {
+    center_line_x.emplace_back(it.x);
+    center_line_y.emplace_back(it.y);
+  }
 }
 
 void uslCallback(const sensor_msgs::Range::ConstPtr &uslMsg, sensor_msgs::Range *usl)
@@ -45,16 +55,19 @@ void usrCallback(const sensor_msgs::Range::ConstPtr &usrMsg, sensor_msgs::Range 
 
 void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl)
 {
-  ROS_INFO("Reconfigure Request: %f %f %f %d %d %d",
+  ROS_INFO("Reconfigure Request: %f %f %f %d %d %d %d",
            config.K_P,
            config.K_I,
            config.K_D,
            config.vel,
            config.steering,
-           config.size);
+           config.size,
+           config.ctrlDist);
+
   ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
   vel = config.vel;
   steer = config.steering;
+  ctrl_dist = config.ctrlDist;
 }
 
 /**
@@ -87,12 +100,12 @@ int main(int argc, char **argv)
 
 
   echtzeitsysteme::points trajectory_points;
-  ros::Publisher trajectory = nh.advertise<echtzeitsysteme::points>("trajectory", 10);   //TODO: change buffer size
+  ros::Publisher trajectory = nh.advertise<echtzeitsysteme::points>("trajectory", 1);   //TODO: change buffer size
 
   // generate subscriber for us-sensor messages
-  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 5, boost::bind(usrCallback, _1, &usr));
-  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 5, boost::bind(uslCallback, _1, &usl));
-  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 5, boost::bind(usfCallback, _1, &usf));
+  ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 1, boost::bind(usrCallback, _1, &usr));
+  ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 1, boost::bind(uslCallback, _1, &usl));
+  ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 1, boost::bind(usfCallback, _1, &usf));
 
   CController ctrl(17.5, 3.5, 0.1, 0.1, 1000);
 
@@ -166,16 +179,19 @@ int main(int argc, char **argv)
     auto dist_y = trajectory_points.points.at(0).y;
     auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
 
-    ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()) );
-    // publishs the steering input at the first
-    if (steering_ctrl.size() > 2) {
-      auto dist_on_traj = (traj.getVecWaypointDists()).at(1);
-      steering.data = static_cast<short>(steering_ctrl.at(1));
-    }
-    else
-      steering.data = static_cast<short>(steering_ctrl.front());
+    auto curv_at = traj.calcCurvatureAt(ctrl_dist + dist);
+    auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
+    auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
 
+    ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()) );
+    ROS_INFO("number of points %d \n", (int)(traj.getVecWaypointDists()).size() );
+
+    // publishs the steering input at the first
+    steering.data = static_cast<short>(steering_ctrl_at);
+
+    
     steeringCtrl.publish(steering);
+    clearLineVecs();
     ros::spinOnce();
 
     loop_rate.sleep();
@@ -184,4 +200,14 @@ int main(int argc, char **argv)
   ros::spin();
 
   return 0;
+}
+
+
+void clearLineVecs(){
+  left_line_x.clear();
+  left_line_y.clear();
+  center_line_x.clear();
+  center_line_y.clear();
+  right_line_x.clear();
+  right_line_y.clear();
 }
