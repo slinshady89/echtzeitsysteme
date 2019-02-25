@@ -7,8 +7,8 @@ from sensor_msgs.msg import Image
 
 # constants
 
-vLineCount = 4
-hLineCount = 9
+vLineCount = 6
+hLineCount = 10
 
 lineThickness = 1
 
@@ -29,10 +29,11 @@ class frame_processor:
     def onReceiveFrame(self,imgMsg):
         try:
             frame = self.bridge.imgmsg_to_cv2(imgMsg, 'bgr8')
+            height, width, channels = frame.shape
 
             #initialize the width and height only once
-            if self.width !=-1 and frame.cols > 0:
-                self.width, self.height = frame.cols, frame.rows
+            if self.width ==-1 and width > 0:
+                self.width, self.height = width, height
                 self.hDist = int(self.width/hLineCount)
                 self.vDist = int(self.height/vLineCount)
 
