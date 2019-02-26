@@ -221,6 +221,7 @@ add_executable(image_viewer src/monitoring/image_viewer.cpp)
 #add_dependencies(lane_detector_project ${catkin_EXPORTED_TARGETS})
 add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_viewer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 
