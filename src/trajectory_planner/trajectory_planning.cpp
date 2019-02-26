@@ -111,20 +111,40 @@ int main(int argc, char **argv)
 
   // Loop starts here:
   ros::Rate loop_rate(1 / looptime);
-
+  
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
 
+  //Check if vectors are filled with data
+  while(left_line_x.empty() && left_line_y.empty())
+  {
+    ROS_INFO("Waiting for left line...");
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
+  while(right_line_x.empty() && right_line_y.empty())
+  {
+    ROS_INFO("Waiting for right line...");
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
+  while(center_line_x.empty() && center_line_y.empty())
+  {
+    ROS_INFO("Waiting for center line...");
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
   // calculate splines of the given set of points
   // TODO: a test for size > 2 should be done here
-
   CTrajectory left_line(left_line_x, left_line_y);
-
   CTrajectory right_line(right_line_x, right_line_y);
-
   CTrajectory center_line(center_line_x, center_line_y);
-
   CTrajectory traj = right_line.calcTraj(left_line, 1.0, 0.0);
+
+  ROS_INFO("Loop start!");
 
   while (ros::ok())
   {
@@ -142,7 +162,7 @@ int main(int argc, char **argv)
       // point this task is called if no new points at the are available the next point could be evaluated
       curv_traj = traj.calcCurvature(v / looptime);
     }
-
+    
     VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
     std::vector<double> steering_deg;
@@ -163,7 +183,7 @@ int main(int argc, char **argv)
 
     veh.setDesired_trajectory_(traj);
 
-    ROS_INFO("calculated Steering: %.2f\n", (float)steering_ctrl.front());
+    ROS_INFO("calculated Steering: %.2f", (float)steering_ctrl.front());
     velocity.data = static_cast<short>(vel);
     ROS_INFO("vel: %d\n", velocity.data);
     motorCtrl.publish(velocity);
@@ -192,8 +212,8 @@ int main(int argc, char **argv)
     
     steeringCtrl.publish(steering);
     clearLineVecs();
+    
     ros::spinOnce();
-
     loop_rate.sleep();
   }
 

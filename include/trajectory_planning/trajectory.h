@@ -85,19 +85,20 @@ public:
   CTrajectory(std::vector<double> &_x, std::vector<double> &_y, bool _boundaryType = 0) : vec_x_(_x), vec_y_(_y), natural_bound_type_(_boundaryType)
   {
     v_ = 0.0;
-    if (_x.size() == _y.size())
+    if (_x.size() == _y.size() && !_x.empty() && !_y.empty())
     {
       x_.setcontent(_x.size(), &_x.front());
       y_.setcontent(_y.size(), &_y.front());
       calcLinLength(_x, _y);
       s_.setcontent(s_lin.size(),&s_lin.front());
+      ROS_INFO("ALGLIB in Trajectory Constructor");
       alglib::spline1dbuildcubic(s_, x_ ,vec_x_.size(), natural_bound_type_, 0.0, natural_bound_type_, 0.0, spline_x_);
       alglib::spline1dbuildcubic(s_, y_ ,vec_y_.size(), natural_bound_type_, 0.0, natural_bound_type_, 0.0, spline_y_);
     }
     else
     {
-      printf("                  NO SPLINE CALCULATED               \n");
-      printf("number of points for x = %d and y = %d differ \n", int(_x.size()), int(_y.size()));
+      ROS_INFO("                  NO SPLINE CALCULATED               \n");
+      ROS_INFO("number of points for x = %d and y = %d differ \n", int(_x.size()), int(_y.size()));
     }
   }
 

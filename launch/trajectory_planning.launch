@@ -1,0 +1,4 @@
+<launch>
+<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" output="screen">
+</node>
+</launch>
