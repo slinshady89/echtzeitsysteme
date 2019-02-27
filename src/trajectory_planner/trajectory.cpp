@@ -62,8 +62,8 @@ CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double
   {
     for (int i = 0; i < this->vec_x_.size(); ++i)
     {
-      new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) / (_weighting + 1));
-      new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) / (_weighting + 1) + _offset);
+      new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) * (1-_weighting));
+      new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting) + _offset);
     }
   }
 
