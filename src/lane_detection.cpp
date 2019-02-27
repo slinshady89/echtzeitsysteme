@@ -181,8 +181,9 @@ Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc)
 
 geometry_msgs::Point convertPointToMessagePoint(Point2i point) {
     geometry_msgs::Point output;
-    output.x = point.x;
-    output.y = point.y;
+    // convert from cm to m and write in message
+    output.x = (point.x / 100.0);
+    output.y = (point.y / 100.0);
     return output;
 }
 
