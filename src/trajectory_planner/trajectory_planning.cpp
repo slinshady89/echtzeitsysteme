@@ -116,12 +116,14 @@ int main(int argc, char **argv)
   server.setCallback(f);
 
   //Check if vectors are filled with data
+  /*
   while(left_line_x.empty() && left_line_y.empty())
   {
     ROS_INFO("Waiting for left line...");
     ros::spinOnce();
     loop_rate.sleep();
   }
+  */
 
   while(right_line_x.empty() && right_line_y.empty())
   {
@@ -130,19 +132,21 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
+  /*
   while(center_line_x.empty() && center_line_y.empty())
   {
     ROS_INFO("Waiting for center line...");
     ros::spinOnce();
     loop_rate.sleep();
   }
+   */
 
   // calculate splines of the given set of points
   // TODO: a test for size > 2 should be done here
-  CTrajectory left_line(left_line_x, left_line_y);
+  //CTrajectory left_line(left_line_x, left_line_y);
   CTrajectory right_line(right_line_x, right_line_y);
-  CTrajectory center_line(center_line_x, center_line_y);
-  CTrajectory traj = right_line.calcTraj(left_line, 1.0, 0.0);
+  //CTrajectory center_line(center_line_x, center_line_y);
+  CTrajectory traj = right_line.calcTraj(right_line, 1.0, 0.25);
 
   ROS_INFO("Loop start!");
 
