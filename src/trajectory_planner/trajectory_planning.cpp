@@ -125,7 +125,8 @@ int main(int argc, char **argv)
   }
   */
 
-  while(right_line_x.empty() && right_line_y.empty())
+  //wait until the received message has enough points to build a cubic spline
+  while(right_line_x.size()<2 || right_line_y.size()<2)
   {
     ROS_INFO("Waiting for right line...");
     ros::spinOnce();
