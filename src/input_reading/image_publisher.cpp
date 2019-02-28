@@ -5,7 +5,7 @@
 #include <lane_detection/CameraReader.hpp>
 
 
-#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
+#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/captured_frames/02-25_12-35-53.jpg"
 
 const int PUBLISH_RATE = 20;
 const int PUBLISHER_QUEUE = 1;
