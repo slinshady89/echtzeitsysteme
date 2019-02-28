@@ -116,14 +116,15 @@ int main(int argc, char **argv)
   server.setCallback(f);
 
   //Check if vectors are filled with data
-  /*
-  while(left_line_x.empty() && left_line_y.empty())
+/*
+  while(left_line_x.size()<2 || left_line_y.size()<2)
   {
     ROS_INFO("Waiting for left line...");
     ros::spinOnce();
     loop_rate.sleep();
   }
-  */
+
+ */
 
   //wait until the received message has enough points to build a cubic spline
   while(right_line_x.size()<2 || right_line_y.size()<2)
@@ -142,80 +143,93 @@ int main(int argc, char **argv)
   }
    */
 
-  // calculate splines of the given set of points
-  // TODO: a test for size > 2 should be done here
-  //CTrajectory left_line(left_line_x, left_line_y);
-  CTrajectory right_line(right_line_x, right_line_y);
-  //CTrajectory center_line(center_line_x, center_line_y);
-  CTrajectory traj = right_line.calcTraj(right_line, 1.0, 0.25);
+  /*
+    std::vector<double> new_x, new_y;
+    new_x.reserve((right_line.getVecWaypointDists()).size());
+    new_y.reserve((right_line.getVecWaypointDists()).size());
+    ROS_INFO("In calcTraj");
+    for (int i = 0; i < (right_line.getVecWaypointDists()).size(); ++i)
+    {
+        ROS_INFO("this->vec_x_: %f   , with weighting: %f", this->vec_x_.at(i), this->vec_x_.at(i)*_weighting);
+        ROS_INFO("_other.vec_x_: %f   , with weighting: %f", _other.vec_x_.at(i), _other.vec_x_.at(i)*(1-_weighting));
+        new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) * (1-_weighting));
+        new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting) + _offset);
+    }
+    */
 
   ROS_INFO("Loop start!");
 
   while (ros::ok())
   {
-    std::vector<double> curv_traj;
-    // some validation check should be done!
-    if (!ctrl.ctrlLoop(usl, usr, usf))
-    {
-      ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", ctrl.getUsMinDist());
-      velocity.data = 0;
-    }
-    else
-    {
-      double v = 1.0; // 1m/s
-      // this way the trajectories curvature is calculated at every
-      // point this task is called if no new points at the are available the next point could be evaluated
-      curv_traj = traj.calcCurvature(v / looptime);
-    }
-    
-    VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
+      if (right_line_x.size()>=2 && right_line_y.size()>=2) {
+        // calculate splines of the given set of points
+        // TODO: a test for size > 2 should be done here
+        //CTrajectory left_line(left_line_x, left_line_y);
+        CTrajectory rl = CTrajectory(right_line_x, right_line_y);
+        //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
+        //CTrajectory center_line(center_line_x, center_line_y);
+        CTrajectory traj = rl.calcTraj(rl, 1.0, 0.25);
 
-    std::vector<double> steering_deg;
-    std::vector<int> steering_ctrl;
-    steering_deg.reserve(traj.getVecWaypointDists().size());
-    steering_ctrl.reserve(traj.getVecWaypointDists().size());
+        std::vector<double> curv_traj;
+        // some validation check should be done!
+        if (!ctrl.ctrlLoop(usl, usr, usf)) {
+          ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", ctrl.getUsMinDist());
+          velocity.data = 0;
+        } else {
+          double v = 1.0; // 1m/s
+          // this way the trajectories curvature is calculated at every
+          // point this task is called if no new points at the are available the next point could be evaluated
+          curv_traj = traj.calcCurvature(v / looptime);
+        }
 
-    for (auto it : curv_traj)
-    {
-      steering_deg.emplace_back(veh.calculateSteeringAngleDeg(it));
-      //printf("steering_angle_deg : %.2f\n", steering_deg.back());
-    }
-    for (auto it : steering_deg)
-    {
-      steering_ctrl.emplace_back(veh.steeringAngleDegToSignal(it));
-      //printf("steering_sig_ctrl : %.2f\n", steering_ctrl.back());
-    }
+        VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
-    veh.setDesired_trajectory_(traj);
+        std::vector<double> steering_deg;
+        std::vector<int> steering_ctrl;
+        steering_deg.reserve(traj.getVecWaypointDists().size());
+        steering_ctrl.reserve(traj.getVecWaypointDists().size());
 
-    ROS_INFO("calculated Steering: %.2f", (float)steering_ctrl.front());
-    velocity.data = static_cast<short>(vel);
-    ROS_INFO("vel: %d\n", velocity.data);
-    motorCtrl.publish(velocity);
+        for (auto it : curv_traj) {
+          steering_deg.emplace_back(veh.calculateSteeringAngleDeg(it));
+          //printf("steering_angle_deg : %.2f\n", steering_deg.back());
+        }
+        for (auto it : steering_deg) {
+          steering_ctrl.emplace_back(veh.steeringAngleDegToSignal(it));
+          //printf("steering_sig_ctrl : %.2f\n", steering_ctrl.back());
+        }
 
-    trajectory_points.points.clear();
-    for(auto it : traj.getVecWaypointDists()){
-      trajectory_points.points.emplace_back(traj.getPointOnTrajAt(it));
-    }
+        veh.setDesired_trajectory_(traj);
 
-    trajectory.publish(trajectory_points);
-    // distance to first trajectory point
-    auto dist_x = trajectory_points.points.at(0).x;
-    auto dist_y = trajectory_points.points.at(0).y;
-    auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
+        ROS_INFO("calculated Steering: %.2f", (float) steering_ctrl.front());
+        velocity.data = static_cast<short>(vel);
+        ROS_INFO("vel: %d\n", velocity.data);
+        motorCtrl.publish(velocity);
 
-    auto curv_at = traj.calcCurvatureAt(ctrl_dist + dist);
-    auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
-    auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
+        trajectory_points.points.clear();
+        for (auto it : traj.getVecWaypointDists()) {
+          trajectory_points.points.emplace_back(traj.getPointOnTrajAt(it));
+        }
 
-    ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()) );
-    ROS_INFO("number of points %d \n", (int)(traj.getVecWaypointDists()).size() );
+        trajectory.publish(trajectory_points);
+        // distance to first trajectory point
+        auto dist_x = trajectory_points.points.at(0).x;
+        auto dist_y = trajectory_points.points.at(0).y;
+        auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
 
-    // publishs the steering input at the first
-    steering.data = static_cast<short>(steering_ctrl_at);
+        auto curv_at = traj.calcCurvatureAt(ctrl_dist + dist);
+        auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
+        auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
 
-    
-    steeringCtrl.publish(steering);
+        ROS_INFO("Length of trajectory %.2f \n", float(dist
+                +(traj.getVecWaypointDists()).back()));
+        ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
+
+        // publishs the steering input at the first
+        steering.data = static_cast<short>(steering_ctrl_at);
+
+
+        steeringCtrl.publish(steering);
+      }
     clearLineVecs();
     
     ros::spinOnce();
@@ -235,4 +249,23 @@ void clearLineVecs(){
   center_line_y.clear();
   right_line_x.clear();
   right_line_y.clear();
+}
+
+
+CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double _offset)
+{
+  std::vector<double> new_x, new_y;
+  new_x.reserve(this->vec_x_.size());
+  new_y.reserve(this->vec_y_.size());
+
+  if (this->vec_x_.size() == _other.vec_x_.size())
+  {
+    for (int i = 0; i < this->vec_x_.size(); ++i)
+    {
+      new_x.emplace_back((this->vec_x_.at(i) * _weighting) + _other.vec_x_.at(i) * (1-_weighting));
+      new_y.emplace_back((this->vec_y_.at(i) * _weighting) + _other.vec_y_.at(i) * (1-_weighting));
+    }
+  }
+
+  return CTrajectory(new_x, new_y);
 }

@@ -51,25 +51,29 @@ double CTrajectory::calcCurvatureAt(double _s)
   denominator = std::sqrt(denominator * denominator * denominator);
   return nominator / denominator /* * M_PI / 180*/; // use curvature in rad ?!
 }
-
+/*
 CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double _offset)
 {
   std::vector<double> new_x, new_y;
   new_x.reserve(this->vec_x_.size());
   new_y.reserve(this->vec_y_.size());
+  ROS_INFO("In calcTraj");
 
   if (this->vec_x_.size() == _other.vec_x_.size())
   {
+    ROS_INFO("inner scope");
     for (int i = 0; i < this->vec_x_.size(); ++i)
     {
+        ROS_INFO("this->vec_x_: %f   , with weighting: %f", this->vec_x_.at(i), this->vec_x_.at(i)*_weighting);
+      ROS_INFO("_other.vec_x_: %f   , with weighting: %f", _other.vec_x_.at(i), _other.vec_x_.at(i)*(1-_weighting));
       new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) * (1-_weighting));
-      new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting) + _offset);
+      new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting));
     }
   }
 
   return CTrajectory(new_x, new_y);
 }
-
+*/
 alglib::ae_int_t CTrajectory::getNatural_bound_type_() const
 {
   return natural_bound_type_;
