@@ -1,15 +1,4 @@
 <launch>
-
-	<!--<param name="v_mops" type="double" value="300"/>-->
-
-	<rosparam command="load" file="$(find echtzeitsysteme)/launch/parameter.yaml" /> 
-
-	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" output="screen"
-launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.lane_detection.%p' " />
-
-	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" 
-launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.trajectory_planning.%p' " />
-
 	<node pkg="pses_ucbridge" type="uc_bridge" name="uc_bridge" output="screen">
       <param name="config_path" value="$(find pses_ucbridge)/config/" />
       <param name="register_sensor_groups" value="true" />
@@ -22,5 +11,8 @@ launch-prefix="valgrind --tool=callgrind --callgrind-out-file='callgrind.traject
       <param name="enable_debug_messages" value="false" />
       <param name="enable_raw_communication" value="false" />
     </node>
-
+    
+	<node pkg="echtzeitsysteme" type="webcam_publisher" name="webcam_publisher" output="screen"></node>
+	<node pkg="echtzeitsysteme" type="lane_detection" name="lane_detection" output="screen"></node>
+	<node pkg="echtzeitsysteme" type="trajectory_planning" name="trajectory_planning" output="screen"></node>
 </launch>
