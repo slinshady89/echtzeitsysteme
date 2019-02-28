@@ -33,7 +33,7 @@ using namespace constants::calibrations;
 // photo from 15.12.
 #define PARAMS_4 59.0, 84.0, 22, 180, 180, Point(384, 895), Point(1460, 900), Point(1128, 472), Point(760, 460), 5
 
-int IMAGE_ROWS[] = {100, 200, 300, 400, 500, 600, 700, 800, 900};
+int IMAGE_ROWS[] = {900, 800, 700, 600, 500, 400, 300, 200, 100};
 int IMAGE_ROWS_SIZE = 9;
 
 const int TARGET_WIDTH = 120;
