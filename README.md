@@ -77,6 +77,41 @@ Starten der Node und Öffnen des Fensters: `rosrun rqt_reconfigure rqt_reconfigu
     * verwaltet die Topics und Publisher und Subscriber
 * auf dem anderen Gerät (welches mit dem Master verbunden werden soll):
     * Neusetzen der Master-ID (im Terminal des zweiten Geräts): `export ROS_MASTER_URI=http://[IP des ersten Geräts]:11311`
+    * Hinzufügen der IP-Adresse des Master-Gerätes in der Datei `/etc/hosts` (auf dem zweiten Gerät, i.d.R. der Laptop):
+        `<IP>   pses-04` (pses-04 ist der Hostname).
     * danach können Nodes auf dem zweiten Gerät regulär mit dem Master kommunizieren
     und über Topics publishen und subscriben (müssen über das gleiche Terminal ausgeführt
     werden, in welchem die Variable gesetzt wurde)
+    
+## Einrichtung von CLion für ROS
+<https://www.jetbrains.com/help/clion/ros-setup-tutorial.html>
+
+
+#### Starten mit korrekten Umgebungsvariablen
+
+* Terminal starten, in ``catkin_ws`` wechseln → stelle sicher, dass ROS-Environment-Variables gelesen werden (zum Ausführen von ``rosrun, catkin_make,`` ...)
+* von dort aus Clion ausführen
+	* entweder durch vorher definiertem alias oder durch Angabe des vollen Pfads zu Clion (bei mir ``/opt/CLion/bin/clion.sh``)
+
+
+#### ROS-Projekt(e) öffnen
+In Clion:
+
+* File → Open → die Datei "CMakeLists.txt" im ``src``-Ordner des Catkin-Workspace öffnen ("Open as Project")
+* *alternativ:* File → Import → wähle das ``src``-Directory aus, um von dort aus das Projekt zu importieren
+
+
+* wenn alles gut geht, sollte unten im CMake-Tab von Clion der Build-Prozess angezeigt werden und nicht failen
+
+
+#### einmalige Konfiguration (nach dem ersten Öffnen des Projekts)
+
+* In Clion:
+	* File → Settings → Build, Execution, Deployment → CMake
+	* bei "CMake options" Folgendes eintragen (Pfad durch eigenen Pfad ersetzen):
+		* ``-DCATKIN_DEVEL_PREFIX:PATH= <voller Pfad zum Ordner catkin_ws>``
+	* bei "Generation path" Folgendes eintragen:
+		* ``<voller Pfad zum Ordner catkin_ws>/build_clion``
+		* (es kann auch ein anderer Ordner für den Build angegeben werden, aber ein separater (build_clion) hat für mich am besten funktioniert)
+	* Konfiguration speichern, fertig!
+		* beim Starten einer Node (der entsprechenden main) wird der eigene Ordner für den Build genutzt
