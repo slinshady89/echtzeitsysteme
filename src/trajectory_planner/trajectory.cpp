@@ -20,6 +20,8 @@ void CTrajectory::calcLinLength(std::vector<double> _x, std::vector<double> _y)
     y1 = _y.at(i + 1);
     s_lin.emplace_back(std::sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) + s_lin.back());
   }
+  if(s_lin.size() > 2)
+    spline_lin_length_ = s_lin.back() - s_lin.at(1);
 }
 
 alglib::spline1dinterpolant CTrajectory::getSplineInterpolant(char _name)
@@ -44,36 +46,33 @@ double CTrajectory::calcCurvatureAt(double _s)
   double denominator = dx * dx + dy * dy;
   if (denominator == 0.0)
   {
-    printf("curvature couldn't be calculated \n");
-    printf("denom = 0.0 \n");
+    ROS_INFO("curvature couldn't be calculated \n");
+    ROS_INFO("denom = 0.0 \n");
     return 0.0;
   }
   denominator = std::sqrt(denominator * denominator * denominator);
   return nominator / denominator /* * M_PI / 180*/; // use curvature in rad ?!
 }
-/*
+
 CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double _offset)
 {
   std::vector<double> new_x, new_y;
-  new_x.reserve(this->vec_x_.size());
-  new_y.reserve(this->vec_y_.size());
-  ROS_INFO("In calcTraj");
-
-  if (this->vec_x_.size() == _other.vec_x_.size())
-  {
-    ROS_INFO("inner scope");
-    for (int i = 0; i < this->vec_x_.size(); ++i)
-    {
-        ROS_INFO("this->vec_x_: %f   , with weighting: %f", this->vec_x_.at(i), this->vec_x_.at(i)*_weighting);
-      ROS_INFO("_other.vec_x_: %f   , with weighting: %f", _other.vec_x_.at(i), _other.vec_x_.at(i)*(1-_weighting));
-      new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) * (1-_weighting));
-      new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting));
-    }
+  // sets the first value of the trajectory at the vehicle coordinates itself
+  // so a return to the desired trajectory in the future is implicitly planned
+  new_x.emplace_back(0.0);
+  new_y.emplace_back(0.0);
+  auto min_length_lines = std::min(this->spline_lin_length_, _other.spline_lin_length_);
+  auto num_anchors = this->vec_y_.size();
+  for (auto s = this->s_lin.front(); s < this->s_lin.back(); ) {
+    auto this_line = this->getPointOnTrajAt(s);
+    auto other_line = _other.getPointOnTrajAt(s);
+    new_x.emplace_back(this_line.x * _weighting + other_line.x * (1-_weighting));
+    new_y.emplace_back(this_line.y * _weighting + other_line.y * (1-_weighting) + _offset);
+    s += min_length_lines / num_anchors;
   }
-
   return CTrajectory(new_x, new_y);
 }
-*/
+
 alglib::ae_int_t CTrajectory::getNatural_bound_type_() const
 {
   return natural_bound_type_;

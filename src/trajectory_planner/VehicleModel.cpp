@@ -22,7 +22,7 @@ int VehicleModel::steeringAngleDegToSignal(double _steeringAngle)
   int steering_control = 0;
   auto poly = this->getPolynom();
   double x = _steeringAngle;
-  steering_control = static_cast<int>(x * poly[0] + x * poly[1] + x * poly[2] + x * poly[3] + x * poly[4] + x * poly[5] + x * poly[6]);
+  steering_control = static_cast<int>(std::pow(x,5) * poly[0] + std::pow(x,4) * poly[1] + std::pow(x,3) * poly[2] + x*x * poly[3] + x * poly[4] + poly[5]);
   return std::abs(steering_control) > getAbsMaxSteering_() ? getAbsMaxSteering_() : steering_control;
 }
 

@@ -184,7 +184,7 @@ add_executable(lane_detection src/lane_detection.cpp
         src/lane_detection/lane_points_calculator.cpp
         )
 add_executable(trajectory_planning
-        src/trajectory_planner/trajectory_planning.cpp)
+        src/trajectory_planner/trajectory_planning.cpp include/trajectory_planning/polynomialRegression.h)
 
 add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
         src/lane_detection/CameraReader.cpp

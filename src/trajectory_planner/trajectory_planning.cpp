@@ -3,6 +3,7 @@
 #include <geometry_msgs/Point.h>
 #include <trajectory_planning/trajectory.h>
 #include <trajectory_planning/vehModel.h>
+#include "trajectory_planning/polynomialRegression.h"
 
 int vel = 0;
 int steer = 0;
@@ -124,8 +125,10 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
- */
+  right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+  right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
 
+ */
   //wait until the received message has enough points to build a cubic spline
   while(right_line_x.size()<2 || right_line_y.size()<2)
   {
@@ -143,19 +146,6 @@ int main(int argc, char **argv)
   }
    */
 
-  /*
-    std::vector<double> new_x, new_y;
-    new_x.reserve((right_line.getVecWaypointDists()).size());
-    new_y.reserve((right_line.getVecWaypointDists()).size());
-    ROS_INFO("In calcTraj");
-    for (int i = 0; i < (right_line.getVecWaypointDists()).size(); ++i)
-    {
-        ROS_INFO("this->vec_x_: %f   , with weighting: %f", this->vec_x_.at(i), this->vec_x_.at(i)*_weighting);
-        ROS_INFO("_other.vec_x_: %f   , with weighting: %f", _other.vec_x_.at(i), _other.vec_x_.at(i)*(1-_weighting));
-        new_x.emplace_back((this->vec_x_.at(i) * _weighting + _other.vec_x_.at(i)) * (1-_weighting));
-        new_y.emplace_back((this->vec_y_.at(i) * _weighting + _other.vec_y_.at(i)) * (1-_weighting) + _offset);
-    }
-    */
 
   ROS_INFO("Loop start!");
 
@@ -206,26 +196,114 @@ int main(int argc, char **argv)
         motorCtrl.publish(velocity);
 
         trajectory_points.points.clear();
-        for (auto it : traj.getVecWaypointDists()) {
-          trajectory_points.points.emplace_back(traj.getPointOnTrajAt(it));
+        // calc trajectory in aquidistant distances...
+
+        std::vector<double> tX, tY;
+
+        auto delta_dist = traj.getVecWaypointDists().back() / 100;
+        for (auto waypoint = 0.0; waypoint < traj.getVecWaypointDists().back(); )  {
+          trajectory_points.points.emplace_back(traj.getPointOnTrajAt(waypoint));
+          tX.emplace_back(trajectory_points.points.back().x);
+          tY.emplace_back(trajectory_points.points.back().y);
+          ROS_INFO("%.4f;%.4f \n", trajectory_points.points.back().x, trajectory_points.points.back().y);
+          waypoint += delta_dist;
         }
+
+
+        alglib::spline1dinterpolant test_traj;
+
+        alglib::real_1d_array x,y;
+        x.setcontent(tX.size(), &tX.front());
+        y.setcontent(tX.size(), &tY.front());
+        alglib::spline1dbuildcubic(x,y,test_traj);
+        double testY, dY, ddY;
+
+
 
         trajectory.publish(trajectory_points);
         // distance to first trajectory point
         auto dist_x = trajectory_points.points.at(0).x;
         auto dist_y = trajectory_points.points.at(0).y;
         auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
+        ctrl_dist = 1.1;
 
-        auto curv_at = traj.calcCurvatureAt(ctrl_dist + dist);
+        alglib::spline1ddiff(test_traj,ctrl_dist, testY, dY, ddY);
+
+        auto denom = (1+dY)*(1+dY);
+        denom = std::sqrt(std::pow(denom,3));
+        auto test_curv = ddY / denom;
+
+        double ax, ay, bx, by, cx, cy;
+
+        auto dist_param = 0.3;
+        ax = alglib::spline1dcalc(traj.getSplineInterpolant('x'), ctrl_dist-dist_param);
+        ay = alglib::spline1dcalc(traj.getSplineInterpolant('y'), ctrl_dist-dist_param);
+        bx = alglib::spline1dcalc(traj.getSplineInterpolant('x'), ctrl_dist);
+        by = alglib::spline1dcalc(traj.getSplineInterpolant('y'), ctrl_dist);
+        cx = alglib::spline1dcalc(traj.getSplineInterpolant('x'), ctrl_dist+dist_param);
+        cy = alglib::spline1dcalc(traj.getSplineInterpolant('y'), ctrl_dist+dist_param);
+
+        auto area = (bx-ax)*(cy-ay)-(by-ay)*(cx-ax);
+        auto ab = std::sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
+        auto ac = std::sqrt((ax-cx)*(ax-cx)+(ay-cy)*(ay-cy));
+        auto bc = std::sqrt((bx-cx)*(bx-cx)+(by-cy)*(by-cy));
+
+        auto three_point_curv = 4*area/ (ab*ac*bc);
+
+
+        std::vector<double> polynom;
+        if(steer == 0)  steer = 5;
+        size_t order = steer;
+
+        PolynomialRegression<double> poly;
+        bool lq = poly.fitIt(tX,tY, order, polynom);
+
+        int i = 0;
+        auto diff = 0.0;
+        for (auto x : tX){
+          auto y = 0.0;
+          for (size_t i = 0; i < polynom.size(); i++){
+            y += polynom[i]* std::pow(x,i);
+          }
+          diff += y - tY[i];
+          i++;
+        }
+        
+        auto poly_y = 0.0;
+        for (size_t i = 0; i < polynom.size(); i++){
+          poly_y += polynom[i]* std::pow(ctrl_dist,i);
+        }
+        auto poly_dy = 0.0;
+        for (size_t i = 1; i < polynom.size(); i++){
+          poly_dy += polynom[i]* std::pow(ctrl_dist,i-1)*i;
+        }
+
+        auto poly_ddy = 0.0;
+        for (size_t i = 2; i < polynom.size(); i++){
+          poly_ddy += polynom[i]* std::pow(ctrl_dist,i-2)*(i-1);
+        }
+
+
+
+        auto poly_denom = (1+poly_dy)*(1+poly_dy);
+        poly_denom = std::sqrt(std::pow(denom,3));
+        auto poly_test_curv = poly_ddy / denom;
+        auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
+        auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
+
+
+        auto curv_at = traj.calcCurvatureAt(ctrl_dist);
+        ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
         auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
+        ROS_INFO("calculated steering angle: %.2f \n", steering_angle_poly);
         auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
+        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl_poly);
 
-        ROS_INFO("Length of trajectory %.2f \n", float(dist
-                +(traj.getVecWaypointDists()).back()));
-        ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
+        //ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()));
+        //ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
 
         // publishs the steering input at the first
-        steering.data = static_cast<short>(steering_ctrl_at);
+        steering.data = static_cast<short>(steering_ctrl_poly);
 
 
         steeringCtrl.publish(steering);
@@ -251,21 +329,3 @@ void clearLineVecs(){
   right_line_y.clear();
 }
 
-
-CTrajectory CTrajectory::calcTraj(CTrajectory &_other, double _weighting, double _offset)
-{
-  std::vector<double> new_x, new_y;
-  new_x.reserve(this->vec_x_.size());
-  new_y.reserve(this->vec_y_.size());
-
-  if (this->vec_x_.size() == _other.vec_x_.size())
-  {
-    for (int i = 0; i < this->vec_x_.size(); ++i)
-    {
-      new_x.emplace_back((this->vec_x_.at(i) * _weighting) + _other.vec_x_.at(i) * (1-_weighting));
-      new_y.emplace_back((this->vec_y_.at(i) * _weighting) + _other.vec_y_.at(i) * (1-_weighting));
-    }
-  }
-
-  return CTrajectory(new_x, new_y);
-}
