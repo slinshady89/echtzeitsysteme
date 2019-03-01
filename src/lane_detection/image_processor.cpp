@@ -106,16 +106,20 @@ Point2d ImageProcessor::getWorldCoordinates(Point2i imageCoordinates) {
     int x_unscaledLocal = image.rows - imageCoordinates.y - px_os_bottom;
     int y_unscaledLocal = -(imageCoordinates.x - (image.cols/2));
     // scale pixel coordinates to actual world units and add distance offset
-    double x = x_unscaledLocal * height_cm_per_px + offset_cm;
-    double y = (y_unscaledLocal * width_cm_per_px);
+    double x_world = x_unscaledLocal * height_cm_per_px + offset_cm;
+    double y_world = (y_unscaledLocal * width_cm_per_px);
 
-    return Point2d(x, y);
+    return Point2d(x_world, y_world);
 }
 
 Point2i ImageProcessor::getImageCoordinates(Point2d worldCoordinates) {
-    // TODO: implement when needed
-    ROS_ERROR("ImageProcessor::getImageCoordinates() is not implemented!");
-    return Point2d(-1,-1);
+    // scale to pixel distance units after shifting according to the world offset (but keep orientation)
+    int x_unscaledLocal = (int)((worldCoordinates.x - offset_cm) * height_px_per_cm);
+    int y_unscaledLocal = (int)(worldCoordinates.y * width_px_per_cm);
+    // change orientation to the image coordinate system and adapt to test plane offset (in the calibration image)
+    int x_image = -y_unscaledLocal + (image.cols/2);
+    int y_image = image.rows - x_unscaledLocal - px_os_bottom;
+    return Point2i(x_image,y_image);
 }
 
 // debugging
