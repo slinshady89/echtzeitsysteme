@@ -39,8 +39,8 @@ void drawGrid(Mat& mat) {
 }
 
 // for debugging
-void printWorldCoords(Point2i pxPoint, int pointId, ImageProcessor& proc) {
-  Point2d worldCoords1 = proc.getWorldCoordinates(pxPoint);
+void printWorldCoords(Point2i pxPoint, int pointId, CameraCalibration cal) {
+  Point2d worldCoords1 = cal.getWorldCoordinates(pxPoint);
   ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
 }
 
@@ -74,11 +74,11 @@ int main(int argc, char** argv)
   frame = reader.readImage();
   //ROS_INFO("Buffer size: %f", reader.getVideoCapture().get(CV_CAP_PROP_BUFFERSIZE));
 #endif
-  
+
+  CameraCalibration calibration(PARAMS_3);
   // TODO: for more meaningful testing, move object creation in the loop
-  ImageProcessor imageProcessor(frame, BGR);
+  ImageProcessor imageProcessor(frame, BGR, calibration);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
-  imageProcessor.calibrateCameraImage(PARAMS_3);
 /*
   imshow("CameraFrame", frame);
   waitKey(0);

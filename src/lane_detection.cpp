@@ -100,14 +100,14 @@ int main(int argc, char **argv)
   getcwd(dir_name, 100);
   ROS_INFO("Current directory is: %s", dir_name);
 
-  ImageProcessor imageProcessor(frame, BGR);
+  CameraCalibration calibration(
+          calibration_02_25::RECT_WIDTH, calibration_02_25::RECT_HEIGHT, calibration_02_25::OFFSET_ORIGIN,
+          TARGET_WIDTH, TARGET_HEIGHT,
+          calibration_02_25::BOTTOM_LEFT, calibration_02_25::BOTTOM_RIGHT, calibration_02_25::TOP_RIGHT, calibration_02_25::TOP_LEFT,
+          TARGET_PX_PER_CM
+  );
+  ImageProcessor imageProcessor(frame, BGR, calibration);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
-    imageProcessor.calibrateCameraImage(
-            calibration_02_25::RECT_WIDTH, calibration_02_25::RECT_HEIGHT, calibration_02_25::OFFSET_ORIGIN,
-            TARGET_WIDTH, TARGET_HEIGHT,
-            calibration_02_25::BOTTOM_LEFT, calibration_02_25::BOTTOM_RIGHT, calibration_02_25::TOP_RIGHT, calibration_02_25::TOP_LEFT,
-            TARGET_PX_PER_CM
-    );
   /**
    * Init ROS Publisher here. Can set to be a fixed array
    */
@@ -141,10 +141,10 @@ int main(int argc, char **argv)
   left_line.points.clear();
   // convert found lane points to world coordinates and push them to the messages
   for (auto it:rightLanePoints_px) {
-      right_line.points.emplace_back(convertPointToMessagePoint(imageProcessor.getWorldCoordinates(it)));
+      right_line.points.emplace_back(convertPointToMessagePoint(calibration.getWorldCoordinates(it)));
   }
   for (auto it:leftLanePoints_px) {
-      left_line.points.emplace_back(convertPointToMessagePoint(imageProcessor.getWorldCoordinates(it)));
+      left_line.points.emplace_back(convertPointToMessagePoint(calibration.getWorldCoordinates(it)));
   }
 
   right_line_pub.publish(right_line);

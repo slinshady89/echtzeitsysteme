@@ -182,6 +182,7 @@ add_executable(lane_detection src/lane_detection.cpp
         src/lane_detection/image_processor.cpp
         src/gui/color_selector.cpp
         src/lane_detection/lane_points_calculator.cpp
+        src/lane_detection/CameraCalibration.cpp
         )
 add_executable(trajectory_planning
         src/trajectory_planner/trajectory_planning.cpp include/trajectory_planning/polynomialRegression.h)
@@ -189,12 +190,16 @@ add_executable(trajectory_planning
 add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
         src/lane_detection/CameraReader.cpp
         src/lane_detection/image_processor.cpp
-        src/gui/color_selector.cpp)
+        src/gui/color_selector.cpp
+        src/lane_detection/CameraCalibration.cpp
+        )
 
 add_executable(show_multiple_lane_points
         proof_of_concept/src/show_multiple_lane_points.cpp
         src/lane_detection/image_processor.cpp
-        src/lane_detection/lane_points_calculator.cpp)
+        src/lane_detection/lane_points_calculator.cpp
+        src/lane_detection/CameraCalibration.cpp
+        )
 
 add_executable(webcam_publisher src/input_reading/webcam_publisher.cpp
         src/lane_detection/CameraReader.cpp

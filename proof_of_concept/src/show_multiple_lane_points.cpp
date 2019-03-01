@@ -57,7 +57,7 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
 int main(int argc, char **argv)
 {
 
-    ros::init(argc, argv, "lane_detection");
+    ros::init(argc, argv, "show_multiple_lane_points");
 
     // initialize this node
     ros::NodeHandle nh;
@@ -78,19 +78,19 @@ int main(int argc, char **argv)
     }
 
     // TODO: move pwd logic to util function
-    ROS_INFO("LANE DETECTION NODE");
+    ROS_INFO("show multiple lane points");
     char dir_name[100];
     getcwd(dir_name, 100);
     ROS_INFO("Current directory is: %s", dir_name);
 
 
-    ImageProcessor imageProcessor(sourceImage, BGR);
-    imageProcessor.calibrateCameraImage(
+    CameraCalibration calibration(
             myphoto2::RECT_WIDTH, myphoto2::RECT_HEIGHT, myphoto2::OFFSET_ORIGIN,
             TARGET_WIDTH, TARGET_HEIGHT,
             myphoto2::BOTTOM_LEFT, myphoto2::BOTTOM_RIGHT, myphoto2::TOP_RIGHT, myphoto2::TOP_LEFT,
             TARGET_PX_PER_CM
-            );
+    );
+    ImageProcessor imageProcessor(sourceImage, BGR, calibration);
     LanePointsCalculator& lanePointsCalculator = LanePointsCalculator::getInstance();
     ROS_INFO("Calibrated camera image.");
     // show source image in window "SourceImage"
