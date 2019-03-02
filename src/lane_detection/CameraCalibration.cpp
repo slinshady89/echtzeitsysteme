@@ -74,8 +74,8 @@ void CameraCalibration::calibrateCameraImage(double testRectWidth_cm, double tes
 
 Point2d CameraCalibration::getWorldCoordinates(Point2i imageCoordinates) {
     // adapt pixel coordinates to the orientation and position of the world coordinate system
-    int x_unscaledLocal = dstHeight - imageCoordinates.y - px_os_bottom;
-    int y_unscaledLocal = -(imageCoordinates.x - (dstWidth / 2));
+    double x_unscaledLocal = dstHeight - imageCoordinates.y - px_os_bottom;
+    double y_unscaledLocal = -(imageCoordinates.x - (dstWidth / 2.0));
     // scale pixel coordinates to actual world units and add distance offset
     double x_world = x_unscaledLocal * height_cm_per_px + offset_cm;
     double y_world = (y_unscaledLocal * width_cm_per_px);
@@ -85,12 +85,12 @@ Point2d CameraCalibration::getWorldCoordinates(Point2i imageCoordinates) {
 
 Point2i CameraCalibration::getImageCoordinates(Point2d worldCoordinates) {
     // scale to pixel distance units after shifting according to the world offset (but keep orientation)
-    int x_unscaledLocal = (int)((worldCoordinates.x - offset_cm) * height_px_per_cm);
-    int y_unscaledLocal = (int)(worldCoordinates.y * width_px_per_cm);
+    double x_unscaledLocal = ((worldCoordinates.x - offset_cm) * height_px_per_cm);
+    double y_unscaledLocal = (worldCoordinates.y * width_px_per_cm);
     // change orientation to the image coordinate system and adapt to test plane offset (in the calibration image)
-    int x_image = -y_unscaledLocal + (dstWidth / 2);
-    int y_image = dstHeight - x_unscaledLocal - px_os_bottom;
-    return Point2i(x_image,y_image);
+    double x_image = -y_unscaledLocal + (dstWidth / 2.0);
+    double y_image = dstHeight - x_unscaledLocal - px_os_bottom;
+    return Point2i((int)x_image,(int)y_image);
 }
 
 Mat CameraCalibration::getTransformMatr() {

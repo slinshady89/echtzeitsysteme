@@ -206,7 +206,8 @@ add_executable(webcam_publisher src/input_reading/webcam_publisher.cpp
         )
 add_executable(image_publisher src/input_reading/image_publisher.cpp)
 
-add_executable(image_viewer src/monitoring/image_viewer.cpp)
+add_executable(image_viewer src/monitoring/image_viewer.cpp
+                            src/lane_detection/CameraCalibration.cpp)
 
 
 # make sure configure headers are built before any node using them
