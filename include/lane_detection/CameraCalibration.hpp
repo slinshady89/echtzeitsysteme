@@ -85,9 +85,13 @@ void calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, dou
                                 Point srcP1_px, Point srcP2_px, Point srcP3_px, Point srcP4_px,
                                 double px_per_cm);
 
-    Point2d getWorldCoordinates(Point2i imageCoordinates);
+    Point2d getWorldCoordinatesFromTransformedImageCoordinates(Point2i imageCoordinates);
 
-    Point2i getImageCoordinates(Point2d worldCoordinates);
+    Point2d getWorldCoordinatesFromUntransformedImageCoordinates(Point2i imageCoordinates);
+
+    Point2i getTransformedImageCoordinates(Point2d worldCoordinates);
+
+    Point2i getUntransformedImageCoordinates(Point2d worldCoordinates);
 
 
     Mat getTransformMatr();

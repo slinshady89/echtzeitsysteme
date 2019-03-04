@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <lane_detection/image_processor.hpp>
 #include <stdio.h>
+#include <stdlib.h>
 #include <echtzeitsysteme/ImageProcessingConfig.h>
 #include <dynamic_reconfigure/server.h>
 #include <lane_detection/lane_points_calculator.hpp>
@@ -140,11 +141,21 @@ int main(int argc, char **argv)
   right_line.points.clear();
   left_line.points.clear();
   // convert found lane points to world coordinates and push them to the messages
+  const double THRESHOLD = 30;
+  Point2d lastPoint;
+  if (!rightLanePoints_px.empty()) lastPoint = calibration.getWorldCoordinatesFromTransformedImageCoordinates(rightLanePoints_px.at(0));
+
   for (auto it:rightLanePoints_px) {
-      right_line.points.emplace_back(convertPointToMessagePoint(calibration.getWorldCoordinates(it)));
+      Point2d worldCoordinates = calibration.getWorldCoordinatesFromTransformedImageCoordinates(it);
+      if(abs(worldCoordinates.y - lastPoint.y) < THRESHOLD) {
+        right_line.points.emplace_back(convertPointToMessagePoint(
+                calibration.getWorldCoordinatesFromTransformedImageCoordinates(it)));
+      }
+      lastPoint = worldCoordinates;
   }
   for (auto it:leftLanePoints_px) {
-      left_line.points.emplace_back(convertPointToMessagePoint(calibration.getWorldCoordinates(it)));
+      left_line.points.emplace_back(convertPointToMessagePoint(
+              calibration.getWorldCoordinatesFromTransformedImageCoordinates(it)));
   }
 
   right_line_pub.publish(right_line);

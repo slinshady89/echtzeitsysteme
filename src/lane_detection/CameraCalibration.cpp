@@ -1,5 +1,7 @@
 #include <lane_detection/image_processor.hpp>
 #include <CameraCalibration.hpp>
+#include <lane_detection/CameraCalibration.hpp>
+
 
 void CameraCalibration::calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, double offsetToOrigin_cm,
                                     int targetWidth, int targetHeight,
@@ -72,7 +74,7 @@ void CameraCalibration::calibrateCameraImage(double testRectWidth_cm, double tes
                                 dstP1_px, dstP2_px, dstP3_px, dstP4_px);
 }
 
-Point2d CameraCalibration::getWorldCoordinates(Point2i imageCoordinates) {
+Point2d CameraCalibration::getWorldCoordinatesFromTransformedImageCoordinates(Point2i imageCoordinates) {
     // adapt pixel coordinates to the orientation and position of the world coordinate system
     double x_unscaledLocal = dstHeight - imageCoordinates.y - px_os_bottom;
     double y_unscaledLocal = -(imageCoordinates.x - (dstWidth / 2.0));
@@ -83,7 +85,7 @@ Point2d CameraCalibration::getWorldCoordinates(Point2i imageCoordinates) {
     return Point2d(x_world, y_world);
 }
 
-Point2i CameraCalibration::getImageCoordinates(Point2d worldCoordinates) {
+Point2i CameraCalibration::getTransformedImageCoordinates(Point2d worldCoordinates) {
     // scale to pixel distance units after shifting according to the world offset (but keep orientation)
     double x_unscaledLocal = ((worldCoordinates.x - offset_cm) * height_px_per_cm);
     double y_unscaledLocal = (worldCoordinates.y * width_px_per_cm);
@@ -91,6 +93,14 @@ Point2i CameraCalibration::getImageCoordinates(Point2d worldCoordinates) {
     double x_image = -y_unscaledLocal + (dstWidth / 2.0);
     double y_image = dstHeight - x_unscaledLocal - px_os_bottom;
     return Point2i((int)x_image,(int)y_image);
+}
+
+Point2d CameraCalibration::getWorldCoordinatesFromUntransformedImageCoordinates(Point2i imageCoordinates) {
+    return cv::Point2d();
+}
+
+Point2i CameraCalibration::getUntransformedImageCoordinates(Point2d worldCoordinates) {
+    return cv::Point2i();
 }
 
 Mat CameraCalibration::getTransformMatr() {
