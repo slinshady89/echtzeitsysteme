@@ -12,6 +12,11 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 
+
+#include "opencv2/imgproc.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui.hpp"
+
 using namespace cv;
 using namespace constants::calibrations;
 
@@ -178,7 +183,7 @@ int main(int argc, char **argv)
 Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc)
 {
 
-  Mat output;
+  Mat output, morph_img;
 
   proc.setImage(input, BGR);
   output = proc.transformTo2D();
@@ -187,6 +192,37 @@ Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc)
   proc.convertToHSV();
   output = proc.filterColor(Scalar(low_H, low_S, low_V),
                             Scalar(high_H, high_S, high_V));
+
+
+  /* morph_operator
+   * Opening: MORPH_OPEN : 2
+   * Closing: MORPH_CLOSE: 3
+   * Gradient: MORPH_GRADIENT: 4
+   * Top Hat: MORPH_TOPHAT: 5
+   * Black Hat: MORPH_BLACKHAT: 6
+   */
+  int morph_operator = 2;
+  /* morph_elem
+   * 0: Rect
+   * 1: Cross
+   * 2: Ellipse
+   * */
+  int morph_elem = 0;
+  /* morph_size
+   * 1 : matrix 3x3
+   * 2 : matrix 5x5
+   * n : matrix 2n+1x2n+1
+   * */
+  int morph_size = 1;
+  // processes opening with rectangle object
+  cv::Mat element = cv::getStructuringElement( morph_elem, cv::Size( 2*morph_size + 1, 2*morph_size+1 ), cv::Point( morph_size, morph_size ) );
+  cv::morphologyEx( output, morph_img, morph_operator, element );
+  morph_operator = 3;
+  morph_elem = 0;
+  morph_size = 4;
+  // processes closing with rectangle object
+  element = cv::getStructuringElement( morph_elem, cv::Size( 2*morph_size + 1, 2*morph_size+1 ), cv::Point( morph_size, morph_size ) );
+  cv::morphologyEx( morph_img, output, morph_operator, element );
 
   return output;
 }
