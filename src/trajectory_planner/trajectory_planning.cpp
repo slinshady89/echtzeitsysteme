@@ -19,23 +19,32 @@ void clearLineVecs();
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  for(auto it : msg->points) {
-    left_line_x.emplace_back(it.x);
-    left_line_y.emplace_back(it.y);
+  if(!msg->points.empty())
+  {
+    for(auto it : msg->points) {
+      left_line_x.emplace_back(it.x);
+      left_line_y.emplace_back(it.y);
+    }
   }
 }
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  for(auto it : msg->points) {
-    right_line_x.emplace_back(it.x);
-    right_line_y.emplace_back(it.y);
+  if(!msg->points.empty())
+  {
+    for(auto it : msg->points) {
+      right_line_x.emplace_back(it.x);
+      right_line_y.emplace_back(it.y);
+    }
   }
 }
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  for(auto it : msg->points) {
-    center_line_x.emplace_back(it.x);
-    center_line_y.emplace_back(it.y);
+  if(!msg->points.empty())
+  {
+    for(auto it : msg->points) {
+      center_line_x.emplace_back(it.x);
+      center_line_y.emplace_back(it.y);
+    }
   }
 }
 
@@ -130,9 +139,9 @@ int main(int argc, char **argv)
 
  */
   //wait until the received message has enough points to build a cubic spline
-  while(right_line_x.size()<2 || right_line_y.size()<2)
+  while(left_line_x.size()<2 || left_line_y.size()<2)
   {
-    ROS_INFO("Waiting for right line...");
+    ROS_INFO("Waiting for left line...");
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -151,7 +160,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      if (right_line_x.size()>=2 && right_line_y.size()>=2) {
+      if (right_line_x.size()>2 && right_line_y.size()>2) {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
         //CTrajectory left_line(left_line_x, left_line_y);
@@ -205,7 +214,7 @@ int main(int argc, char **argv)
           trajectory_points.points.emplace_back(traj.getPointOnTrajAt(waypoint));
           tX.emplace_back(trajectory_points.points.back().x);
           tY.emplace_back(trajectory_points.points.back().y);
-          ROS_INFO("%.4f;%.4f \n", trajectory_points.points.back().x, trajectory_points.points.back().y);
+          //ROS_INFO("%.4f;%.4f \n", trajectory_points.points.back().x, trajectory_points.points.back().y);
           waypoint += delta_dist;
         }
 
@@ -225,7 +234,8 @@ int main(int argc, char **argv)
         auto dist_x = trajectory_points.points.at(0).x;
         auto dist_y = trajectory_points.points.at(0).y;
         auto dist = std::sqrt(dist_x * dist_x + dist_y * dist_y);
-        ctrl_dist = 1.1;
+        //ctrl_dist = 1.1;
+        ROS_INFO("ctrl_dist = %d", ctrl_dist);
 
         alglib::spline1ddiff(test_traj,ctrl_dist, testY, dY, ddY);
 
