@@ -183,6 +183,9 @@ add_executable(lane_detection src/lane_detection.cpp
         src/gui/color_selector.cpp
         src/lane_detection/lane_points_calculator.cpp
         src/lane_detection/CameraCalibration.cpp
+
+        src/lane_detection/TransformingLaneDetector.cpp
+        src/lane_detection/LaneDetector.cpp
         )
 add_executable(trajectory_planning
         src/trajectory_planner/trajectory_planning.cpp include/trajectory_planning/polynomialRegression.h)

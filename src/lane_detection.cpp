@@ -16,6 +16,9 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
+#include <lane_detection/LaneDetector.h>
+#include <lane_detection/TransformingLaneDetector.h>
+#include <lane_detection/NonTransformingLaneDetector.h>
 
 using namespace cv;
 using namespace constants::calibrations;
@@ -134,6 +137,9 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
 
+    /* TODO: should be done by LaneDetector */
+
+
     Mat processedImage = processImage(frame, imageProcessor, lpc);
     // TODO: error-prone to use a fixed MONO8 encoding... what if the fully processed image is different in the future?
     processedImagePublisher.publish(cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, processedImage).toImageMsg());
@@ -163,6 +169,9 @@ int main(int argc, char **argv)
       left_line.points.emplace_back(convertPointToMessagePoint(
               calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
   }
+
+
+  /* TODO: just get lane points from LaneDetector and publish then them */
 
   right_line_pub.publish(right_line);
   left_line_pub.publish(left_line);
