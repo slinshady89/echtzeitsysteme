@@ -5,6 +5,15 @@
 
 using namespace cv;
 
+/**
+ * Holds the data obtained by a camera calibration:
+ * This includes the measures of the test rectangle used for mapping real-world to image units,
+ * the locations of its corner points in the captured calibration photo.
+ * The coordinates of the corresponding image which represents a bird's eye perspective of the real-world
+ * are constructed through calculating a transformation matrix which maps all image points to a 2D plane.
+ *
+ * Converting image coordinates (2D / 3D) to world coordinates and vice versa is supported through respective methods.
+ */
 class CameraCalibration {
 public:
     int getDstWidth() const;
@@ -49,6 +58,8 @@ private:
     int px_os_left;
     int px_os_right;
     int offset_cm;
+
+    std::vector<Point2i> transformPoints(std::vector<Point2i>& points, Mat& m);
 public:
     int getOffset_cm() const;
 
@@ -85,13 +96,19 @@ void calibrateCameraImage(double testRectWidth_cm, double testRectHeight_cm, dou
                                 Point srcP1_px, Point srcP2_px, Point srcP3_px, Point srcP4_px,
                                 double px_per_cm);
 
-    Point2d getWorldCoordinatesFromTransformedImageCoordinates(Point2i imageCoordinates);
+    // conversion between world coordinates and 2D image coordinates
+    Point2d getWorldCoordinatesFrom2DImageCoordinates(Point2i imageCoordinates2D);
+    Point2i get2DImageCoordinatesFromWorldCoordinates(Point2d worldCoordinates);
+    std::vector<Point2d> getWorldCoordinatesFrom2DImageCoordinates(std::vector<Point2i>& imageCoordinates2D);
+    std::vector<Point2i> get2DImageCoordinatesFromWorldCoordinates(std::vector<Point2d> worldCoordinates);
 
-    Point2d getWorldCoordinatesFromUntransformedImageCoordinates(Point2i imageCoordinates);
+    // conversion between 3D and 2D image coordinates
+    std::vector<Point2i> get3DFrom2DImageCoordinates(std::vector<Point2i>& imageCoordinates2D);
+    std::vector<Point2i> get2DFrom3DImageCoordinates(std::vector<Point2i>& imageCoordinates3D);
 
-    Point2i getTransformedImageCoordinates(Point2d worldCoordinates);
-
-    Point2i getUntransformedImageCoordinates(Point2d worldCoordinates);
+    // conversion between world and 3D image coordinates
+    std::vector<Point2d> getWorldCoordinatesFrom3DImageCoordinates(std::vector<Point2i> &imageCoordinates3D);
+    std::vector<Point2i> get3DImageCoordinatesFromWorldCoordinates(std::vector<Point2d> &worldCoordinates);
 
 
     Mat getTransformMatr();

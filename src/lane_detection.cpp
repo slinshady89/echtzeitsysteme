@@ -143,19 +143,20 @@ int main(int argc, char **argv)
   // convert found lane points to world coordinates and push them to the messages
   const double THRESHOLD = 30;
   Point2d lastPoint;
-  if (!rightLanePoints_px.empty()) lastPoint = calibration.getWorldCoordinatesFromTransformedImageCoordinates(rightLanePoints_px.at(0));
+  if (!rightLanePoints_px.empty()) lastPoint = calibration.getWorldCoordinatesFrom2DImageCoordinates(
+            rightLanePoints_px.at(0));
 
   for (auto it:rightLanePoints_px) {
-      Point2d worldCoordinates = calibration.getWorldCoordinatesFromTransformedImageCoordinates(it);
+      Point2d worldCoordinates = calibration.getWorldCoordinatesFrom2DImageCoordinates(it);
       if(abs(worldCoordinates.y - lastPoint.y) < THRESHOLD) {
         right_line.points.emplace_back(convertPointToMessagePoint(
-                calibration.getWorldCoordinatesFromTransformedImageCoordinates(it)));
+                calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
       }
       lastPoint = worldCoordinates;
   }
   for (auto it:leftLanePoints_px) {
       left_line.points.emplace_back(convertPointToMessagePoint(
-              calibration.getWorldCoordinatesFromTransformedImageCoordinates(it)));
+              calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
   }
 
   right_line_pub.publish(right_line);

@@ -56,7 +56,7 @@ void rightLaneCallback(const echtzeitsysteme::points::ConstPtr &msg, std::vector
     right_lane_x.emplace_back(it.x);
     right_lane_y.emplace_back(it.y);
     auto msgPoints = Point2d(it.x, it.y);
-    Point2i imgCoordinates = calibration.getTransformedImageCoordinates(Point2d(it.x * 100.0, it.y * 100.0));
+    Point2i imgCoordinates = calibration.get2DImageCoordinatesFromWorldCoordinates(Point2d(it.x * 100.0, it.y * 100.0));
     if (imgCoordinates.x>=0 && imgCoordinates.x<calibration.getDstWidth()
         && imgCoordinates.y>=0 && imgCoordinates.y<calibration.getDstHeight()) {
       rightLane_px.emplace_back(imgCoordinates);
@@ -76,7 +76,7 @@ void trajCallback(const echtzeitsysteme::points::ConstPtr &msg, std::vector<doub
   for(auto it : msg->points) {
     traj_x.emplace_back(it.x);
     traj_y.emplace_back(it.y);
-    Point2i imgCoordinates = calibration.getTransformedImageCoordinates(Point2d(it.x * 100.0, it.y * 100.0));
+    Point2i imgCoordinates = calibration.get2DImageCoordinatesFromWorldCoordinates(Point2d(it.x * 100.0, it.y * 100.0));
     if (imgCoordinates.x>=0 && imgCoordinates.x<calibration.getDstWidth()
         && imgCoordinates.y>=0 && imgCoordinates.y<calibration.getDstHeight()) {
       traj_px.emplace_back(imgCoordinates);

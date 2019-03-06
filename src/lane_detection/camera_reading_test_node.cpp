@@ -40,7 +40,7 @@ void drawGrid(Mat& mat) {
 
 // for debugging
 void printWorldCoords(Point2i pxPoint, int pointId, CameraCalibration cal) {
-  Point2d worldCoords1 = cal.getWorldCoordinatesFromTransformedImageCoordinates(pxPoint);
+  Point2d worldCoords1 = cal.getWorldCoordinatesFrom2DImageCoordinates(pxPoint);
   ROS_INFO("Car coordinates of image point %d (%d,%d): (%f,%f)", pointId, pxPoint.x, pxPoint.y, worldCoords1.x, worldCoords1.y);
 }
 

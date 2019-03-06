@@ -13,7 +13,6 @@ enum ColorType { BGR, HSV, GREY };
 
 /**
  * Image processor to perform multiple operation on OpenCV Mat objects.
- * NOTE: calibrateCameraImage() must have been called in order to use most methods!
  */
 class ImageProcessor {
     public:
