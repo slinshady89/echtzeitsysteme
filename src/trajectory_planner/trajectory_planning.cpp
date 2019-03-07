@@ -264,16 +264,16 @@ int main(int argc, char **argv)
         auto poly_y = 0.0;
 
         for (size_t i = 0; i < polynom.size(); i++){
-          poly_y += polynom[i]* std::pow(ctrl_dist / 100,i);
+          poly_y += polynom[i]* std::pow(ctrl_dist / 100.0f,i);
         }
         auto poly_dy = 0.0;
         for (size_t i = 1; i < polynom.size(); i++){
-          poly_dy += polynom[i]* std::pow(ctrl_dist / 100,i-1)*i;
+          poly_dy += polynom[i]* std::pow(ctrl_dist / 100.0f,i-1)*i;
         }
 
         auto poly_ddy = 0.0;
         for (size_t i = 2; i < polynom.size(); i++){
-          poly_ddy += polynom[i]* std::pow(ctrl_dist / 100,i-2)*(i-1);
+          poly_ddy += polynom[i]* std::pow(ctrl_dist / 100.0f,i-2)*(i-1);
         }
 
 
