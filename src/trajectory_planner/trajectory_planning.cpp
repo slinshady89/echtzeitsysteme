@@ -256,7 +256,6 @@ int main(int argc, char **argv)
           i++;
         }
 
-         */
 
 
         // differentiation of polynom
@@ -281,6 +280,10 @@ int main(int argc, char **argv)
         auto poly_denom = (1+poly_dy)*(1+poly_dy);
         poly_denom = std::sqrt(std::pow(poly_denom,3));
         auto poly_test_curv = poly_ddy / poly_denom;
+
+
+        */
+        auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
         auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
         int steering_ctrl_poly(0);
         if (steering_angle_poly < 1 && steering_angle_poly > -1)

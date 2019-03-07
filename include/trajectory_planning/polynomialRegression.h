@@ -21,17 +21,48 @@ class PolynomialRegression {
   public:
 
     PolynomialRegression();
-    virtual ~PolynomialRegression(){};
+    virtual ~PolynomialRegression();
 
     bool fitIt(
       const std::vector<TYPE> & x,
       const std::vector<TYPE> & y,
       const int &             order,
       std::vector<TYPE> &     coeffs);
+
+    double calcCurv(
+      const std::vector<TYPE> &polyCoeffs,
+      double at
+      );
 };
 
 template <class TYPE>
 PolynomialRegression<TYPE>::PolynomialRegression() {};
+
+
+template <class TYPE>
+double PolynomialRegression<TYPE>::calcCurv(
+  const std::vector<TYPE> &polyCoeffs,
+  double at)
+{
+  auto poly_y = 0.0;
+  auto poly_dy = 0.0;
+  auto poly_ddy = 0.0;
+
+  for (size_t i = 0; i < polyCoeffs.size(); i++){
+    poly_y += polyCoeffs[i]* std::pow(at,i);
+  }
+  for (size_t i = 1; i < polyCoeffs.size(); i++){
+    poly_dy += polyCoeffs[i]* std::pow(at,i-1)*i;
+  }
+  for (size_t i = 2; i < polyCoeffs.size(); i++){
+    poly_ddy += polyCoeffs[i]* std::pow(at,i-2)*(i-1);
+  }
+
+  auto poly_denom = (1+poly_dy)*(1+poly_dy);
+  poly_denom = std::sqrt(std::pow(poly_denom,3));
+  return poly_ddy / poly_denom;
+}
+
 
 template <class TYPE>
 bool PolynomialRegression<TYPE>::fitIt(
