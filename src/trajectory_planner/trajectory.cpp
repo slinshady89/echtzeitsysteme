@@ -35,9 +35,9 @@ alglib::spline1dinterpolant CTrajectory::getSplineInterpolant(char _name)
 double CTrajectory::calcCurvatureAt(double _s)
 {
   if(_s > spline_lin_length_){
-    ROS_INFO("given point s out of range of traj \n");
-    ROS_INFO("calculating at end of traj \n");
-    _s = spline_lin_length_;
+    //ROS_INFO("given point s out of range of traj \n");
+    //ROS_INFO("calculating at end of traj \n");
+    //_s = spline_lin_length_;
   }
   double x, dx, ddx, y, dy, ddy;
   spline1ddiff(spline_x_, _s, x, dx, ddx);

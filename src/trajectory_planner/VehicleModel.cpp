@@ -8,11 +8,11 @@ double VehicleModel::calculateSteeringAngleDeg(double _curvatureTraj)
 {
   double steering_signal = 0.0;
   // if curvature is to big that simplification has to be assumed
-  if ((1 / _curvatureTraj) * (1 / _curvatureTraj) < length_rear_axle_to_cog_ * length_rear_axle_to_cog_)
-    return _curvatureTraj * length_;
+  if ((1 / _curvatureTraj) * (1 / _curvatureTraj) < length_rear_axle_to_cog_ * length_rear_axle_to_cog_ / (100*100))
+    return _curvatureTraj * length_ / 100;
 
-  double denom = std::sqrt((1 / _curvatureTraj) * (1 / _curvatureTraj) - length_rear_axle_to_cog_ * length_rear_axle_to_cog_);
-  steering_signal = std::atan(length_ / denom);
+  double denom = std::sqrt((1 / _curvatureTraj) * (1 / _curvatureTraj) - length_rear_axle_to_cog_ * length_rear_axle_to_cog_/ (100*100));
+  steering_signal = std::atan(length_ / 100 / denom);
 
   return std::abs(steering_signal) > absMaxSteering_ ? absMaxSteering_ * std::abs(steering_signal) / steering_signal : steering_signal;
 }

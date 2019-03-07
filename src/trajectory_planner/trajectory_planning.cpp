@@ -163,13 +163,13 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      if (right_line_x.size()>2 && right_line_y.size()>2)
+      //if (right_line_x.size()>2 && right_line_y.size()>2)
       {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
 
-        //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-        //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+        right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+        right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
         CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
@@ -218,14 +218,15 @@ int main(int argc, char **argv)
         trajectory_points.points.clear();
         // calc trajectory in aquidistant distances...
 
-        std::vector<double> tX, tY;
+        std::vector<double> tX, tY, curv;
 
         auto delta_dist = traj.getVecWaypointDists().back() / 100;
         for (auto waypoint = 0.0; waypoint < traj.getVecWaypointDists().back(); )  {
           trajectory_points.points.emplace_back(traj.getPointOnTrajAt(waypoint));
           tX.emplace_back(trajectory_points.points.back().x);
           tY.emplace_back(trajectory_points.points.back().y);
-          //ROS_INFO("%.4f;%.4f \n", trajectory_points.points.back().x, trajectory_points.points.back().y);
+          curv.emplace_back(traj.calcCurvatureAt(waypoint));
+          ROS_INFO("%.4f;%.4f, %.4f", trajectory_points.points.back().x, trajectory_points.points.back().y, curv.back());
           waypoint += delta_dist;
         }
 
@@ -242,6 +243,18 @@ int main(int argc, char **argv)
 
         PolynomialRegression<double> poly;
         bool lq = poly.fitIt(tX,tY, order, polynom);
+
+        struct twoval{
+          twoval(double first, double second) :one(first), two(second){}
+          double one;
+          double two;
+        };
+        std::vector<twoval> curv_poly;
+        for (auto waypoint = 0.1; waypoint < traj.getVecWaypointDists().back(); ) {
+          curv_poly.emplace_back(twoval(poly.calcCurv(polynom, waypoint),waypoint));
+          waypoint += delta_dist;
+
+        }
 
 
         // calc difference of spline and traj at supportive places of the spline
@@ -284,6 +297,7 @@ int main(int argc, char **argv)
 
 
         */
+        ctrl_dist = 60;
         auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
         auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
         int steering_ctrl_poly(0);
