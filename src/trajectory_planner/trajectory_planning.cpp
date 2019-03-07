@@ -229,19 +229,8 @@ int main(int argc, char **argv)
         }
 
 
-<<<<<<< HEAD
-        trajectory.publish(trajectory_points);
-
         ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
-=======
-        alglib::spline1dinterpolant test_traj;
->>>>>>> master
 
-        alglib::real_1d_array x,y;
-        x.setcontent(tX.size(), &tX.front());
-        y.setcontent(tX.size(), &tY.front());
-        alglib::spline1dbuildcubic(x,y,test_traj);
-        double testY, dY, ddY;
 
         trajectory.publish(trajectory_points);
         
