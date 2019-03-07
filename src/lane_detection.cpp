@@ -48,7 +48,7 @@ int IMAGE_ROWS_SIZE = 9;
 const int TARGET_WIDTH = 120;
 const int TARGET_HEIGHT = 200;
 const int TARGET_PX_PER_CM = 5;
-const int LOOP_RATE_IN_HERTZ = 10;
+const int LOOP_RATE_IN_HERTZ = 20;
 
 
 // variables that are set by the rqt_reconfigure callback
@@ -58,7 +58,7 @@ int loop_rate;
 int laneColorThreshold;
 
 Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc);
-geometry_msgs::Point convertPointToMessagePoint(Point2i point);
+geometry_msgs::Point convertPointToMessagePoint(Point2d point);
 
 void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level)
 {
@@ -97,6 +97,7 @@ int main(int argc, char **argv)
   f = boost::bind(&configCallback, _1, _2);
   server.setCallback(f);
 
+  // TODO: change instantiation
   LanePointsCalculator& lpc = LanePointsCalculator::getInstance();
 
   image_transport::ImageTransport imageTransport(nh);
@@ -116,6 +117,7 @@ int main(int argc, char **argv)
           TARGET_PX_PER_CM
   );
   ImageProcessor imageProcessor(frame, BGR, calibration);
+  TransformingLaneDetector laneDetector (imageProcessor, lpc, calibration, 10);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
   /**
    * Init ROS Publisher here. Can set to be a fixed array
@@ -140,17 +142,46 @@ int main(int argc, char **argv)
     /* TODO: should be done by LaneDetector */
 
 
+
+/*
     Mat processedImage = processImage(frame, imageProcessor, lpc);
     // TODO: error-prone to use a fixed MONO8 encoding... what if the fully processed image is different in the future?
     processedImagePublisher.publish(cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, processedImage).toImageMsg());
+    */
 
+    Scalar lowGreen = Scalar(low_H, low_S, low_V);
+    Scalar highGreen = Scalar(high_H, high_S, high_V);
+    Scalar lowPink = Scalar(152, 44, 98);
+    Scalar highPink = Scalar(180, 128, 255);
 
+    laneDetector.detectLanes(frame, lowGreen, highGreen, lowPink, highPink);
+    laneDetector.publishProcessedImage(processedImagePublisher);
+
+/*
   std::vector<Point2i> rightLanePoints_px = lpc.lanePoints(IMAGE_ROWS, IMAGE_ROWS_SIZE, LEFT, imageProcessor);
   std::vector<Point2i> leftLanePoints_px = lpc.lanePoints(IMAGE_ROWS, IMAGE_ROWS_SIZE, RIGHT, imageProcessor);
+  */
+
 
   // prepare sending of new lane points
   right_line.points.clear();
   left_line.points.clear();
+  center_line.points.clear();
+
+  // push points to messages
+  for (auto it:laneDetector.getRightLane()) {
+    right_line.points.emplace_back(convertPointToMessagePoint(it));
+  }
+  for (auto it:laneDetector.getLeftLane()) {
+    left_line.points.emplace_back(convertPointToMessagePoint(it));
+  }
+  // TODO: always empty at the moment
+  for (auto it:laneDetector.getMiddleLane()) {
+    center_line.points.emplace_back(convertPointToMessagePoint(it));
+  }
+
+
+  /*
   // convert found lane points to world coordinates and push them to the messages
   const double THRESHOLD = 30;
   Point2d lastPoint;
@@ -169,6 +200,7 @@ int main(int argc, char **argv)
       left_line.points.emplace_back(convertPointToMessagePoint(
               calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
   }
+   */
 
 
   /* TODO: just get lane points from LaneDetector and publish then them */
@@ -176,6 +208,7 @@ int main(int argc, char **argv)
   right_line_pub.publish(right_line);
   left_line_pub.publish(left_line);
   center_line_pub.publish(center_line);
+
 
 
       // write most recent frame on topic to frame
@@ -193,14 +226,6 @@ Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc)
 {
 
   Mat output, morph_img;
-
-  proc.setImage(input, BGR);
-  output = proc.transformTo2D();
-
-  // prepare color filtering
-  proc.convertToHSV();
-  output = proc.filterColor(Scalar(low_H, low_S, low_V),
-                            Scalar(high_H, high_S, high_V));
 
 
   /* morph_operator
@@ -236,7 +261,7 @@ Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc)
   return output;
 }
 
-geometry_msgs::Point convertPointToMessagePoint(Point2i point) {
+geometry_msgs::Point convertPointToMessagePoint(Point2d point) {
     geometry_msgs::Point output;
     // convert from cm to m and write in message
     output.x = (point.x / 100.0);

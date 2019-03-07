@@ -5,7 +5,7 @@ std::vector<Point2i> LaneDetector::filterForMaxWidthDistOfAdjacentPoints(std::ve
     std::vector<Point2i> filtered;
     Point2i lastPoint = points.at(0);
     for (auto it:points) {
-        if (abs(it.x - it.y) <= maxDist_px) {
+        if (abs(it.x - lastPoint.x) <= maxDist_px) {
             filtered.emplace_back(it);
         }
         lastPoint = it;

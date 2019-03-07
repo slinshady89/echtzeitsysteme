@@ -12,7 +12,7 @@ using namespace cv;
 
 class LaneDetector {
 public:
-    LaneDetector(ImageProcessor& proc, LanePointsCalculator& lpc, CameraCalibration cal, Mat& inputImage, int maxPointsPerLane)
+    LaneDetector(ImageProcessor& proc, LanePointsCalculator& lpc, CameraCalibration cal, int maxPointsPerLane)
         : proc(proc), lpc(lpc), cal(cal), maxPointsPerLane(maxPointsPerLane) {};
 
     virtual void detectLanes(Mat& inputImage, Scalar& lowColorGreen,Scalar& highColorGreen,

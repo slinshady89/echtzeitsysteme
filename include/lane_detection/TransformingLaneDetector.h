@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <lane_detection/LaneDetector.h>
+#include <algorithm>
 
 using namespace cv;
 
@@ -16,7 +17,7 @@ using namespace cv;
 class TransformingLaneDetector : public LaneDetector {
 public:
     TransformingLaneDetector(ImageProcessor& proc, LanePointsCalculator& lpc, CameraCalibration cal,
-            Mat& inputImage, int maxPointsPerLane);;
+            int maxPointsPerLane);;
 
     void detectLanes(Mat& inputImage, Scalar& lowColorGreen,Scalar& highColorGreen,
             Scalar& lowColorPink, Scalar& highColorPink) override;
@@ -29,7 +30,10 @@ public:
     void publishProcessedImage(image_transport::Publisher publisher) override;;
 private:
     int maxDistBetweenAdjacentPoints_px;
-
+    void correctOuterLines(std::vector<Point2i>& leftTmp, std::vector<Point2i>& rightTmp, std::vector<Point2i>& middleLine);
+    void sortPointsInDescendingYOrder(std::vector<Point2i>& points);
+    void addPointsToLeftAndRightLane(std::vector<Point2i>& points);
+    Mat morphologicalPreprocessing(Mat input);
 };
 
 
