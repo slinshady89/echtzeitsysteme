@@ -137,11 +137,8 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
-<<<<<<< HEAD
-=======
   right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
   right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
->>>>>>> master
 
   //wait until the received message has enough points to build a cubic spline
   while(right_line_x.size()<2 || right_line_y.size()<2)
@@ -166,13 +163,13 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      //if (right_line_x.size()>2 && right_line_y.size()>2)
+      if (right_line_x.size()>2 && right_line_y.size()>2)
       {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
 
-        right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-        right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+        //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+        //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
         CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);

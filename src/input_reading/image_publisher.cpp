@@ -8,7 +8,7 @@
 
 #define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/captured_frames/02-25_12-35-53.jpg"
 
-const int PUBLISH_RATE = 10;
+const int PUBLISH_RATE = 1;
 const int PUBLISHER_QUEUE = 1;
 
 const std::vector<std::string> imagePaths{
@@ -36,21 +36,20 @@ int main(int argc, char** argv) {
 
     ros::Rate loop_rate(PUBLISH_RATE);
     ROS_INFO("Publish %d images per second...", PUBLISH_RATE);
-    while(ros::ok()) {
-        /*
-        int c = getchar();
+    while(ros::ok())
+    {
+        /*int c = getchar();
         if (c=='f')
             currentImage++;
         else if (c=='b')
-            currentImage--;
-            */
-
-        //Mat frame = cv::imread(nextPath(currentImage).c_str(), IMREAD_COLOR);
-        Mat frame = cv::imread(TEST_PICTURE_PATH, IMREAD_COLOR);
+            currentImage--;*/
+        
+        Mat frame = cv::imread(nextPath(currentImage).c_str(), IMREAD_COLOR);
+        //Mat frame = cv::imread(TEST_PICTURE_PATH, IMREAD_COLOR);
         imageMessage = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, frame).toImageMsg();
         framePublisher.publish(imageMessage);
 
-
+        currentImage++;
         ros::spinOnce();
         loop_rate.sleep();
     }
