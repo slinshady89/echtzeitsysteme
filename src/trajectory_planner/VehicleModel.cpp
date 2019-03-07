@@ -12,7 +12,7 @@ double VehicleModel::calculateSteeringAngleDeg(double _curvatureTraj)
     return _curvatureTraj * length_ / 100;
 
   double denom = std::sqrt((1 / _curvatureTraj) * (1 / _curvatureTraj) - length_rear_axle_to_cog_ * length_rear_axle_to_cog_/ (100*100));
-  steering_signal = std::atan(length_ / 100 / denom);
+  steering_signal = std::atan(length_ / 100 / denom) * 180 / M_PI;
 
   return std::abs(steering_signal) > absMaxSteering_ ? absMaxSteering_ * std::abs(steering_signal) / steering_signal : steering_signal;
 }

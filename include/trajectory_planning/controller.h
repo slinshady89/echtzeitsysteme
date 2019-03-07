@@ -45,6 +45,7 @@ public:
     * output: steering wheel angle
     */
     double computeSteering(std::array<double,arraySize> _arrTrajErrors);
+    double computeSteering(std::vector<double> _vecTrajErrors);
     double computeSteering(double& err);
     void setCtrlParams(double P, double I, double D, double t, double lim);
     void setCtrlParams(double P, double I, double D);
@@ -72,7 +73,14 @@ private:
     double usMinDist = 0.2;
     double K_P, K_I, K_D;
     std::array<double,arraySize> arrErrsWeighting; // weighting of errors of desired traj
-    double dt;
+    std::vector<double> vecErrsWeights;
+public:
+  const std::vector<double> &getVecErrsWeights() const;
+
+  void setVecErrsWeights(const std::vector<double> &vecErrsWeights);
+
+private:
+  double dt;
     double limit;
     double preError;
     double integral;

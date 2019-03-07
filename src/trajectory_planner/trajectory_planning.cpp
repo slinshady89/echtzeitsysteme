@@ -137,8 +137,10 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
+ */
   right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
   right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+  /*
 
   //wait until the received message has enough points to build a cubic spline
   while(right_line_x.size()<2 || right_line_y.size()<2)
@@ -148,8 +150,6 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
- */
-  /*
   while(center_line_x.empty() && center_line_y.empty())
   {
     ROS_INFO("Waiting for center line...");
@@ -163,13 +163,13 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      if (right_line_x.size()>2 && right_line_y.size()>2)
+      //if (right_line_x.size()>2 && right_line_y.size()>2)
       {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
 
-        //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-        //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+        right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+        right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
         CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
@@ -190,25 +190,7 @@ int main(int argc, char **argv)
 
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
-        /*
-         *
-         *      NO LONGER IN USE SINCE POLYNOMIAL CURVATURE CALCULATION
-         *
-         *
-        std::vector<double> steering_deg;
-        std::vector<int> steering_ctrl;
-        steering_deg.reserve(traj.getVecWaypointDists().size());
-        steering_ctrl.reserve(traj.getVecWaypointDists().size());
 
-        for (auto it : curv_traj) {
-          steering_deg.emplace_back(veh.calculateSteeringAngleDeg(it));
-          //printf("steering_angle_deg : %.2f\n", steering_deg.back());
-        }
-        for (auto it : steering_deg) {
-          steering_ctrl.emplace_back(veh.steeringAngleDegToSignal(it));
-          //printf("steering_sig_ctrl : %.2f\n", steering_ctrl.back());
-        }
-        */
         veh.setDesired_trajectory_(traj);
 
         velocity.data = static_cast<short>(vel);
@@ -226,7 +208,7 @@ int main(int argc, char **argv)
           tX.emplace_back(trajectory_points.points.back().x);
           tY.emplace_back(trajectory_points.points.back().y);
           curv.emplace_back(traj.calcCurvatureAt(waypoint));
-          ROS_INFO("%.4f;%.4f, %.4f", trajectory_points.points.back().x, trajectory_points.points.back().y, curv.back());
+          //ROS_INFO("%.4f;%.4f, %.4f", trajectory_points.points.back().x, trajectory_points.points.back().y, curv.back());
           waypoint += delta_dist;
         }
 
@@ -237,78 +219,37 @@ int main(int argc, char **argv)
         trajectory.publish(trajectory_points);
         
         std::vector<double> polynom;
-        if(steer == 0)  steer = 5;
-        ROS_INFO("Order of the Polynom (steer) = %d", steer);
-        size_t order = static_cast<size_t>(steer);
 
         PolynomialRegression<double> poly;
-        bool lq = poly.fitIt(tX,tY, order, polynom);
+        bool lq = poly.fitIt(tX,tY, /*order*/5, polynom);
 
-        /*
-        struct twoval{
-          twoval(double first, double second) :one(first), two(second){}
-          double one;
-          double two;
-        };
-        std::vector<twoval> curv_poly;
-        for (auto waypoint = 0.1; waypoint < traj.getVecWaypointDists().back(); ) {
-          curv_poly.emplace_back(twoval(poly.calcCurv(polynom, waypoint),waypoint));
-          waypoint += delta_dist;
+
+        // calculate steering angle in an area around the
+        double weightDecreasingFact = 0.90;
+        std::vector<double> weights;
+        std::vector<double> errs;
+        errs.emplace_back(tY.front());
+        weights.emplace_back(1.0);
+        for (double s = delta_dist; s < ctrl_dist/100.0f;){
+          weights.emplace_back(weights.back()*weightDecreasingFact);
+          auto err = traj.getPointOnTrajAt(s).y;
+          errs.emplace_back(err);
+          s += delta_dist;
         }
-        */
-
-        // calc difference of spline and traj at supportive places of the spline
-        /*
-        int i = 0;
-        auto diff = 0.0;
-        for (auto x : tX){
-          auto y = 0.0;
-          for (size_t i = 0; i < polynom.size(); i++){
-            y += polynom[i]* std::pow(x,i);
-          }
-          diff += y - tY[i];
-          i++;
-        }
+        ctrl.setVecErrsWeights(weights);
 
 
+        auto steer_rescue = ctrl.computeSteering(errs);
+        ROS_INFO("Steering with vecTraj: %d\n", int(steer_rescue));
 
-        // differentiation of polynom
+        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
+        auto steer_single_point = ctrl.computeSteering(errs.back());
+        ROS_INFO("Steering with single Point: %d\n", int(steer_single_point));
 
-        auto poly_y = 0.0;
-
-        for (size_t i = 0; i < polynom.size(); i++){
-          poly_y += polynom[i]* std::pow(ctrl_dist / 100.0f,i);
-        }
-        auto poly_dy = 0.0;
-        for (size_t i = 1; i < polynom.size(); i++){
-          poly_dy += polynom[i]* std::pow(ctrl_dist / 100.0f,i-1)*i;
-        }
-
-        auto poly_ddy = 0.0;
-        for (size_t i = 2; i < polynom.size(); i++){
-          poly_ddy += polynom[i]* std::pow(ctrl_dist / 100.0f,i-2)*(i-1);
-        }
-
-
-
-        auto poly_denom = (1+poly_dy)*(1+poly_dy);
-        poly_denom = std::sqrt(std::pow(poly_denom,3));
-        auto poly_test_curv = poly_ddy / poly_denom;
-
-
-        */
-        ctrl_dist = 60;
         auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
         auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
-        int steering_ctrl_poly(0);
-        if (steering_angle_poly < 1 && steering_angle_poly > -1)
-        {
-          ROS_INFO("calculated steering angle less than 1° ==>  SteeringCtrl = -70");
-          steering_ctrl_poly = -70;
-        } else
-        {
-          steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
-        }
+        auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
+
 
         //auto curv_at = traj.calcCurvatureAt(ctrl_dist);
         ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
@@ -321,8 +262,10 @@ int main(int argc, char **argv)
         //ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
 
         // publishs the steering input at the first
-        steering.data = static_cast<short>(steering_ctrl_poly);
+        //steering.data = static_cast<short>(steering_ctrl_poly);
 
+        // steer with PID onto a point
+        steering.data = static_cast<short>(steer_single_point);
 
         steeringCtrl.publish(steering);
       }

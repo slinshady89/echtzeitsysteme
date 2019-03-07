@@ -203,3 +203,42 @@ CController::~CController()
 {
     integral = 0;
 }
+
+double CController::computeSteering(std::vector<double> _vecTrajErrors) {
+    double steer = 0.0;
+    double err = 0.0;
+
+    for(size_t i = 0; i < vecErrsWeights.size();i++)
+    {
+        err = _vecTrajErrors.at(i) * vecErrsWeights.at(i);
+    }
+    dErrorAct = (err - preError);
+    // limit to the I-part of the controller so it stops raising if a countersteering onto the traj is detected
+    if(abs(dErrorAct) >= abs(dErrorLast))      integral += dt*err;
+    else                                    integral -= dt*err;
+
+    // maybe don't use err but kappa directly instead?
+    double Pout = K_P * err;
+    double Iout = K_I * integral;
+    double derivate = 0.0;
+    if(dt != 0.0) derivate = dErrorAct / dt;
+    double Dout = K_D *derivate;
+
+    steer = Pout + Iout + Dout;
+    if(steer > limit) steer = limit;
+    if(steer < -limit) steer = -limit;
+
+    dErrorLast = (err - preError);
+
+    preError = err;
+    ctrlDone();
+    return steer;
+}
+
+const std::vector<double> &CController::getVecErrsWeights() const {
+    return vecErrsWeights;
+}
+
+void CController::setVecErrsWeights(const std::vector<double> &vecErrsWeights) {
+    CController::vecErrsWeights = vecErrsWeights;
+}
