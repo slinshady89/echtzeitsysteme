@@ -8,7 +8,7 @@
 #define HEIGHT 720
 
 
-const int PUBLISH_RATE = 20;
+const int PUBLISH_RATE = 10;
 const int PUBLISHER_QUEUE = 1;
 
 int main(int argc, char** argv) {

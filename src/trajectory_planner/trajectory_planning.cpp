@@ -19,6 +19,7 @@ void clearLineVecs();
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
+  ROS_INFO("LL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -29,6 +30,7 @@ void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 }
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
+  ROS_INFO("RL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -39,6 +41,7 @@ void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 }
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
+  ROS_INFO("CL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -134,7 +137,6 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
- */
   right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
   right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
 
@@ -146,6 +148,7 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
+ */
   /*
   while(center_line_x.empty() && center_line_y.empty())
   {
@@ -219,11 +222,16 @@ int main(int argc, char **argv)
         }
 
 
+        alglib::spline1dinterpolant test_traj;
+
+        alglib::real_1d_array x,y;
+        x.setcontent(tX.size(), &tX.front());
+        y.setcontent(tX.size(), &tY.front());
+        alglib::spline1dbuildcubic(x,y,test_traj);
+        double testY, dY, ddY;
+
         trajectory.publish(trajectory_points);
-
-        ROS_INFO("ctrl_dist = %d", ctrl_dist);
-
-
+        
         std::vector<double> polynom;
         if(steer == 0)  steer = 5;
         size_t order = steer;
@@ -269,15 +277,16 @@ int main(int argc, char **argv)
 
         auto poly_denom = (1+poly_dy)*(1+poly_dy);
         poly_denom = std::sqrt(std::pow(poly_denom,3));
-
         auto poly_test_curv = poly_ddy / poly_denom;
         auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
-        auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
-
-        if(steering_angle_poly < 1.0) {
+        int steering_ctrl_poly(0);
+        if (steering_angle_poly < 1 && steering_angle_poly > -1)
+        {
           steering_ctrl_poly = -70;
+        } else
+        {
+          steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
         }
-
 
         //auto curv_at = traj.calcCurvatureAt(ctrl_dist);
         ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
