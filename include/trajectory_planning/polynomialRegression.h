@@ -1,9 +1,5 @@
-//
-// Created by nils on 3/1/19.
-//
-
-#ifndef _ECHTZEITSYSTEME_POLYNOMIALREGRESSION_H
-#define _ECHTZEITSYSTEME_POLYNOMIALREGRESSION_H
+#ifndef _POLYNOMIALREGRESSION_H
+#define _POLYNOMIALREGRESSION_H
 /**
  * PURPOSE:
  *
@@ -135,4 +131,4 @@ bool PolynomialRegression<TYPE>::fitIt(
   return true;
 }
 
-#endif //_ECHTZEITSYSTEME_POLYNOMIALREGRESSION_H
+#endif //_POLYNOMIALREGRESSION_H

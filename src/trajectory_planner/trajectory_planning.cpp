@@ -134,9 +134,6 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
- */
-  right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-  right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
 
   //wait until the received message has enough points to build a cubic spline
   while(right_line_x.size()<2 || right_line_y.size()<2)
@@ -146,6 +143,7 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
+ */
   /*
   while(center_line_x.empty() && center_line_y.empty())
   {
@@ -160,9 +158,13 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      if (right_line_x.size()>2 && right_line_y.size()>2) {
+      //if (right_line_x.size()>2 && right_line_y.size()>2)
+      {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
+
+        right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+        right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
         CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
@@ -221,11 +223,12 @@ int main(int argc, char **argv)
 
         trajectory.publish(trajectory_points);
 
-        ROS_INFO("ctrl_dist = %d", ctrl_dist);
+        ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
 
 
         std::vector<double> polynom;
         if(steer == 0)  steer = 5;
+        ROS_INFO("Order of the Polynom (steer) = %d", steer);
         size_t order = steer;
 
         PolynomialRegression<double> poly;
@@ -250,19 +253,19 @@ int main(int argc, char **argv)
 
         // differentiation of polynom
 
-
         auto poly_y = 0.0;
+
         for (size_t i = 0; i < polynom.size(); i++){
-          poly_y += polynom[i]* std::pow(ctrl_dist,i);
+          poly_y += polynom[i]* std::pow(ctrl_dist / 100,i);
         }
         auto poly_dy = 0.0;
         for (size_t i = 1; i < polynom.size(); i++){
-          poly_dy += polynom[i]* std::pow(ctrl_dist,i-1)*i;
+          poly_dy += polynom[i]* std::pow(ctrl_dist / 100,i-1)*i;
         }
 
         auto poly_ddy = 0.0;
         for (size_t i = 2; i < polynom.size(); i++){
-          poly_ddy += polynom[i]* std::pow(ctrl_dist,i-2)*(i-1);
+          poly_ddy += polynom[i]* std::pow(ctrl_dist / 100,i-2)*(i-1);
         }
 
 
