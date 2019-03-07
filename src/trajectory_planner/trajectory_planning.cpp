@@ -193,6 +193,11 @@ int main(int argc, char **argv)
 
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
+        /*
+         *
+         *      NO LONGER IN USE SINCE POLYNOMIAL CURVATURE CALCULATION
+         *
+         *
         std::vector<double> steering_deg;
         std::vector<int> steering_ctrl;
         steering_deg.reserve(traj.getVecWaypointDists().size());
@@ -206,10 +211,9 @@ int main(int argc, char **argv)
           steering_ctrl.emplace_back(veh.steeringAngleDegToSignal(it));
           //printf("steering_sig_ctrl : %.2f\n", steering_ctrl.back());
         }
-
+        */
         veh.setDesired_trajectory_(traj);
 
-        ROS_INFO("calculated Steering: %.2f", (float) steering_ctrl.front());
         velocity.data = static_cast<short>(vel);
         ROS_INFO("vel: %d\n", velocity.data);
         motorCtrl.publish(velocity);
@@ -237,7 +241,7 @@ int main(int argc, char **argv)
         std::vector<double> polynom;
         if(steer == 0)  steer = 5;
         ROS_INFO("Order of the Polynom (steer) = %d", steer);
-        size_t order = steer;
+        size_t order = static_cast<size_t>(steer);
 
         PolynomialRegression<double> poly;
         bool lq = poly.fitIt(tX,tY, order, polynom);
@@ -288,6 +292,7 @@ int main(int argc, char **argv)
         int steering_ctrl_poly(0);
         if (steering_angle_poly < 1 && steering_angle_poly > -1)
         {
+          ROS_INFO("calculated steering angle less than 1° ==>  SteeringCtrl = -70");
           steering_ctrl_poly = -70;
         } else
         {

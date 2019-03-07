@@ -162,4 +162,9 @@ bool PolynomialRegression<TYPE>::fitIt(
   return true;
 }
 
+template<class TYPE>
+PolynomialRegression<TYPE>::~PolynomialRegression() {
+
+}
+
 #endif //_POLYNOMIALREGRESSION_H
