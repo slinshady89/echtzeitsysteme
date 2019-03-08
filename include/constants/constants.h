@@ -6,6 +6,7 @@
 #define PROJECT_CONSTANTS_H
 
 #include <opencv2/opencv.hpp>
+#include <lane_detection/CameraCalibration.hpp>
 
 namespace constants {
     /* webcam configuration */
@@ -53,8 +54,16 @@ namespace constants {
             const double RECT_WIDTH =  59.0;
             const double RECT_HEIGHT = 84.0;
             const double OFFSET_ORIGIN = 37.0;
-            const int TARGET_WIDTH = 180;
-            const int TARGET_HEIGHT = 180;
+            const int TARGET_WIDTH = 150;
+            const int TARGET_HEIGHT = 200;
+            const int TARGET_PX_PER_CM = 5;
+            const CameraCalibration calibration_150_200_px(
+                    RECT_WIDTH, RECT_HEIGHT, OFFSET_ORIGIN,
+                    TARGET_WIDTH, TARGET_HEIGHT,
+                    BOTTOM_LEFT, BOTTOM_RIGHT, TOP_RIGHT, TOP_LEFT,
+                    TARGET_PX_PER_CM
+            );
+
 
         }
     }

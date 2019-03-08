@@ -148,12 +148,7 @@ int main(int argc, char** argv) {
   std::vector<Point2i> leftLaneImagePoints;
   std::vector<Point2i> centerLaneImagePoints;
 
-  CameraCalibration calibration(
-          calibration_02_25::RECT_WIDTH, calibration_02_25::RECT_HEIGHT, calibration_02_25::OFFSET_ORIGIN,
-          TARGET_WIDTH, TARGET_HEIGHT,
-          calibration_02_25::BOTTOM_LEFT, calibration_02_25::BOTTOM_RIGHT, calibration_02_25::TOP_RIGHT, calibration_02_25::TOP_LEFT,
-          TARGET_PX_PER_CM
-  );
+  CameraCalibration calibration = calibration_02_25::calibration_150_200_px;
 
   ros::Subscriber leftLaneSubscriber = nh.subscribe<echtzeitsysteme::points>("left_line", 1, boost::bind(
           &leftLaneCallback, _1,
