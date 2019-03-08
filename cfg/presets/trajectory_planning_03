@@ -1,0 +1,29 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  K_D: 0.1
+  K_I: 1.0
+  K_P: 37.0
+  ctrlDist: 123
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      K_D: 0.1
+      K_I: 1.0
+      K_P: 37.0
+      ctrlDist: 123
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      size: 1
+      state: true
+      steering: 0
+      type: ''
+      vel: 300
+    state: []
+  size: 1
+  steering: 0
+  vel: 300
+state: []

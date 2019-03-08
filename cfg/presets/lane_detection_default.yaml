@@ -1,0 +1,47 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  colorThreshold: 180
+  green_high_H: 78
+  green_high_S: 169
+  green_high_V: 255
+  green_low_H: 48
+  green_low_S: 55
+  green_low_V: 173
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      colorThreshold: 180
+      green_high_H: 78
+      green_high_S: 169
+      green_high_V: 255
+      green_low_H: 48
+      green_low_S: 55
+      green_low_V: 173
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      lane_dist_cm: 30.0
+      loop_rate: 10
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      pink_high_H: 179
+      pink_high_S: 129
+      pink_high_V: 255
+      pink_low_H: 152
+      pink_low_S: 44
+      pink_low_V: 102
+      state: true
+      type: ''
+      y_dist_cm: 88.0
+    state: []
+  lane_dist_cm: 30.0
+  loop_rate: 10
+  pink_high_H: 179
+  pink_high_S: 129
+  pink_high_V: 255
+  pink_low_H: 152
+  pink_low_S: 44
+  pink_low_V: 102
+  y_dist_cm: 88.0
+state: []

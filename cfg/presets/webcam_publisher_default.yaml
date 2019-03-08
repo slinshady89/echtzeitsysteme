@@ -1,0 +1,23 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  brightness: 0.5
+  contrast: 0.33684
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      brightness: 0.5
+      contrast: 0.33684
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      hue: 0.5
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      saturation: 0.55
+      state: true
+      type: ''
+    state: []
+  hue: 0.5
+  saturation: 0.55
+state: []
