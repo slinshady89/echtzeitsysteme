@@ -104,11 +104,11 @@ bool CController::ctrlLoop(double range_usl, double range_usr, double range_usf)
 };
 
 
-/** computeSteering
+/** computeSteeringErrs
  * input: array with errors of planned trajectory and actual path
  * 
  */
-double CController::computeSteering(std::array<double,arraySize> _errs)
+double CController::computeSteeringErrs(std::array<double,arraySize> _errs)
 {
     double steer = 0.0;
     double err = 0.0;
@@ -116,7 +116,9 @@ double CController::computeSteering(std::array<double,arraySize> _errs)
     // calculate weighted error of the last 5 errors
     size_t i = 0;
     for(auto err_ : _errs)
-    {
+    {   
+        ROS_INFO("CController: err_ = %f", err_);
+        ROS_INFO("CController: weighted err = %f", err);
         err = err_ * arrErrsWeighting[i++];
         // necessary check since arrays are all initiated with arraySize
         if(i == arraySize-1)
@@ -204,7 +206,7 @@ CController::~CController()
     integral = 0;
 }
 
-double CController::computeSteering(std::vector<double> _vecTrajErrors) {
+double CController::computeSteeringTraj(std::vector<double> _vecTrajErrors) {
     double steer = 0.0;
     double err = 0.0;
 

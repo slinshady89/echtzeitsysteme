@@ -44,8 +44,8 @@ public:
     * input: errors of the next 5 timesteps
     * output: steering wheel angle
     */
-    double computeSteering(std::array<double,arraySize> _arrTrajErrors);
-    double computeSteering(std::vector<double> _vecTrajErrors);
+    double computeSteeringErrs(std::array<double,arraySize> _arrTrajErrors);
+    double computeSteeringTraj(std::vector<double> _vecTrajErrors);
     double computeSteering(double& err);
     void setCtrlParams(double P, double I, double D, double t, double lim);
     void setCtrlParams(double P, double I, double D);

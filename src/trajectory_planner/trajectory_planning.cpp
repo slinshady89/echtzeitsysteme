@@ -19,7 +19,7 @@ void clearLineVecs();
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  ROS_INFO("LL Callback");
+  //ROS_INFO("LL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -30,7 +30,7 @@ void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 }
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  ROS_INFO("RL Callback");
+  //ROS_INFO("RL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -41,7 +41,7 @@ void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 }
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
-  ROS_INFO("CL Callback");
+  //ROS_INFO("CL Callback");
   if(!msg->points.empty())
   {
     for(auto it : msg->points) {
@@ -122,7 +122,6 @@ int main(int argc, char **argv)
 
   CController ctrl(17.5, 3.5, 0.1, 0.1, 1000);
 
-  // Loop starts here:
   ros::Rate loop_rate(1 / looptime);
   
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
@@ -138,8 +137,8 @@ int main(int argc, char **argv)
   }
 
  */
-  right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-  right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+  //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+  //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
   /*
 
   //wait until the received message has enough points to build a cubic spline
@@ -163,13 +162,13 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-      //if (right_line_x.size()>2 && right_line_y.size()>2)
+      if (right_line_x.size()>2 && right_line_y.size()>2)
       {
         // calculate splines of the given set of points
         // TODO: a test for size > 2 should be done here
 
-        right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-        right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
+        //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
+        //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
         CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
@@ -178,6 +177,7 @@ int main(int argc, char **argv)
 
         std::vector<double> curv_traj;
         // some validation check should be done!
+        // Funktioniert überhaupt nicht!
         if (!ctrl.ctrlLoop(usl, usr, usf)) {
           ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", ctrl.getUsMinDist());
           velocity.data = 0;
@@ -185,14 +185,15 @@ int main(int argc, char **argv)
           double v = 1.0; // 1m/s
           // this way the trajectories curvature is calculated at every
           // point this task is called if no new points at the are available the next point could be evaluated
+          velocity.data = static_cast<short>(vel);
           curv_traj = traj.calcCurvature(v / looptime);
         }
 
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
 
-
         veh.setDesired_trajectory_(traj);
 
+        // remove for collision detection
         velocity.data = static_cast<short>(vel);
         ROS_INFO("vel: %d\n", velocity.data);
         motorCtrl.publish(velocity);
@@ -212,9 +213,7 @@ int main(int argc, char **argv)
           waypoint += delta_dist;
         }
 
-
         ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
-
 
         trajectory.publish(trajectory_points);
         
@@ -228,6 +227,8 @@ int main(int argc, char **argv)
         double weightDecreasingFact = 0.90;
         std::vector<double> weights;
         std::vector<double> errs;
+        //ROS_INFO("ty.front() = %f", tY.front());
+        //ROS_INFO("delta_dist = %f", delta_dist);
         errs.emplace_back(tY.front());
         weights.emplace_back(1.0);
         for (double s = delta_dist; s < ctrl_dist/100.0f;){
@@ -239,8 +240,8 @@ int main(int argc, char **argv)
         ctrl.setVecErrsWeights(weights);
 
 
-        auto steer_rescue = ctrl.computeSteering(errs);
-        ROS_INFO("Steering with vecTraj: %d\n", int(steer_rescue));
+        auto steer_rescue = ctrl.computeSteeringTraj(errs);
+        ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
 
         ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
         auto steer_single_point = ctrl.computeSteering(errs.back());
@@ -250,13 +251,14 @@ int main(int argc, char **argv)
         auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
         auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
 
+        auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 
         //auto curv_at = traj.calcCurvatureAt(ctrl_dist);
-        ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
+        //ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
         //auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
-        ROS_INFO("calculated steering angle: %.2f \n", steering_angle_poly);
+        //ROS_INFO("calculated steering angle: %.2f \n", steering_angle_poly);
         //auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
-        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl_poly);
+        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl);
 
         //ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()));
         //ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
@@ -265,7 +267,7 @@ int main(int argc, char **argv)
         //steering.data = static_cast<short>(steering_ctrl_poly);
 
         // steer with PID onto a point
-        steering.data = static_cast<short>(steer_single_point);
+        steering.data = static_cast<short>(steering_ctrl);
 
         steeringCtrl.publish(steering);
       }
@@ -279,7 +281,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
 
 void clearLineVecs(){
   left_line_x.clear();
