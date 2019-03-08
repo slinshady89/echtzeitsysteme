@@ -52,7 +52,8 @@ const int LOOP_RATE_IN_HERTZ = 20;
 
 
 // variables that are set by the rqt_reconfigure callback
-int low_H, low_S, low_V, high_H, high_S, high_V;
+int green_low_H, green_low_S, green_low_V, green_high_H, green_high_S, green_high_V;
+int pink_low_H, pink_low_S, pink_low_V, pink_high_H, pink_high_S, pink_high_V;
 double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
@@ -62,12 +63,18 @@ geometry_msgs::Point convertPointToMessagePoint(Point2d point);
 
 void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level)
 {
-  low_H = config.low_H;
-  low_S = config.low_S;
-  low_V = config.low_V;
-  high_H = config.high_H;
-  high_S = config.high_S;
-  high_V = config.high_V;
+  green_low_H = config.green_low_H;
+  green_low_S = config.green_low_S;
+  green_low_V = config.green_low_V;
+  green_high_H = config.green_high_H;
+  green_high_S = config.green_high_S;
+  green_high_V = config.green_high_V;
+  pink_low_H = config.pink_low_H;
+  pink_low_S = config.pink_low_S;
+  pink_low_V = config.pink_low_V;
+  pink_high_H = config.pink_high_H;
+  pink_high_S = config.pink_high_S;
+  pink_high_V = config.pink_high_V;
   y_dist_cm = config.y_dist_cm;
   lane_dist_cm = config.lane_dist_cm;
   loop_rate = config.loop_rate;
@@ -144,10 +151,10 @@ int main(int argc, char **argv)
     processedImagePublisher.publish(cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, processedImage).toImageMsg());
     */
 
-    Scalar lowGreen = Scalar(low_H, low_S, low_V);
-    Scalar highGreen = Scalar(high_H, high_S, high_V);
-    Scalar lowPink = Scalar(152, 44, 98);
-    Scalar highPink = Scalar(180, 128, 255);
+    Scalar lowGreen = Scalar(green_low_H, green_low_S, green_low_V);
+    Scalar highGreen = Scalar(green_high_H, green_high_S, green_high_V);
+    Scalar lowPink = Scalar(pink_low_H, pink_low_S, pink_low_V);
+    Scalar highPink = Scalar(pink_high_H, pink_high_S, pink_high_V);
 
     laneDetector.detectLanes(frame, lowGreen, highGreen, lowPink, highPink);
     laneDetector.publishProcessedImage(processedImagePublisher);

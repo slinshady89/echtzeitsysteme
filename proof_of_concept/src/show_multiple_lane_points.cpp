@@ -32,7 +32,7 @@ int IMAGE_ROWS[] = {100, 200, 300, 400, 500, 600, 700, 800, 900};
 int IMAGE_ROWS_SIZE = 9;
 
 /* configuration parameters */
-int low_H, low_S, low_V, high_H, high_S, high_V;
+int green_low_H, green_low_S, green_low_V, green_high_H, green_high_S, green_high_V;
 double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
@@ -40,12 +40,12 @@ int laneColorThreshold;
 Mat processImage(ImageProcessor& proc, LanePointsCalculator& lpc);
 
 void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t level) {
-    low_H = config.low_H;
-    low_S = config.low_S;
-    low_V = config.low_V;
-    high_H = config.high_H;
-    high_S = config.high_S;
-    high_V = config.high_V;
+    green_low_H = config.green_low_H;
+    green_low_S = config.green_low_S;
+    green_low_V = config.green_low_V;
+    green_high_H = config.green_high_H;
+    green_high_S = config.green_high_S;
+    green_high_V = config.green_high_V;
     y_dist_cm = config.y_dist_cm;
     lane_dist_cm = config.lane_dist_cm;
     loop_rate = config.loop_rate;
@@ -125,7 +125,7 @@ Mat processImage(ImageProcessor& proc, LanePointsCalculator& lpc)
     imshow("perspective transformed", output);
 
     proc.convertToHSV();
-    output = proc.filterColor(Scalar(low_H, low_S, low_V),Scalar(high_H, high_S, high_V));
+    output = proc.filterColor(Scalar(green_low_H, green_low_S, green_low_V),Scalar(green_high_H, green_high_S, green_high_V));
     imshow("colors filtered", output);
 
     std::vector<Point2i> rightLanePoints = lpc.lanePoints(IMAGE_ROWS, IMAGE_ROWS_SIZE, LEFT, proc);

@@ -4,15 +4,15 @@ dictitems:
     dictitems:
       groups: !!python/object/new:dynamic_reconfigure.encoding.Config
         state: []
-      high_H: 78
-      high_S: 169
-      high_V: 255
+      green_high_H: 78
+      green_high_S: 169
+      green_high_V: 255
       id: 0
       lane_dist_cm: 30.0
       loop_rate: 1
-      low_H: 48
-      low_S: 55
-      low_V: 173
+      green_low_H: 48
+      green_low_S: 55
+      green_low_V: 173
       name: Default
       parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
         state: []
@@ -21,13 +21,13 @@ dictitems:
       type: ''
       y_dist_cm: 88.0
     state: []
-  high_H: 78
-  high_S: 169
-  high_V: 255
+  green_high_H: 78
+  green_high_S: 169
+  green_high_V: 255
   lane_dist_cm: 30.0
   loop_rate: 1
-  low_H: 48
-  low_S: 55
-  low_V: 173
+  green_low_H: 48
+  green_low_S: 55
+  green_low_V: 173
   y_dist_cm: 88.0
 state: []
