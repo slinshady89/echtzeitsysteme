@@ -117,12 +117,7 @@ int main(int argc, char **argv)
   getcwd(dir_name, 100);
   ROS_INFO("Current directory is: %s", dir_name);
 
-  CameraCalibration calibration(
-          calibration_02_25::RECT_WIDTH, calibration_02_25::RECT_HEIGHT, calibration_02_25::OFFSET_ORIGIN,
-          TARGET_WIDTH, TARGET_HEIGHT,
-          calibration_02_25::BOTTOM_LEFT, calibration_02_25::BOTTOM_RIGHT, calibration_02_25::TOP_RIGHT, calibration_02_25::TOP_LEFT,
-          TARGET_PX_PER_CM
-  );
+  CameraCalibration calibration = calibration_02_25::calibration_150_200_px;
   ImageProcessor imageProcessor(frame, BGR, calibration);
   TransformingLaneDetector laneDetector (imageProcessor, lpc, calibration, 10);
   //imageProcessor.calibrateCameraImage(PARAMS_2);
