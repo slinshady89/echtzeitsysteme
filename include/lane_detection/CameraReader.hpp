@@ -36,6 +36,7 @@ class CameraReader {
          */
         void setRelativePositionInVideo(double position);
         double getNumberOfFrames();
+        void setCameraSettings(double brightness, double contrast, double saturation, double hue);
 
         VideoCapture& getVideoCapture();    // TODO const reference (read-only)
 

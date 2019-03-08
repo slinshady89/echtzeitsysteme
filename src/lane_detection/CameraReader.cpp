@@ -1,4 +1,6 @@
 #include <CameraReader.hpp>
+#include <lane_detection/CameraReader.hpp>
+
 
 #define FRAMES_TO_DISCARD 4
 
@@ -47,4 +49,11 @@ double CameraReader::getNumberOfFrames() {
 }
 VideoCapture& CameraReader::getVideoCapture() {
     return cap;
+}
+
+void CameraReader::setCameraSettings(double brightness, double contrast, double saturation, double hue) {
+    cap.set(CV_CAP_PROP_BRIGHTNESS, brightness);
+    cap.set(CV_CAP_PROP_CONTRAST, contrast);
+    cap.set(CV_CAP_PROP_SATURATION, saturation);
+    cap.set(CV_CAP_PROP_HUE, hue);
 }

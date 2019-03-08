@@ -13,10 +13,9 @@
 const int PUBLISH_RATE = 10;
 const int PUBLISHER_QUEUE = 1;
 
-void configCallback(echtzeitsysteme::WebcamSettingsConfig &config, uint32_t level)
+void configCallback(echtzeitsysteme::WebcamSettingsConfig &config, uint32_t level, CameraReader& cameraReader)
 {
-  
-
+    cameraReader.setCameraSettings(config.brightness, config.contrast, config.saturation, config.hue);
   ROS_INFO("Webcam settings configuration updated.");
 }
 
@@ -24,17 +23,18 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "webcam_publisher");
     ros::NodeHandle nh;
 
+    CameraReader cameraReader(WIDTH, HEIGHT);
+
     dynamic_reconfigure::Server<echtzeitsysteme::WebcamSettingsConfig> server;
     dynamic_reconfigure::Server<echtzeitsysteme::WebcamSettingsConfig>::CallbackType f;
 
-    f = boost::bind(&configCallback, _1, _2);
+    f = boost::bind(&configCallback, _1, _2, boost::ref(cameraReader));
     server.setCallback(f);
 
     image_transport::ImageTransport it(nh);
     image_transport::Publisher framePublisher = it.advertise("camera/frame", PUBLISHER_QUEUE);    // TODO: change queue size
     sensor_msgs::ImagePtr imageMessage;
 
-    CameraReader cameraReader(WIDTH, HEIGHT);
     ros::Rate loop_rate(PUBLISH_RATE);
     ROS_INFO("Publish %d webcam frames per second...", PUBLISH_RATE);
     while(ros::ok()) {
