@@ -53,7 +53,6 @@ const int LOOP_RATE_IN_HERTZ = 20;
 
 // variables that are set by the rqt_reconfigure callback
 int low_H, low_S, low_V, high_H, high_S, high_V;
-double brightness, contrast, saturation, hue, exposure;
 double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
@@ -73,12 +72,6 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   lane_dist_cm = config.lane_dist_cm;
   loop_rate = config.loop_rate;
   laneColorThreshold = config.colorThreshold;
-
-  brightness = config.brightness;
-  contrast = config.contrast;
-  saturation = config.saturation;
-  hue = config.hue;
-  //exposure = config.exposure;
 
   ROS_INFO("Updated configuration.");
 }

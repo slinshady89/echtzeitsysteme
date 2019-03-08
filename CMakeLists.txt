@@ -107,6 +107,7 @@ generate_messages(
 generate_dynamic_reconfigure_options(
         cfg/controller.cfg
         cfg/ImageProcessing.cfg
+        cfg/WebcamSettings.cfg
         #...
 )
 
