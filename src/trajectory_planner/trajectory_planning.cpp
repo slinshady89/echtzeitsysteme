@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 1, boost::bind(uslCallback, _1, &usl));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 1, boost::bind(usfCallback, _1, &usf));
 
-  CController ctrl(17.5, 3.5, 0.1, 0.1, 1000);
+  CController ctrl(17.5, 3.5, 0.1, looptime, 1000);
 
   ros::Rate loop_rate(1 / looptime);
   
@@ -180,7 +180,6 @@ int main(int argc, char **argv)
       {
         // calculate splines of the given set of points
 
-        //CTrajectory left_line(left_line_x, left_line_y);
         //CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
         //CTrajectory center_line(center_line_x, center_line_y);
@@ -189,10 +188,7 @@ int main(int argc, char **argv)
         ROS_INFO("Offset for trajectory calculation = %f", offset);
 
         std::vector<double> curv_traj;
-        // some validation check should be done!
-        // Funktioniert überhaupt nicht!
-        if (!ctrl.ctrlLoop(usl, usr, usf)) {
-          ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", ctrl.getUsMinDist());
+        if (!ctrl.ctrlLoop(usl.range, usr.range, usf.range)) {
           velocity.data = 0;
         } else {
           double v = 1.0; // 1m/s
@@ -207,7 +203,7 @@ int main(int argc, char **argv)
         veh.setDesired_trajectory_(traj);
 
         // remove for collision detection
-        velocity.data = static_cast<short>(vel);
+        //velocity.data = static_cast<short>(vel);
         ROS_INFO("vel: %d\n", velocity.data);
         motorCtrl.publish(velocity);
 
@@ -229,11 +225,6 @@ int main(int argc, char **argv)
         ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
 
         trajectory.publish(trajectory_points);
-        
-        std::vector<double> polynom;
-
-        PolynomialRegression<double> poly;
-        bool lq = poly.fitIt(tX,tY, /*order*/5, polynom);
 
         // calculate steering angle in an area around the
         double weightDecreasingFact = 0.90;
@@ -254,11 +245,14 @@ int main(int argc, char **argv)
 
         ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
         auto steer_single_point = ctrl.computeSteering(errs.back());
+        
+        //if(usedLeftLine) steer_single_point *= 0.8;
+
         ROS_INFO("Steering with single Point: %d\n", int(steer_single_point));
 
-        auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
-        auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
-        auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
+        //auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
+        //auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
+        //auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
 
         auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 

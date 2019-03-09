@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include <echtzeitsysteme/ControllerConfig.h>
 #include <dynamic_reconfigure/server.h>
+#include <numeric>
 
 static const size_t arraySize = 5;
 
@@ -64,16 +65,17 @@ public:
     void setDeratingWeightFact(double _fact){deratingWeightFact = _fact;};
     double getDeratingWeightFact(){return deratingWeightFact;};
 
-
     void computeTraj();
     double computeVarErr();
 
-
 private:
-    double usMinDist = 0.2;
+    double usMinDist = 0.25;
     double K_P, K_I, K_D;
     std::array<double,arraySize> arrErrsWeighting; // weighting of errors of desired traj
     std::vector<double> vecErrsWeights;
+    std::vector<double> moving_usf{0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> moving_usr{0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> moving_usl{0.0, 0.0, 0.0, 0.0, 0.0};
 public:
   const std::vector<double> &getVecErrsWeights() const;
 

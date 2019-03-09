@@ -90,15 +90,35 @@ bool CController::ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _ran
   }
 };
 
+/*
+    @param range_usl, range_usr, range_usf input ranges from ultrasound sensors
+    @return if something is detected near vehicle
+*/
 bool CController::ctrlLoop(double range_usl, double range_usr, double range_usf){
+    moving_usf.insert(moving_usf.end(), range_usf);
+    moving_usr.insert(moving_usr.end(), range_usr);
+    moving_usl.insert(moving_usl.end(), range_usl);
+
+    moving_usf.erase(moving_usf.begin());
+    moving_usr.erase(moving_usr.begin());
+    moving_usl.erase(moving_usl.begin());
+
+    double usf_avg = std::accumulate(moving_usf.begin(), moving_usf.end(), 0.0) / moving_usf.size();
+    double usr_avg = std::accumulate(moving_usr.begin(), moving_usr.end(), 0.0) / moving_usr.size();
+    double usl_avg = std::accumulate(moving_usl.begin(), moving_usl.end(), 0.0) / moving_usl.size();
+
     double minDist = getUsMinDist();
-    if (range_usf < 1.0)        ROS_INFO("US front: %f",(float) range_usf);     
-    if (range_usf < 1.0)        ROS_INFO("US left: %f",(float) range_usl);     
-    if (range_usf < 1.0)        ROS_INFO("US right: %f",(float) range_usr); 
+    ROS_INFO("minDist = %f", minDist);
+
+    if (usf_avg < 1.0) ROS_INFO("US front: %f",(float) usf_avg);     
+    if (usr_avg < 1.0) ROS_INFO("US left: %f",(float) usr_avg);     
+    if (usl_avg < 1.0) ROS_INFO("US right: %f",(float) usl_avg); 
     
-    if(range_usl <= minDist || range_usr <= minDist || range_usf <= minDist)
+    if(usf_avg < minDist || usr_avg < minDist || usl_avg < minDist)
+    {
+        ROS_INFO("Ultrasonic sensor is detecting something closer than: %f", minDist);
         return false;
-    
+    }
 
     return true;
 };
@@ -150,7 +170,7 @@ double CController::computeSteeringErrs(std::array<double,arraySize> _errs)
 double CController::computeSteering(double& _err)
 {
     double steer = 0.0;
-
+    if(_err > 0) _err *= 2;
     dErrorAct = (_err - preError);
     // limit to the I-part of the controller so it stops raising if a counter-steering onto the traj is detected
     if(abs(dErrorAct) >= abs(dErrorLast))       integral += dt*_err;
@@ -175,7 +195,7 @@ double CController::computeSteering(double& _err)
     dErrorLast = _err - preError;
 
     preError = _err;
-    ctrlDone();
+    //ctrlDone();
     ROS_INFO("error: %f   ==>   P: %f  I: %f  D: %f   ==>  steer: %f", _err, p_out, i_out, d_out, steer);
     return steer;
 };
