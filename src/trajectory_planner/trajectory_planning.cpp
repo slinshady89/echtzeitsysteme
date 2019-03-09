@@ -8,10 +8,9 @@
 int vel = 0;
 int steer = 0;
 int ctrl_dist = 0;
-std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, right_line_x, right_line_y;
+std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, right_line_x, right_line_y, used_line_x, used_line_y;
 
 void clearLineVecs();
-
 
 /*
  * callback function fpr trajectory custom points message
@@ -157,23 +156,33 @@ int main(int argc, char **argv)
   }
    */
 
-
+  bool usedLeftLine = false;
   ROS_INFO("Loop start!");
 
   while (ros::ok())
   {
-      if (right_line_x.size()>2 && right_line_y.size()>2)
+    if (left_line_x.size() > right_line_x.size() && left_line_y.size() > right_line_y.size())
+    {
+      used_line_x = left_line_x;
+      used_line_y = left_line_y;
+      usedLeftLine = true;
+    } else
+    {
+      used_line_x = right_line_x;
+      used_line_y = right_line_y;
+      usedLeftLine = false;
+    }
+
+    if (used_line_x.size()>2 && used_line_y.size()>2)
       {
         // calculate splines of the given set of points
-        // TODO: a test for size > 2 should be done here
 
-        //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-        //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
         //CTrajectory left_line(left_line_x, left_line_y);
-        CTrajectory rl = CTrajectory(right_line_x, right_line_y);
+        //CTrajectory rl = CTrajectory(right_line_x, right_line_y);
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
         //CTrajectory center_line(center_line_x, center_line_y);
-        CTrajectory traj = rl.calcTraj(rl, 1.0, 0.25);
+        CTrajectory usedLine = CTrajectory(used_line_x, used_line_y);
+        CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, (usedLeftLine == true ? -0.2 < : 0.2));
 
         std::vector<double> curv_traj;
         // some validation check should be done!
@@ -222,13 +231,10 @@ int main(int argc, char **argv)
         PolynomialRegression<double> poly;
         bool lq = poly.fitIt(tX,tY, /*order*/5, polynom);
 
-
         // calculate steering angle in an area around the
         double weightDecreasingFact = 0.90;
         std::vector<double> weights;
         std::vector<double> errs;
-        //ROS_INFO("ty.front() = %f", tY.front());
-        //ROS_INFO("delta_dist = %f", delta_dist);
         errs.emplace_back(tY.front());
         weights.emplace_back(1.0);
         for (double s = delta_dist; s < ctrl_dist/100.0f;){
@@ -238,7 +244,6 @@ int main(int argc, char **argv)
           s += delta_dist;
         }
         ctrl.setVecErrsWeights(weights);
-
 
         auto steer_rescue = ctrl.computeSteeringTraj(errs);
         ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
@@ -271,6 +276,7 @@ int main(int argc, char **argv)
 
         steeringCtrl.publish(steering);
       }
+      
     clearLineVecs();
     
     ros::spinOnce();

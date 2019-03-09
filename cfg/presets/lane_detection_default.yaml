@@ -19,7 +19,6 @@ dictitems:
       groups: !!python/object/new:dynamic_reconfigure.encoding.Config
         state: []
       id: 0
-      lane_dist_cm: 30.0
       loop_rate: 10
       name: Default
       parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
@@ -33,9 +32,7 @@ dictitems:
       pink_low_V: 102
       state: true
       type: ''
-      y_dist_cm: 88.0
     state: []
-  lane_dist_cm: 30.0
   loop_rate: 10
   pink_high_H: 179
   pink_high_S: 129
@@ -43,5 +40,4 @@ dictitems:
   pink_low_H: 152
   pink_low_S: 44
   pink_low_V: 102
-  y_dist_cm: 88.0
 state: []

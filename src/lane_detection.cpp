@@ -54,7 +54,6 @@ const int LOOP_RATE_IN_HERTZ = 20;
 // variables that are set by the rqt_reconfigure callback
 int green_low_H, green_low_S, green_low_V, green_high_H, green_high_S, green_high_V;
 int pink_low_H, pink_low_S, pink_low_V, pink_high_H, pink_high_S, pink_high_V;
-double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
 
@@ -75,8 +74,6 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   pink_high_H = config.pink_high_H;
   pink_high_S = config.pink_high_S;
   pink_high_V = config.pink_high_V;
-  y_dist_cm = config.y_dist_cm;
-  lane_dist_cm = config.lane_dist_cm;
   loop_rate = config.loop_rate;
   laneColorThreshold = config.colorThreshold;
 

@@ -8,7 +8,6 @@ dictitems:
       high_S: 169
       high_V: 255
       id: 0
-      lane_dist_cm: 39.0
       loop_rate: 1
       low_H: 48
       low_S: 55
@@ -19,15 +18,12 @@ dictitems:
       parent: 0
       state: true
       type: ''
-      y_dist_cm: 88.0
     state: []
   high_H: 78
   high_S: 169
   high_V: 255
-  lane_dist_cm: 39.0
   loop_rate: 1
   low_H: 48
   low_S: 55
   low_V: 173
-  y_dist_cm: 88.0
 state: []

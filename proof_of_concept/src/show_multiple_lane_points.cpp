@@ -33,7 +33,6 @@ int IMAGE_ROWS_SIZE = 9;
 
 /* configuration parameters */
 int green_low_H, green_low_S, green_low_V, green_high_H, green_high_S, green_high_V;
-double y_dist_cm, lane_dist_cm;
 int loop_rate;
 int laneColorThreshold;
 
@@ -46,8 +45,6 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
     green_high_H = config.green_high_H;
     green_high_S = config.green_high_S;
     green_high_V = config.green_high_V;
-    y_dist_cm = config.y_dist_cm;
-    lane_dist_cm = config.lane_dist_cm;
     loop_rate = config.loop_rate;
     laneColorThreshold = config.colorThreshold;
 
