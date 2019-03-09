@@ -2,11 +2,8 @@
 #define CAMERA_READER_HPP_
 
 // default camera resolution
-#define INIT_VIDEO_WIDTH 1920
-#define INIT_VIDEO_HEIGHT 1080
-
-// read a file "test.mp4" instead of the webcam input if active
-//#define DEBUG
+#define INIT_VIDEO_WIDTH 1280
+#define INIT_VIDEO_HEIGHT 720
 
 #include <opencv2/opencv.hpp>
 using namespace cv;
@@ -29,16 +26,15 @@ class CameraReader {
         ~CameraReader(){};
 
 
-        Mat readImage();
         /**
-         * Sets the frame to be returned to the specified position (0 for beginning, 1 end of the file / buffer).
-         * Set to 1 for most recent webcam picture.
+         * Reads the most recent frame in the buffer of the contained video capture.
+         * @return most recent frame
          */
-        void setRelativePositionInVideo(double position);
-        double getNumberOfFrames();
+        Mat readImage();
+
         void setCameraSettings(double brightness, double contrast, double saturation, double hue);
 
-        VideoCapture& getVideoCapture();    // TODO const reference (read-only)
+        VideoCapture& getVideoCapture();
 
     private:
         VideoCapture cap;

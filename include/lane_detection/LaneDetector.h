@@ -17,6 +17,15 @@ public:
 
     virtual ~LaneDetector() = default;
 
+    /**
+     * Detects the left, middle and right line in a given (webcam) image according to the
+     * given color thresholds for green and pink lines.
+     * @param inputImage webcam image (untransformed)
+     * @param lowColorGreen lower bound for green line color
+     * @param highColorGreen higher bound for green line color
+     * @param lowColorPink lower bound for pink line color
+     * @param highColorPink higher bound for pink line color
+     */
     virtual void detectLanes(Mat& inputImage, Scalar& lowColorGreen,Scalar& highColorGreen,
                      Scalar& lowColorPink, Scalar& highColorPink) = 0;
     virtual std::vector<Point2d> getRightLane() = 0;
@@ -48,6 +57,12 @@ protected:
     bool leftLaneDetected;
     bool middleLaneDetected;
 
+    /**
+     * Only keeps those points that don't exceed the given maximum x distance.
+     * @param points input points
+     * @param maxDist_px maximum allowed distance in x-direction between two points
+     * @return filtered points
+     */
     std::vector<Point2i> filterForMaxWidthDistOfAdjacentPoints(std::vector<Point2i>& points, int maxDist_px);
 };
 

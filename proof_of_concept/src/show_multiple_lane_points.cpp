@@ -8,17 +8,15 @@
 #include <time.h>
 #include <constants/constants.h>
 
+#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
+
+/**
+ * Proof-of-Concept Node for showing the functionality of detecting multiple lane points.
+ */
+
 using namespace cv;
 using namespace constants::calibrations;
 
-#define SHOW_IMAGES
-#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
-
-
-#define USE_TEST_PICTURE
-
-// my_photo-2.jpg
-#define PARAMS_3 59.0,84.0,20,180,180,Point(549,799),Point(1384,786),Point(1129,490),Point(800,493),5
 
 const int TARGET_WIDTH = 120;
 const int TARGET_HEIGHT = 200;
@@ -56,7 +54,6 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "show_multiple_lane_points");
 
-    // initialize this node
     ros::NodeHandle nh;
 
     Mat sourceImage;
@@ -105,10 +102,8 @@ int main(int argc, char **argv)
 
         waitKey(100);
 
-        // call subscription, services, other callbacks
         ros::spinOnce();
 
-        // this is needed to ensure a const. loop rate
         loop_rate.sleep();
     }
 

@@ -4,8 +4,11 @@
 #include <constants/constants.h>
 #include <opencv2/opencv.hpp>
 
-using namespace constants;
+/**
+ * Tests for proving the correctness of the three coordinate transformation functions.
+ */
 
+using namespace constants;
 
 const int TARGET_WIDTH = 120;
 const int TARGET_HEIGHT = 200;

@@ -9,6 +9,10 @@
 #define WIDTH 1280
 #define HEIGHT 720
 
+/**
+ * This ROS node opens the video stream of the webcam and publishes the captured frames at a given rate.
+ * The settings of the webcam (brightness, contrast, saturation, hue) can be configured at runtime via rqt_reconfigure.
+ */
 
 const int PUBLISH_RATE = 10;
 const int PUBLISHER_QUEUE = 1;

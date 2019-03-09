@@ -78,7 +78,12 @@ class LanePointsCalculator
      */
     std::vector<Point2i> lanePoints(int *rows, int rows_size, Direction searchDir, ImageProcessor &proc);
 
-  private:
+    /**
+       * Calculates a single (inaccurate) trajectory point by using a fixed distance to the right lane in the given distance (y_cm).
+       */
+    Point2d singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold, Mat& image, CameraCalibration& cal);
+
+private:
     LanePointsCalculator(){};
     LanePointsCalculator(LanePointsCalculator const&) = delete;
     void operator=(LanePointsCalculator const&) = delete;

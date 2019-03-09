@@ -1,4 +1,5 @@
 
+#include <lane_detection/image_processor.hpp>
 #include <lane_detection/lane_points_calculator.hpp>
 
 #include "lane_detection/lane_points_calculator.hpp"
@@ -73,4 +74,24 @@ std::vector<Point2i> LanePointsCalculator::lanePoints(int *rows, int rows_size, 
         }
     }
     return results;
+}
+
+Point2d LanePointsCalculator::singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold, Mat& image, CameraCalibration& cal) {
+    int pxHeight = (y_cm - cal.getOffset_cm()) * cal.getHeight_px_per_cm();
+    int pxDistLane = int(rightLaneDist_cm * cal.getWidth_px_per_cm());
+
+    int y = image.rows - pxHeight;
+    int width = image.cols;
+    if (y>=0 && y < image.rows) { // validity check
+        Mat imageRow = image.row(y);
+        for (int i=width-1; i>=0; i--) {
+            Scalar pixel = imageRow.at<uchar>(0,i);
+
+            if (pixel.val[0]>colorThreshold) {
+                return Point2d(i-pxDistLane,y);
+            }
+        }
+    }
+    std::cerr << "No trajectory point found." << std::endl;
+    return Point2d(-1,-1);
 }

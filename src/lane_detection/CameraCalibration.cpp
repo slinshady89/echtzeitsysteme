@@ -114,30 +114,6 @@ CameraCalibration::get2DImageCoordinatesFromWorldCoordinates(std::vector<Point2d
     return converted;
 }
 
-/*
-Point2i CameraCalibration::get3DFrom2DImageCoordinates(Point2i imageCoordinates2D) {
-    Mat& m = transformMatr;
-
-    int type = m.type();
-    int invType = invTransformMatr.type();
-    int x = imageCoordinates2D.x;
-    int y = imageCoordinates2D.y;
-    int m11 = m.at<uchar>(1,1);
-    int m12 = m.at<uchar>(1,2);
-    int m13 = m.at<uchar>(1,3);
-    int m21 = m.at<uchar>(2,1);
-    int m22 = m.at<uchar>(2,2);
-    int m23 = m.at<uchar>(2,3);
-    uchar tmp = m.at<uchar>(3,1);
-    int m31 = m.at<uchar>(3,1);
-    int m32 = m.at<uchar>(3,2);
-    int m33 = m.at<uchar>(3,3);
-    int transformedX = (int) (m11*x + m12*y + m13)/(m31*x + m32*y + m33);
-    int transformedY = (int) (m21*x + m22*y + m23)/(m31*x + m32*y + m33);
-    return cv::Point2i(transformedX, transformedY);
-}
- */
-
 std::vector<Point2i> CameraCalibration::transformPoints(std::vector<Point2i> &points, Mat &m) {
     std::vector<Point2d> input;
     input.reserve(points.size());

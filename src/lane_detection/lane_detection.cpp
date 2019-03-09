@@ -11,51 +11,23 @@
 #include <constants/constants.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
-
-
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include <lane_detection/LaneDetector.h>
 #include <lane_detection/TransformingLaneDetector.h>
-#include <lane_detection/NonTransformingLaneDetector.h>
 
 using namespace cv;
 using namespace constants::calibrations;
 
-//#define TEST_PICTURE_PATH "camera_reading_test/images/calibration_test_2.jpg"
-//#define TEST_PICTURE_PATH "camera_reading_test/images/track_straight.jpg"
-//#define TEST_PICTURE_PATH "/home/pses/catkin_ws/src/echtzeitsysteme/include/lane_detection/images/calibration_test_2.jpg"
-//#define TEST_PICTURE_PATH "echtzeitsysteme/include/lane_detection/images/2018-12-05-220157.jpg"
-
-// NOTE: run from inside "catkin_ws" folder to find test photo
-#define TEST_PICTURE_PATH "./src/echtzeitsysteme/images/my_photo-2.jpg"
-
 #define PUBLISHER_QUEUE 1
 #define SUBSCRIBER_QUEUE 1
 
-//#define PARAMS_1 59.0, 84.0, 30.0, 640, 480, Point(0, 366), Point(632, 363), Point(404, 238), Point(237, 237), Point(151, 639), Point(488, 639), Point(488, 0), Point(151, 0)
-//#define PARAMS_2 59.0, 84.0, 20, 640, 991, Point(43, 387), Point(583, 383), Point(404, 189), Point(234, 190), Point(95, 990), Point(545, 990), Point(545, 350), Point(95, 350)
-
-// my_photo-2.jpg
-#define PARAMS_3 59.0, 84.0, 20, 180, 180, Point(549, 799), Point(1384, 786), Point(1129, 490), Point(800, 493), 5
-// photo from 15.12.
-#define PARAMS_4 59.0, 84.0, 22, 180, 180, Point(384, 895), Point(1460, 900), Point(1128, 472), Point(760, 460), 5
-
-int IMAGE_ROWS[] = {900, 800, 700, 600, 500, 400, 300, 200, 100};
-int IMAGE_ROWS_SIZE = 9;
-
-const int TARGET_WIDTH = 120;
-const int TARGET_HEIGHT = 200;
-const int TARGET_PX_PER_CM = 5;
 const int LOOP_RATE_IN_HERTZ = 20;
-
 
 // variables that are set by the rqt_reconfigure callback
 int green_low_H, green_low_S, green_low_V, green_high_H, green_high_S, green_high_V;
 int pink_low_H, pink_low_S, pink_low_V, pink_high_H, pink_high_S, pink_high_V;
-int loop_rate;
-int laneColorThreshold;
 
 Mat processImage(Mat input, ImageProcessor &proc, LanePointsCalculator& lpc);
 geometry_msgs::Point convertPointToMessagePoint(Point2d point);
@@ -74,14 +46,11 @@ void configCallback(echtzeitsysteme::ImageProcessingConfig &config, uint32_t lev
   pink_high_H = config.pink_high_H;
   pink_high_S = config.pink_high_S;
   pink_high_V = config.pink_high_V;
-  loop_rate = config.loop_rate;
-  laneColorThreshold = config.colorThreshold;
 
   ROS_INFO("Updated configuration.");
 }
 
 void receiveFrameCallback(const sensor_msgs::ImageConstPtr& receivedFrame, Mat& frame) {
-    // TODO: do all the processing in here?
     frame = cv_bridge::toCvCopy(receivedFrame, sensor_msgs::image_encodings::BGR8)->image;
 }
 
@@ -117,17 +86,14 @@ int main(int argc, char **argv)
   CameraCalibration calibration = calibration_02_25::calibration_150_200_px;
   ImageProcessor imageProcessor(frame, BGR, calibration);
   TransformingLaneDetector laneDetector (imageProcessor, lpc, calibration, 10);
-  //imageProcessor.calibrateCameraImage(PARAMS_2);
-  /**
-   * Init ROS Publisher here. Can set to be a fixed array
-   */
+
   echtzeitsysteme::points right_line, left_line, center_line;
 
-  ros::Publisher right_line_pub = nh.advertise<echtzeitsysteme::points>("right_line", 10);   //TODO: change buffer size
-  ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 10);     //TODO: change buffer size
-  ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 10); //TODO: change buffer size
+  ros::Publisher right_line_pub = nh.advertise<echtzeitsysteme::points>("right_line", 10);
+  ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 10);
+  ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 10);
 
-  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ); //TODO: Hz anpassen
+  ros::Rate loop_rate(LOOP_RATE_IN_HERTZ);
 
   ROS_INFO("Wait until the first frame has been received...");
   while(frame.dims==0) {
@@ -137,86 +103,40 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-
-    /* TODO: should be done by LaneDetector */
-
-
-
-/*
-    Mat processedImage = processImage(frame, imageProcessor, lpc);
-    // TODO: error-prone to use a fixed MONO8 encoding... what if the fully processed image is different in the future?
-    processedImagePublisher.publish(cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, processedImage).toImageMsg());
-    */
-
+    // use most recent color thresholds
     Scalar lowGreen = Scalar(green_low_H, green_low_S, green_low_V);
     Scalar highGreen = Scalar(green_high_H, green_high_S, green_high_V);
     Scalar lowPink = Scalar(pink_low_H, pink_low_S, pink_low_V);
     Scalar highPink = Scalar(pink_high_H, pink_high_S, pink_high_V);
 
+    // detect lanes and publish the image after processing (for monitoring only)
     laneDetector.detectLanes(frame, lowGreen, highGreen, lowPink, highPink);
     laneDetector.publishProcessedImage(processedImagePublisher);
 
-/*
-  std::vector<Point2i> rightLanePoints_px = lpc.lanePoints(IMAGE_ROWS, IMAGE_ROWS_SIZE, LEFT, imageProcessor);
-  std::vector<Point2i> leftLanePoints_px = lpc.lanePoints(IMAGE_ROWS, IMAGE_ROWS_SIZE, RIGHT, imageProcessor);
-  */
+    // prepare sending of new lane points
+    right_line.points.clear();
+    left_line.points.clear();
+    center_line.points.clear();
 
-
-  // prepare sending of new lane points
-  right_line.points.clear();
-  left_line.points.clear();
-  center_line.points.clear();
-
-  // push points to messages
-  for (auto it:laneDetector.getRightLane()) {
+    // push points to messages
+    for (auto it:laneDetector.getRightLane()) {
     right_line.points.emplace_back(convertPointToMessagePoint(it));
-  }
-  for (auto it:laneDetector.getLeftLane()) {
+    }
+    for (auto it:laneDetector.getLeftLane()) {
     left_line.points.emplace_back(convertPointToMessagePoint(it));
-  }
-  // TODO: always empty at the moment
-  for (auto it:laneDetector.getMiddleLane()) {
+    }
+    for (auto it:laneDetector.getMiddleLane()) {
     center_line.points.emplace_back(convertPointToMessagePoint(it));
-  }
+    }
 
+    right_line_pub.publish(right_line);
+    left_line_pub.publish(left_line);
+    center_line_pub.publish(center_line);
 
-  /*
-  // convert found lane points to world coordinates and push them to the messages
-  const double THRESHOLD = 30;
-  Point2d lastPoint;
-  if (!rightLanePoints_px.empty()) lastPoint = calibration.getWorldCoordinatesFrom2DImageCoordinates(
-            rightLanePoints_px.at(0));
+    ros::spinOnce();
 
-  for (auto it:rightLanePoints_px) {
-      Point2d worldCoordinates = calibration.getWorldCoordinatesFrom2DImageCoordinates(it);
-      if(abs(worldCoordinates.y - lastPoint.y) < THRESHOLD) {
-        right_line.points.emplace_back(convertPointToMessagePoint(
-                calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
-      }
-      lastPoint = worldCoordinates;
-  }
-  for (auto it:leftLanePoints_px) {
-      left_line.points.emplace_back(convertPointToMessagePoint(
-              calibration.getWorldCoordinatesFrom2DImageCoordinates(it)));
-  }
-   */
-
-
-  /* TODO: just get lane points from LaneDetector and publish then them */
-
-  right_line_pub.publish(right_line);
-  left_line_pub.publish(left_line);
-  center_line_pub.publish(center_line);
-
-
-
-      // write most recent frame on topic to frame
-      ros::spinOnce();
-
-    // ensure a constant loop rate
     loop_rate.sleep();
   }
-
 
   return 0;
 }

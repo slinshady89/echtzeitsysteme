@@ -5,9 +5,6 @@
 #include "CameraCalibration.hpp"
 
 Mat ImageProcessor::transformTo2D() {
-    /*
-    transformMatr = getPerspectiveTransform(srcPoints,dstPoints);
-    */
     Mat output = Mat::zeros(Size(calibration.getDstWidth(), calibration.getDstHeight()), image.type());
     warpPerspective(image, output, calibration.getTransformMatr(), output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
 
@@ -77,25 +74,6 @@ void ImageProcessor::setImage(Mat img, ColorType type) {
     colorType = type;
 }
 
-Point2d ImageProcessor::singleTrajPoint(double rightLaneDist_cm, double y_cm, int colorThreshold) {
-    int pxHeight = (y_cm - calibration.getOffset_cm()) * calibration.getHeight_px_per_cm();
-    int pxDistLane = int(rightLaneDist_cm * calibration.getWidth_px_per_cm());
-
-    int y = image.rows - pxHeight;
-    int width = image.cols;
-    if (y>=0 && y<image.rows) { // validity check
-        Mat imageRow = image.row(y);
-        for (int i=width-1; i>=0; i--) {
-            Scalar pixel = imageRow.at<uchar>(0,i);
-
-            if (pixel.val[0]>colorThreshold) {
-                return Point2d(i-pxDistLane,y);
-            }
-        }
-    }
-    std::cerr << "No trajectory point found." << std::endl;
-    return Point2d(-1,-1);
-}
 Point2i ImageProcessor::firstMatchFromRight(int pxY) {
     if (image.channels()!=1) {
         ROS_WARN("Pixel match search for a non-grayscale image!");
