@@ -9,6 +9,7 @@ int vel = 0;
 int steer = 0;
 int ctrl_dist = 0;
 std::vector<double> left_line_x, left_line_y, center_line_x, center_line_y, right_line_x, right_line_y, used_line_x, used_line_y;
+double offset;
 
 void clearLineVecs();
 
@@ -67,19 +68,21 @@ void usrCallback(const sensor_msgs::Range::ConstPtr &usrMsg, sensor_msgs::Range 
 
 void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl)
 {
-  ROS_INFO("Reconfigure Request: %f %f %f %d %d %d %d",
+  ROS_INFO("Reconfigure Request: %f %f %f %d %d %d %d %f",
            config.K_P,
            config.K_I,
            config.K_D,
            config.vel,
            config.steering,
            config.size,
-           config.ctrlDist);
+           config.ctrlDist,
+           config.offset);
 
   ctrl->setCtrlParams(config.K_P, config.K_I, config.K_D);
   vel = config.vel;
   steer = config.steering;
   ctrl_dist = config.ctrlDist;
+  offset = config.offset;
 }
 
 /**
@@ -182,7 +185,8 @@ int main(int argc, char **argv)
         //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
         //CTrajectory center_line(center_line_x, center_line_y);
         CTrajectory usedLine = CTrajectory(used_line_x, used_line_y);
-        CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, (usedLeftLine == true ? -0.2 < : 0.2));
+        CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, (usedLeftLine == true ? -offset : offset));
+        ROS_INFO("Offset for trajectory calculation = %f", offset);
 
         std::vector<double> curv_traj;
         // some validation check should be done!
