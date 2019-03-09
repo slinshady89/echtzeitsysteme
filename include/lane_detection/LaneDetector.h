@@ -15,6 +15,8 @@ public:
     LaneDetector(ImageProcessor& proc, LanePointsCalculator& lpc, CameraCalibration cal, int maxPointsPerLane)
         : proc(proc), lpc(lpc), cal(cal), maxPointsPerLane(maxPointsPerLane) {};
 
+    virtual ~LaneDetector() = default;
+
     virtual void detectLanes(Mat& inputImage, Scalar& lowColorGreen,Scalar& highColorGreen,
                      Scalar& lowColorPink, Scalar& highColorPink) = 0;
     virtual std::vector<Point2d> getRightLane() = 0;
