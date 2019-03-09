@@ -13,7 +13,6 @@ TransformingLaneDetector::TransformingLaneDetector(ImageProcessor &proc, LanePoi
         rows[maxPointsPerLane-1-i] = firstRowOffset + i*distBetweenRows;
     }
 
-    // FIXME: dirty solution
     maxDistBetweenAdjacentPoints_px = cal.getDstWidth()/3;
 
 }
@@ -23,24 +22,22 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
     proc.setImage(inputImage, BGR);
     proc.transformTo2D();
     Mat transformed = proc.convertToHSV();
+
     // filter green lines
     Mat greenLines = proc.filterColor(lowColorGreen, highColorGreen);
 
-    // preprocess
-    //greenLines = morphologicalPreprocessing(greenLines);
-
-    // detect right and left line and combine in one sorted vector
+    // detect right and left line points and combine them in one sorted vector
     std::vector<Point2i> rightTmp = lpc.lanePoints(rows,rowsCount, LEFT, proc);
     std::vector<Point2i> leftRightTemp = lpc.lanePoints(rows, rowsCount, RIGHT, proc);
     leftRightTemp.insert(leftRightTemp.end(), rightTmp.begin(), rightTmp.end());
     sortPointsInDescendingYOrder(leftRightTemp);
 
-    /* filter middle lane */
+    // filter middle lane
     proc.setImage(transformed, HSV);
     Mat pinkLine = proc.filterColor(lowColorPink, highColorPink);
-    //pinkLine = morphologicalPreprocessing(pinkLine);
     middleLanePoints_px = lpc.lanePoints(rows, rowsCount, LEFT, proc);
 
+    // add points to the vectors of the right / left line according to their relative position to the middle line
     addPointsToLeftAndRightLane(leftRightTemp);
     proc.setImage(pinkLine + greenLines, GREY);
 
@@ -63,7 +60,6 @@ std::vector<Point2d> TransformingLaneDetector::getMiddleLane() {
 
 void TransformingLaneDetector::publishProcessedImage(image_transport::Publisher publisher) {
     // fully processed image is greyscale and 2D
-    // TODO: okay to publish from the image's reference?
     publisher.publish(cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO8, proc.getImage()).toImageMsg());
 }
 

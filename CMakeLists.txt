@@ -178,7 +178,7 @@ add_library(image_processing src/lane_detection/image_processor.cpp)
 ## The recommended prefix ensures that target names across packages don't collide
 #add_executable(lane_detector src/lane_detector_node.cpp)
 
-add_executable(lane_detection src/lane_detection.cpp
+add_executable(lane_detection src/lane_detection/lane_detection.cpp
         src/lane_detection/CameraReader.cpp
         src/lane_detection/image_processor.cpp
         src/gui/color_selector.cpp
@@ -190,13 +190,6 @@ add_executable(lane_detection src/lane_detection.cpp
         )
 add_executable(trajectory_planning
         src/trajectory_planner/trajectory_planning.cpp include/trajectory_planning/polynomialRegression.h)
-
-add_executable(camera_reading_test src/lane_detection/camera_reading_test_node.cpp
-        src/lane_detection/CameraReader.cpp
-        src/lane_detection/image_processor.cpp
-        src/gui/color_selector.cpp
-        src/lane_detection/CameraCalibration.cpp
-        )
 
 add_executable(show_multiple_lane_points
         proof_of_concept/src/show_multiple_lane_points.cpp
@@ -257,11 +250,6 @@ target_link_libraries(trajectory_planning
         trajectory
         ${catkin_LIBRARIES}
         alglib
-        )
-
-target_link_libraries(camera_reading_test
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
         )
 
 target_link_libraries(show_multiple_lane_points
