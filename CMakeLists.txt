@@ -206,6 +206,7 @@ add_executable(image_publisher src/input_reading/image_publisher.cpp)
 add_executable(image_viewer src/monitoring/image_viewer.cpp
                             src/lane_detection/CameraCalibration.cpp)
 
+add_executable(lane_detector src/sign_detection/sign_detector.cpp)
 
 # make sure configure headers are built before any node using them
 # add_dependencies(trajectory_planning ${PROJECT_NAME}_gencfg)
@@ -225,6 +226,7 @@ add_executable(image_viewer src/monitoring/image_viewer.cpp
 add_dependencies(lane_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(trajectory_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(image_viewer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(lane_detector ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 
@@ -265,6 +267,10 @@ target_link_libraries(image_publisher
         ${OpenCV_LIBS})
 
 target_link_libraries(image_viewer
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
+
+target_link_libraries(lane_detector
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS})
 

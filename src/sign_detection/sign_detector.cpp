@@ -11,13 +11,28 @@
 #define SEVENTY 4
 
 //states
-#define RESET 0
-#define STOP_DETECTED 1
-#define PED_DETECTED 2
-#define FORTY_DETECTED 3
-#define SEVENTY_DETECTED 4
-#define STOP_DELAY 5
-#define PED_DELAY 6
+#define RESET 5
+#define DEFAULT 6
+#define STOP_DETECTED 7
+#define STOP_ACTIVE 8
+#define STOP_PASSING_START 25
+#define STOP_PASSING_ACTIVE 26
+#define PED_DETECTED 9
+#define PED_ACTIVE 10
+#define FORTY_DETECTED 11
+#define FORTY_ACTIVE 12
+#define SEVENTY_DETECTED 13
+#define SEVENTY_ACTIVE 14
+
+//events
+#define STOP_EVENT 15
+#define SLOW_EVENT 16
+#define MEDIUM_EVENT 17
+#define FAST_EVENT 18
+
+//constants
+#define STOP_ACTIVE_TIME 3
+#define PED_ACTIVE_TIME 3
 
 
 void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg, int &sign) {
@@ -25,19 +40,19 @@ void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg,
 
 int main (int argc, char** argv) {
 
-    std_msgs::Int16 vel, oldVal;
-    vel.data = 200;
-    oldVal.data = 200;
+    std_msgs::Int16 publishedEvent;
 
-    int sign = NONE;
+    int inputSign = NONE;
+    int lastEvent = MEDIUM_EVENT;
+    int event = MEDIUM_EVENT;
 
     ros::init(argc, argv, "sign_detection");
 
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = nh.subscribe("bounding_boxes", 10, boost::bind(signDetectionCallback, _1, boost::ref(sign)));
+    ros::Subscriber sub = nh.subscribe("bounding_boxes", 10, boost::bind(signDetectionCallback, _1, boost::ref(inputSign)));
 
-    ros::Publisher pub = nh.advertise<std_msgs::Int16>("sign_velocity", 1);
+    ros::Publisher pub = nh.advertise<std_msgs::Int16>("sign_flag", 1);
 
     ros::Time begin = ros::Time::now();
 
@@ -45,154 +60,92 @@ int main (int argc, char** argv) {
 
     ros::Rate r(10);
 
+    double delta = 0.0;
+
     while (ros::ok()) {
 
         switch (state) {
             case RESET:
-                vel.data = oldVal;
-                pub.publish(vel);
+                event = lastEvent;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
 
-                if (sign == STOP) {
-                    state = STOP_DETECTED;
-                    break;
-                }
-                else if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == FORTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else if (sign == SEVENTY) {
-                    state = FORTY_DETECTED;
-                    break;
+                state = DEFAULT;
+                break;
+            case DEFAULT:
+                lastEvent = event;
+
+                switch (inputSign) {
+                    case STOP: state = STOP_DETECTED; break;
+                    case PED: state = PED_DETECTED; break;
+                    case FORTY: state = FORTY_DETECTED; break;
+                    case SEVENTY: state = SEVENTY_DETECTED; break;
+                    case NONE: break;
                 }
                 break;
-
             case STOP_DETECTED:
-                if (val.data != 100) {
-                    oldVal.data = vel.data;
-                }
-                vel.data = 0;
-                pub.publish(vel);
+                event = STOP_EVENT;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
 
-                ros::Duration(2).sleep();
-
-                state = STOP_DELAY;
+                // reset timer
+                begin = ros::Time::now();
+                state = STOP_ACTIVE;
                 break;
-
+            case STOP_ACTIVE:
+                delta = (ros::Time::now() - begin).toSec();
+                if (delta > STOP_ACTIVE_TIME) {
+                    state = STOP_PASSING_START;
+                }
+                break;
+            case STOP_PASSING_START:
+                event = lastEvent;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
+                state = STOP_PASSING_ACTIVE;
+                break;
+            case STOP_PASSING_ACTIVE:
+                if (inputSign!=STOP) {
+                    state = DEFAULT;
+                }
+                break;
             case PED_DETECTED:
-                if (vel.data != 100) {
-                    oldVal.data = vel.data;
-                } 
-                vel.data = 100;
-                pub.publish(vel);
+                event = SLOW_EVENT;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
 
-                if (sign == STOP) {
-                    state = STOP_DETECTED;
-                    break;
+                // reset timer
+                begin = ros::Time::now();
+                state = PED_ACTIVE;
+                break;
+            case PED_ACTIVE:
+                delta = (ros::Time::now() - begin).toSec();
+                if (delta > PED_ACTIVE_TIME && inputSign!=PED) {
+                    state = RESET;
                 }
-                else if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == FORTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else if (sign == SEVENTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else {
-                    begin = ros::Time::now();
-                    state = PED_DELAY;
-                    break;
-                }
-                
-
+                break;
             case FORTY_DETECTED:
-                vel.data = 200;
-                pub.publish(vel);
-
-                if (sign == STOP) {
-                    state = STOP_DETECTED;
-                    break;
-                }
-                else if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == SEVENTY) {
-                    state = SEVENTY_DETECTED;
-                    break;
+                event = MEDIUM_EVENT;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
+                state = FORTY_ACTIVE;
+                break;
+            case FORTY_ACTIVE:
+                if (inputSign != FORTY) {
+                    state = DEFAULT;
                 }
                 break;
-            
             case SEVENTY_DETECTED:
-                vel.data = 300;
-                pub.publish(vel);
-
-                if (sign == STOP) {
-                    state = STOP_DETECTED;
-                    break;
-                }
-                else if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == FORTY) {
-                    state = FORTY_DETECTED;
-                    break;
+                event = FAST_EVENT;
+                publishedEvent.data = event;
+                pub.publish(publishedEvent);
+                state = SEVENTY_ACTIVE;
+                break;
+            case SEVENTY_ACTIVE:
+                if (inputSign != SEVENTY) {
+                    state = DEFAULT;
                 }
                 break;
-
-            case STOP_DELAY:
-                vel.data = oldVal.data;
-                pub.publish(vel);
-
-                if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == FORTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else if (sign == SEVENTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else if (sign == NONE) {
-                    state = RESET;
-                    break;
-                }
-                break;
-
-            case PED_DELAY:
-                if (sign == STOP) {
-                    state = STOP_DETECTED;
-                    break;
-                }
-                else if (sign == PED) {
-                    state = PED_DETECTED;
-                    break;
-                }
-                else if (sign == FORTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                else if (sign == SEVENTY) {
-                    state = FORTY_DETECTED;
-                    break;
-                }
-                
-                double sec = ros::Time::now() - begin;
-                else if (sec > 2) {
-                    state = RESET;
-                }
-                break;    
         }
 
         ros::spinOnce();
