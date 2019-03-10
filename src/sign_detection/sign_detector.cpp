@@ -34,6 +34,7 @@
 //constants
 #define STOP_ACTIVE_TIME 3
 #define PED_ACTIVE_TIME 3
+#define AREA_DEFAULT
 
 int signChecker(std::string objectClass) {
     if (objectClass == "stop") {
@@ -57,7 +58,7 @@ void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg,
         int height = it.ymax - it.ymin;
         int width = it.xmax - it.xmin;
         int area = height * width;
-        if (area >= biggestArea) {
+        if (area >= biggestArea && area > 62500) {
             biggestArea = area;
             sign = signChecker(it.Class);
         }
