@@ -1,7 +1,8 @@
 #include "ros/ros.h"
-#include "BoundingBoxes.h"
-#include "BoundingBox.h"
+#include "darknet_ros_msgs/BoundingBoxes.h"
+#include "darknet_ros_msgs/BoundingBox.h"
 #include <std_msgs/Int16.h>
+#include <string>
 
 //signs
 #define NONE 0
@@ -36,6 +37,32 @@
 
 
 void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg, int &sign) {
+    int biggestArea = 0;
+    sign = NONE;
+    for (auto it: msg->bounding_boxes) {
+        int height = it.ymax - it.ymin;
+        int width = it.xmax - it.xmin;
+        int area = height * width;
+        if (area >= biggestArea) {
+            biggestArea = area;
+            sign = signChecker(it.Class);
+        }
+    }
+}
+
+int signChecker(std::string objectClass) {
+    if (objectClass == "stop") {
+        return STOP;
+    }
+    else if (objectClass == "pedestrian") {
+        return PED;
+    }
+    else if (objectClass == "forty") {
+        return FORTY;
+    }
+    else {
+        return SEVENTY;
+    }
 }
 
 int main (int argc, char** argv) {
