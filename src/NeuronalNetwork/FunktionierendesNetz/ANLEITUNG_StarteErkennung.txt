@@ -1,7 +1,0 @@
--> cmd:	   "activate yolov3"
-
-Webcam analysieren
--> cmd:    "python cam_demo.py"
-
-
-Verwendete weights & cfg & json von Trainingsstand: Schildertask4simpletrain_52_0.009297w
