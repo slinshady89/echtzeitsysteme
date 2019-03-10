@@ -129,35 +129,6 @@ int main(int argc, char **argv)
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
 
-  //Check if vectors are filled with data
-/*
-  while(left_line_x.size()<2 || left_line_y.size()<2)
-  {
-    ROS_INFO("Waiting for left line...");
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-
- */
-  //right_line_x = {0.6, 0.79, 0.98, 1.15, 1.37, 1.56, 1.74};
-  //right_line_y = {-0.2, -0.19, -0.2, -0.19, -0.21, -0.2, -0.21};
-  /*
-
-  //wait until the received message has enough points to build a cubic spline
-  while(right_line_x.size()<2 || right_line_y.size()<2)
-  {
-    ROS_INFO("Waiting for left line...");
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-
-  while(center_line_x.empty() && center_line_y.empty())
-  {
-    ROS_INFO("Waiting for center line...");
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-   */
 
   bool usedLeftLine = false;
   ROS_INFO("Loop start!");
@@ -178,16 +149,12 @@ int main(int argc, char **argv)
 
     if (used_line_x.size()>2 && used_line_y.size()>2)
       {
-        // calculate splines of the given set of points
-
-        //CTrajectory rl = CTrajectory(right_line_x, right_line_y);
-        //CTrajectory ll = CTrajectory(left_line_x, left_line_y);
-        //CTrajectory center_line(center_line_x, center_line_y);
         CTrajectory usedLine = CTrajectory(used_line_x, used_line_y);
-        CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, (usedLeftLine == true ? -offset : offset));
+        CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, usedLeftLine ? -offset : offset);
         ROS_INFO("Offset for trajectory calculation = %f", offset);
 
         std::vector<double> curv_traj;
+        ctrl.setUsMinDist(0.35);
         if (!ctrl.ctrlLoop(usl.range, usr.range, usf.range)) {
           velocity.data = 0;
         } else {
@@ -203,22 +170,15 @@ int main(int argc, char **argv)
         veh.setDesired_trajectory_(traj);
 
         // remove for collision detection
-        //velocity.data = static_cast<short>(vel);
         ROS_INFO("vel: %d\n", velocity.data);
         motorCtrl.publish(velocity);
 
         trajectory_points.points.clear();
-        // calc trajectory in aquidistant distances...
 
-        std::vector<double> tX, tY, curv;
-
+        // calc points on the trajectory in aquidistant distances to publish them
         auto delta_dist = traj.getVecWaypointDists().back() / 100;
         for (auto waypoint = 0.0; waypoint < traj.getVecWaypointDists().back(); )  {
           trajectory_points.points.emplace_back(traj.getPointOnTrajAt(waypoint));
-          tX.emplace_back(trajectory_points.points.back().x);
-          tY.emplace_back(trajectory_points.points.back().y);
-          curv.emplace_back(traj.calcCurvatureAt(waypoint));
-          //ROS_INFO("%.4f;%.4f, %.4f", trajectory_points.points.back().x, trajectory_points.points.back().y, curv.back());
           waypoint += delta_dist;
         }
 
@@ -226,50 +186,14 @@ int main(int argc, char **argv)
 
         trajectory.publish(trajectory_points);
 
-        // calculate steering angle in an area around the
-        double weightDecreasingFact = 0.90;
-        std::vector<double> weights;
-        std::vector<double> errs;
-        errs.emplace_back(tY.front());
-        weights.emplace_back(1.0);
-        for (double s = delta_dist; s < ctrl_dist/100.0f;){
-          weights.emplace_back(weights.back()*weightDecreasingFact);
-          auto err = traj.getPointOnTrajAt(s).y;
-          errs.emplace_back(err);
-          s += delta_dist;
-        }
-        ctrl.setVecErrsWeights(weights);
+        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (traj.getPointOnTrajAt(ctrl_dist/100.0f).y));
+        auto steer_single_point = ctrl.computeSteering(traj.getPointOnTrajAt(ctrl_dist/100.0f).y);
 
-        auto steer_rescue = ctrl.computeSteeringTraj(errs);
-        ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
-
-        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
-        auto steer_single_point = ctrl.computeSteering(errs.back());
-        
-        //if(usedLeftLine) steer_single_point *= 0.8;
-
-        ROS_INFO("Steering with single Point: %d\n", int(steer_single_point));
-
-        //auto poly_test_curv = poly.calcCurv(polynom, ctrl_dist / 100.0f);
-        //auto steering_angle_poly = veh.calculateSteeringAngleDeg(poly_test_curv);
-        //auto steering_ctrl_poly = veh.steeringAngleDegToSignal(steering_angle_poly);
 
         auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 
-        //auto curv_at = traj.calcCurvatureAt(ctrl_dist);
-        //ROS_INFO("calculated cruv: %.2f \n", poly_test_curv);
-        //auto steering_angle_at = veh.calculateSteeringAngleDeg(curv_at);
-        //ROS_INFO("calculated steering angle: %.2f \n", steering_angle_poly);
-        //auto steering_ctrl_at = veh.steeringAngleDegToSignal(steering_angle_at);
         ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl);
 
-        //ROS_INFO("Length of trajectory %.2f \n", float(dist + (traj.getVecWaypointDists()).back()));
-        //ROS_INFO("number of points %d \n", (int) (traj.getVecWaypointDists()).size());
-
-        // publishs the steering input at the first
-        //steering.data = static_cast<short>(steering_ctrl_poly);
-
-        // steer with PID onto a point
         steering.data = static_cast<short>(steering_ctrl);
 
         steeringCtrl.publish(steering);

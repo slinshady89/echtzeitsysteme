@@ -14,62 +14,6 @@ bool CController::ctrlInit(){
 
 
 std::array<double,10> X, Y;
-/*
-void computeTraj(){
-
-using namespace alglib;
-    double lengthOfTraj = lengthOfTraj;
-    for(double i = 0; i < 20; i++){
-        X[i] = {i};
-        Y[i] = {sin(2*M_PI/lengthOfTraj*i)};
-    }
-
-
-    real_1d_array x, y;
-    x.setcontent(X.size(), &X[0]);
-    y.setcontent(Y.size(), &Y[0]);
-    //
-    // We use cubic spline to interpolate f(x)=x^2 sampled 
-    // at 5 equidistant nodes on [-1,+1].
-    //
-    // First, we use default boundary conditions ("parabolically terminated
-    // spline") because cubic spline built with such boundary conditions 
-    // will exactly reproduce any quadratic f(x).
-    //
-    // Then we try to use natural boundary conditions
-    //     d2S(-1)/dx^2 = 0.0
-    //     d2S(+1)/dx^2 = 0.0
-    // and see that such spline interpolated f(x) with small error.
-    //
-    //real_1d_array x = "[-1.0,-0.5,0.0,+0.5,+1.0]";
-    //real_1d_array y = "[+1.0,0.25,0.0,0.25,+1.0]";
-    double t = 2 * M_PI / 20 * 7.0;
-    double v;
-    spline1dinterpolant s;
-    ae_int_t natural_bound_type = 2;
-    //
-    // Test exact boundary conditions: build S(x), calculare S(0.25)
-    // (almost same as original function)
-    //
-    spline1dbuildcubic(x, y, s);
-    v = spline1dcalc(s, t);
-    ROS_INFO("%.4f\n", double(v)); // EXPECTED: 0.801016
-
-    //
-    // Test natural boundary conditions: build S(x), calculare S(0.25)
-    // (small interpolation error)
-    //
-    spline1dbuildcubic(x, y, 5, natural_bound_type, 0.0, natural_bound_type, 0.0, s);
-    v = spline1dcalc(s, t);
-    ROS_INFO("%.3f\n", double(v)); // EXPECTED: 0.801016
-}
-double computeVarErr(){
-    for(double i = 0; ; i++){
-        return 0.2*sin(2*M_PI/20.0*i);
-    }
-}
-
-*/
 
 
 // some validation check should be done here
@@ -167,10 +111,10 @@ double CController::computeSteeringErrs(std::array<double,arraySize> _errs)
     return steer;
 };
 
-double CController::computeSteering(double& _err)
+double CController::computeSteering(double _err)
 {
     double steer = 0.0;
-    if(_err > 0) _err *= 2;
+    //if(_err > 0) _err *= 2;
     dErrorAct = (_err - preError);
     // limit to the I-part of the controller so it stops raising if a counter-steering onto the traj is detected
     if(abs(dErrorAct) >= abs(dErrorLast))       integral += dt*_err;
@@ -195,7 +139,7 @@ double CController::computeSteering(double& _err)
     dErrorLast = _err - preError;
 
     preError = _err;
-    //ctrlDone();
+    ctrlDone();
     ROS_INFO("error: %f   ==>   P: %f  I: %f  D: %f   ==>  steer: %f", _err, p_out, i_out, d_out, steer);
     return steer;
 };
@@ -204,17 +148,10 @@ double CController::computeSteering(double& _err)
 
 
 bool CController::ctrlDone(){
- //   for (size_t i = 0; i < arraySize ; i++){   }
     return true;
 }
 
-void CController::setCtrlParams(double P, double I, double D, double t, double lim){
-    K_P = P;
-    K_I = I;
-    K_D = D;
-    dt = t;
-    limit = lim;
-}
+
 void CController::setCtrlParams(double P, double I, double D){
     K_P = P;
     K_I = I;

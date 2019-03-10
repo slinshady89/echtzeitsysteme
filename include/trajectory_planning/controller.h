@@ -47,10 +47,8 @@ public:
     */
     double computeSteeringErrs(std::array<double,arraySize> _arrTrajErrors);
     double computeSteeringTraj(std::vector<double> _vecTrajErrors);
-    double computeSteering(double& err);
-    void setCtrlParams(double P, double I, double D, double t, double lim);
+    double computeSteering(double err);
     void setCtrlParams(double P, double I, double D);
-    double detectCntSteer(double _err, double _preError);
     bool ctrlInit();
     bool ctrlLoop(double _rangeUSL, double _rangeUSR, double _rangeUSF);
     bool ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _rangeUSR, sensor_msgs::Range _rangeUSF);
@@ -61,12 +59,6 @@ public:
     void setUsMinDist(double _dist){      usMinDist = _dist;    };
 
     sensor_msgs::Range range_usl, range_usr, range_usf;
-
-    void setDeratingWeightFact(double _fact){deratingWeightFact = _fact;};
-    double getDeratingWeightFact(){return deratingWeightFact;};
-
-    void computeTraj();
-    double computeVarErr();
 
 private:
     double usMinDist = 0.25;
