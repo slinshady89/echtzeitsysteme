@@ -126,6 +126,9 @@ int main(int argc, char **argv)
   velocity.data = 0;
   steering.data = 0;
 
+  //! controller object
+  CController ctrl(17.5, 3.5, 0.1, looptime, 1000);
+
   ros::init(argc, argv, "trajectory_planning");
 
   dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig> server;
@@ -158,9 +161,6 @@ int main(int argc, char **argv)
   //! define rqt_reconfigure server callback function
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
-
-  //! controller object
-  CController ctrl(17.5, 3.5, 0.1, looptime, 1000);
 
   //! set rate for while loop
   ros::Rate loop_rate(1 / looptime);
@@ -221,17 +221,32 @@ int main(int argc, char **argv)
 
         trajectory.publish(trajectory_points);
 
-        //! debugging
-        ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
-        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (traj.getPointOnTrajAt(ctrl_dist/100.0f).y));
-        
-        auto steer_single_point = ctrl.computeSteering(traj.getPointOnTrajAt(ctrl_dist/100.0f).y);
+        // calculate steering angle in an area around the
+        double weightDecreasingFact = 0.95;
+        std::vector<double> weights;
+        std::vector<double> errs;
+        errs.emplace_back(trajectory_points.points.front().y);
+        weights.emplace_back(1.0);
+        for (double s = delta_dist; s < ctrl_dist/100.0f;){
+          weights.emplace_back(weights.back()*weightDecreasingFact);
+          auto err = traj.getPointOnTrajAt(s).y;
+          errs.emplace_back(err);
+          s += delta_dist;
+        }
+        std::reverse(weights.begin(), weights.end());
+        ctrl.setVecErrsWeights(weights);
+
+        auto steer_rescue = ctrl.computeSteeringTraj(errs);
+        ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
+
+        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
+        auto steer_single_point = ctrl.computeSteering(errs.back());
 
         auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 
-        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl);
+        ROS_INFO("calculated steering ctrl: %.d \n", steer_rescue);
 
-        steering.data = static_cast<short>(steering_ctrl);
+        steering.data = static_cast<short>(steer_rescue);
 
         steeringCtrl.publish(steering);
 
