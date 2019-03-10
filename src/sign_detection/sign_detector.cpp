@@ -35,6 +35,20 @@
 #define STOP_ACTIVE_TIME 3
 #define PED_ACTIVE_TIME 3
 
+int signChecker(std::string objectClass) {
+    if (objectClass == "stop") {
+        return STOP;
+    }
+    else if (objectClass == "pedestrian") {
+        return PED;
+    }
+    else if (objectClass == "forty") {
+        return FORTY;
+    }
+    else {
+        return SEVENTY;
+    }
+}
 
 void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg, int &sign) {
     int biggestArea = 0;
@@ -50,20 +64,6 @@ void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg,
     }
 }
 
-int signChecker(std::string objectClass) {
-    if (objectClass == "stop") {
-        return STOP;
-    }
-    else if (objectClass == "pedestrian") {
-        return PED;
-    }
-    else if (objectClass == "forty") {
-        return FORTY;
-    }
-    else {
-        return SEVENTY;
-    }
-}
 
 int main (int argc, char** argv) {
 
