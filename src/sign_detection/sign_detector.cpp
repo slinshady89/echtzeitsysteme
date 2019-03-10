@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "darknet_ros_msgs/BoundingBoxes.h"
-#include "darknet_ros_msgs/BoundingBox.h"
+#include <darknet_ros_msgs/BoundingBoxes.h>
+#include <darknet_ros_msgs/BoundingBox.h>
 #include <std_msgs/Int16.h>
 #include <string>
 
@@ -77,7 +77,7 @@ int main (int argc, char** argv) {
 
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = nh.subscribe("bounding_boxes", 10, boost::bind(signDetectionCallback, _1, boost::ref(inputSign)));
+    ros::Subscriber sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("bounding_boxes", 10, boost::bind(signDetectionCallback, _1, boost::ref(inputSign)));
 
     ros::Publisher pub = nh.advertise<std_msgs::Int16>("sign_flag", 1);
 
