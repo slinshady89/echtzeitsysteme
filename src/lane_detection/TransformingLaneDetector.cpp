@@ -67,10 +67,12 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
         rightLanePoints_px.swap(contoursGreen.at(green2ndLargest));
     }*/
 
+    rightLanePoints_px.erase(rightLanePoints_px.begin(),rightLanePoints_px.end());
+    leftLanePoints_px.erase(leftLanePoints_px.begin(),leftLanePoints_px.end());
 
     if(largestIsRight) {
         if (contoursGreen.at(greenLargest).size() > 10) {
-            auto it = contoursGreen.at(greenLargest).size() / 4;
+            auto it = contoursGreen.at(greenLargest).size() / 8;
             for (int j = 0; j < contoursGreen.at(greenLargest).size()/ 2;) {
                 rightLanePoints_px.emplace_back(contoursGreen.at(greenLargest).at(j));
                 j = j + it;
@@ -80,7 +82,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             rightLanePoints_px.swap(contoursGreen.at(greenLargest));
         }
         if (contoursGreen.at(green2ndLargest).size() > 10) {
-            auto it = contoursGreen.at(green2ndLargest).size() / 4;
+            auto it = contoursGreen.at(green2ndLargest).size() / 8;
             for (int j = 0; j < contoursGreen.at(green2ndLargest).size()/ 2;) {
                 leftLanePoints_px.emplace_back(contoursGreen.at(green2ndLargest).at(j));
                 j = j + it;
@@ -92,7 +94,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             }
     }else{
         if (contoursGreen.at(greenLargest).size() > 10) {
-            auto it = contoursGreen.at(greenLargest).size() / 4;
+            auto it = contoursGreen.at(greenLargest).size() / 8;
             for (int j = 0; j < contoursGreen.at(greenLargest).size() / 2; ) {
                 leftLanePoints_px.emplace_back(contoursGreen.at(greenLargest).at(j));
                 j  = j+ it;
@@ -101,7 +103,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             leftLanePoints_px.swap(contoursGreen.at(greenLargest));
         }
         if (contoursGreen.at(green2ndLargest).size() > 10) {
-            auto it = contoursGreen.at(green2ndLargest).size() / 4;
+            auto it = contoursGreen.at(green2ndLargest).size() / 8;
             for (int j = 0; j < contoursGreen.at(green2ndLargest).size() / 2 ; ) {
                 rightLanePoints_px.emplace_back(contoursGreen.at(green2ndLargest).at(j));
                 j  = j+ it;
@@ -110,6 +112,8 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             rightLanePoints_px.swap(contoursGreen.at(green2ndLargest));
         }
     }
+    contoursGreen.erase(contoursGreen.begin(),contoursGreen.end());
+
     sortPointsInDescendingYOrder(rightLanePoints_px);
     sortPointsInDescendingYOrder(leftLanePoints_px);
     proc.setImage(greenLines, GREY);
