@@ -99,6 +99,7 @@ int main (int argc, char** argv) {
 
     while (ros::ok()) {
         int biggestArea(0);
+        inputSign = 0;
         for (auto it : inputBox.bounding_boxes){
             int height = it.ymax - it.ymin;
             int width = it.xmax - it.xmin;
