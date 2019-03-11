@@ -195,7 +195,7 @@ int main(int argc, char **argv)
         std::vector<double> curv_traj;
         ctrl.setUsMinDist(0.35);
         if (!ctrl.ctrlLoop(usl.range, usr.range, usf.range)) {
-          velocity.data = 0;
+          //velocity.data = 0;
         } else {
           double v = 1.0; // 1m/s
           // this way the trajectories curvature is calculated at every
@@ -203,6 +203,7 @@ int main(int argc, char **argv)
           velocity.data = static_cast<short>(vel);
           curv_traj = traj.calcCurvature(v / looptime);
         }
+        velocity.data = static_cast<short>(vel);
 
         //! setup vehicle model object and set calculated trajectory
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
@@ -240,15 +241,19 @@ int main(int argc, char **argv)
         ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
 
         ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
-        auto steer_single_point = ctrl.computeSteering(errs.back());
+
+        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (traj.getPointOnTrajAt(ctrl_dist/100.0f).y));
+        auto steer_single_point = ctrl.computeSteering(traj.getPointOnTrajAt(ctrl_dist/100.0f).y);
+        //auto steer_single_point = ctrl.computeSteering(errs.back());
 
         auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 
-        ROS_INFO("calculated steering ctrl: %.d \n", steer_single_point);
+        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl);
 
-        steering.data = static_cast<short>(steer_single_point);
+        steering.data = static_cast<short>(steering_ctrl);
 
-        steeringCtrl.publish(steering);
+        //steeringCtrl.publish(steering);
+        steering.data = static_cast<short>(steering_ctrl);
 
         trajectory_points.points.clear();
       }

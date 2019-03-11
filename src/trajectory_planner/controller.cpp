@@ -24,13 +24,16 @@ bool CController::ctrlLoop(sensor_msgs::Range _rangeUSL, sensor_msgs::Range _ran
     if (_rangeUSL.range < 1.0)        ROS_INFO("US left: %f",(float) _rangeUSL.range);     
     if (_rangeUSR.range < 1.0)        ROS_INFO("US right: %f",(float) _rangeUSR.range);
   if (_rangeUSL.range <= minDist) {
-    if (_rangeUSL.range != 0) return false;
+    if (_rangeUSL.range != 0.0) return false;
+    else return true;
   }
   if (_rangeUSR.range <= minDist) {
-    if (_rangeUSR.range != 0) return false;
+    if (_rangeUSR.range != 0.0) return false;
+    else return true;
   }
   if (_rangeUSF.range <= minDist) {
-    if (_rangeUSF.range != 0) return false;
+    if (_rangeUSF.range != 0.0) return false;
+    else return true;
   }
 };
 
