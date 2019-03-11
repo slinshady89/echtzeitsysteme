@@ -222,38 +222,17 @@ int main(int argc, char **argv)
 
         trajectory.publish(trajectory_points);
 
-        // calculate steering angle in an area around the
-        double weightDecreasingFact = 0.95;
-        std::vector<double> weights;
-        std::vector<double> errs;
-        errs.emplace_back(trajectory_points.points.front().y);
-        weights.emplace_back(1.0);
-        for (double s = delta_dist; s < ctrl_dist/100.0f;){
-          weights.emplace_back(weights.back()*weightDecreasingFact);
-          auto err = traj.getPointOnTrajAt(s).y;
-          errs.emplace_back(err);
-          s += delta_dist;
-        }
-        std::reverse(weights.begin(), weights.end());
-        ctrl.setVecErrsWeights(weights);
-
-        auto steer_rescue = ctrl.computeSteeringTraj(errs);
-        ROS_INFO("Steering with vecTraj: %f\n", steer_rescue);
-
-        ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (errs.back()));
 
         ROS_INFO("ERR AT CTRL_DIST: %.3f\n", (traj.getPointOnTrajAt(ctrl_dist/100.0f).y));
-        auto steer_single_point = ctrl.computeSteering(traj.getPointOnTrajAt(ctrl_dist/100.0f).y);
-        //auto steer_single_point = ctrl.computeSteering(errs.back());
+        short steer_single_point = (ctrl.computeSteering(traj.getPointOnTrajAt(ctrl_dist/100.0f).y));
 
-        auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
+        ROS_INFO("calculated steering ctrl: %d \n", steer_single_point);
 
-        ROS_INFO("calculated steering ctrl: %.d \n", steering_ctrl);
+        steering.data = short(veh.steeringAngleDegToSignal(steer_single_point));
 
-        steering.data = static_cast<short>(steering_ctrl);
+        //steering.data = static_cast<short>(steer_single_point);
 
-        //steeringCtrl.publish(steering);
-        steering.data = static_cast<short>(steering_ctrl);
+        steeringCtrl.publish(steering);
 
         trajectory_points.points.clear();
       }
