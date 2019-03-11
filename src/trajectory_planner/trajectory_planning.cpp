@@ -244,9 +244,9 @@ int main(int argc, char **argv)
 
         auto steering_ctrl = veh.steeringAngleDegToSignal(steer_single_point);
 
-        ROS_INFO("calculated steering ctrl: %.d \n", steer_rescue);
+        ROS_INFO("calculated steering ctrl: %.d \n", steer_single_point);
 
-        steering.data = static_cast<short>(steer_rescue);
+        steering.data = static_cast<short>(steer_single_point);
 
         steeringCtrl.publish(steering);
 
