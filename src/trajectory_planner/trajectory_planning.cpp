@@ -3,7 +3,7 @@
 #include <geometry_msgs/Point.h>
 #include <trajectory_planning/trajectory.h>
 #include <trajectory_planning/vehModel.h>
-#include "trajectory_planning/polynomialRegression.h"
+#include <trajectory_planning/polynomialRegression.h>
 
 int vel = 0;
 int steer = 0;
@@ -13,9 +13,9 @@ double offset;
 
 void clearLineVecs();
 
-/*
- * callback function fpr trajectory custom points message
- * iterate over each Point in msg and save it in trajectory
+/*!
+ * @brief callback function for detected left line 
+ * @param[in] ros msg containing custom msg type for left line data points 
  */
 void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
@@ -28,6 +28,11 @@ void leftLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
     }
   }
 }
+
+/*!
+ * @brief callback function for detected right line 
+ * @param[in] ros msg containing custom msg type for right line data points 
+ */
 void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
   //ROS_INFO("RL Callback");
@@ -39,6 +44,11 @@ void rightLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
     }
   }
 }
+
+/*!
+ * @brief callback function for detected center line 
+ * @param[in] ros msg containing custom msg type for center line data points 
+ */
 void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
 {
   //ROS_INFO("CL Callback");
@@ -51,21 +61,37 @@ void centerLineCallback(const echtzeitsysteme::points::ConstPtr &msg)
   }
 }
 
+/*!
+ * Callback function for the left ultrasound sensor range.
+ * @param[in] ros msg containing the range msg from the left sensor
+ */
 void uslCallback(const sensor_msgs::Range::ConstPtr &uslMsg, sensor_msgs::Range *usl)
 {
   *usl = *uslMsg;
 }
 
+/*!
+ * Callback function for the front ultrasound sensor range.
+ * @param[in] ros msg containing the range msg from the front sensor
+ */
 void usfCallback(const sensor_msgs::Range::ConstPtr &usfMsg, sensor_msgs::Range *usf)
 {
   *usf = *usfMsg;
 }
 
+/*!
+ * Callback function for the right ultrasound sensor range.
+ * @param[in] ros msg containing the range msg from the right sensor
+ */
 void usrCallback(const sensor_msgs::Range::ConstPtr &usrMsg, sensor_msgs::Range *usr)
 {
   *usr = *usrMsg;
 }
 
+/*!
+ * @brief callback function for dynamic reconfigure service
+ * @param custom configuration for controller settings from rqt_reconfigure
+ */
 void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *ctrl)
 {
   ROS_INFO("Reconfigure Request: %f %f %f %d %d %d %d %f",
@@ -85,8 +111,8 @@ void ctrlParamCallback(echtzeitsysteme::ControllerConfig &config, CController *c
   offset = config.offset;
 }
 
-/**
- * Here comes the tracejtory planning magic
+/*
+ * Here starts the tracejtory planning magic
  */
 int main(int argc, char **argv)
 {
@@ -100,44 +126,51 @@ int main(int argc, char **argv)
   velocity.data = 0;
   steering.data = 0;
 
+  //! controller object
+  CController ctrl(17.5, 3.5, 0.1, looptime, 1000);
+
   ros::init(argc, argv, "trajectory_planning");
 
   dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig> server;
   dynamic_reconfigure::Server<echtzeitsysteme::ControllerConfig>::CallbackType f;
 
   ros::NodeHandle nh;
+
+  /*
+   * register publishing msgs at ros master
+   */
   ros::Publisher motorCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_motor_level_msg", 1);
   ros::Publisher steeringCtrl = nh.advertise<std_msgs::Int16>("/uc_bridge/set_steering_level_msg", 1);
 
+  /*
+   * subscribe to ros msgs and define callback functions
+   */
   ros::Subscriber leftLineSub = nh.subscribe("left_line", 1, leftLineCallback);
   ros::Subscriber rightLineSub = nh.subscribe("right_line", 1, rightLineCallback);
   ros::Subscriber centerLineSub = nh.subscribe("center_line", 1, centerLineCallback);
 
-
+  //! custom points msg
   echtzeitsysteme::points trajectory_points;
   ros::Publisher trajectory = nh.advertise<echtzeitsysteme::points>("trajectory", 1);   //TODO: change buffer size
 
-  // generate subscriber for us-sensor messages
+  //! generate subscriber for ultrasound sensors messages with a second attribute
   ros::Subscriber usrSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usr", 1, boost::bind(usrCallback, _1, &usr));
   ros::Subscriber uslSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usl", 1, boost::bind(uslCallback, _1, &usl));
   ros::Subscriber usfSub = nh.subscribe<sensor_msgs::Range>("/uc_bridge/usf", 1, boost::bind(usfCallback, _1, &usf));
 
-  CController ctrl(17.5, 3.5, 0.1, looptime, 1000);
-
-  ros::Rate loop_rate(1 / looptime);
-  
+  //! define rqt_reconfigure server callback function
   f = boost::bind(&ctrlParamCallback, _1, &ctrl);
   server.setCallback(f);
 
-
+  //! set rate for while loop
+  ros::Rate loop_rate(1 / looptime);
+  
   bool usedLeftLine = false;
-  ROS_INFO("Loop start!");
 
+  ROS_INFO("Loop start!");
   while (ros::ok())
   {
-    std::vector<double> left_line_x = {0.6,0.87,1.02,1.3,1.54,1.8};
-    std::vector<double> left_line_y = {0.2,0.17,0.22,.23,.22,.2};
-
+    //! use the longest detected line for trajectory calculation
     if (left_line_x.size() > right_line_x.size() && left_line_y.size() > right_line_y.size())
     {
       used_line_x = left_line_x;
@@ -150,8 +183,11 @@ int main(int argc, char **argv)
       usedLeftLine = false;
     }
 
+    //! only calculation trajectory if the size of the detected line is grater than 2
+    //! this is needed by spline interpolation
     if (used_line_x.size()>2 && used_line_y.size()>2)
       {
+        //! generate trajectory object based on the longest detected line and calculate trajectory
         CTrajectory usedLine = CTrajectory(used_line_x, used_line_y);
         CTrajectory traj = usedLine.calcTraj(usedLine, 1.0, usedLeftLine ? -offset : offset);
         ROS_INFO("Offset for trajectory calculation = %f", offset);
@@ -168,27 +204,22 @@ int main(int argc, char **argv)
           curv_traj = traj.calcCurvature(v / looptime);
         }
 
+        //! setup vehicle model object and set calculated trajectory
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
-
         veh.setDesired_trajectory_(traj);
 
         // remove for collision detection
         ROS_INFO("vel: %d\n", velocity.data);
         motorCtrl.publish(velocity);
 
-        trajectory_points.points.clear();
-
-        // calc points on the trajectory in aquidistant distances to publish them
+        //! calc points on the trajectory in equidistant distances to publish them
         auto delta_dist = traj.getVecWaypointDists().back() / 100;
         for (auto waypoint = 0.0; waypoint < traj.getVecWaypointDists().back(); )  {
           trajectory_points.points.emplace_back(traj.getPointOnTrajAt(waypoint));
           waypoint += delta_dist;
         }
 
-        ROS_INFO("ctrl_dist = %.2f", ctrl_dist/100.0f);
-
         trajectory.publish(trajectory_points);
-
 
         // calculate steering angle in an area around the
         double weightDecreasingFact = 0.95;
@@ -218,6 +249,8 @@ int main(int argc, char **argv)
         steering.data = static_cast<short>(steer_rescue);
 
         steeringCtrl.publish(steering);
+
+        trajectory_points.points.clear();
       }
       
     clearLineVecs();
