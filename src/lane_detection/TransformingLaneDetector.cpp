@@ -47,7 +47,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             green2ndLargest = i;
         }
     }
-    if(greenLargestSize >= contoursGreen.size() || green2ndLargest >= contoursGreen.size()) {
+    if(greenLargest >= contoursGreen.size() || green2ndLargest >= contoursGreen.size()) {
         ROS_INFO("greenLargestSize.size: %d", contoursGreen.size());
     }else {
 

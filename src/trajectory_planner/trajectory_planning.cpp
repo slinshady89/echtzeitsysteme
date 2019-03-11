@@ -195,7 +195,7 @@ int main(int argc, char **argv)
         std::vector<double> curv_traj;
         ctrl.setUsMinDist(0.35);
         if (!ctrl.ctrlLoop(usl.range, usr.range, usf.range)) {
-          //velocity.data = 0;
+          velocity.data = 0;
         } else {
           double v = 1.0; // 1m/s
           // this way the trajectories curvature is calculated at every
@@ -203,7 +203,6 @@ int main(int argc, char **argv)
           velocity.data = static_cast<short>(vel);
           curv_traj = traj.calcCurvature(v / looptime);
         }
-        velocity.data = static_cast<short>(vel);
 
         //! setup vehicle model object and set calculated trajectory
         VehicleModel veh(15.5, 25.5, 1000, -1000, 1000);
