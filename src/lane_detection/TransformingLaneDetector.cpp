@@ -79,7 +79,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
             }
         } else {
             ROS_INFO("Wait until the first frame has been received...");
-            rightLanePoints_px.swap(contoursGreen.at(greenLargest));
+            rightLanePoints_px=(contoursGreen.at(greenLargest));
         }
         if (contoursGreen.at(green2ndLargest).size() > 10) {
             auto it = contoursGreen.at(green2ndLargest).size() / 8;
@@ -90,7 +90,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
         }
         else
             {
-            leftLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+            leftLanePoints_px = (contoursGreen.at(green2ndLargest));
             }
     }else{
         if (contoursGreen.at(greenLargest).size() > 10) {
@@ -100,7 +100,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
                 j  = j+ it;
             }
         } else {
-            leftLanePoints_px.swap(contoursGreen.at(greenLargest));
+            leftLanePoints_px=(contoursGreen.at(greenLargest));
         }
         if (contoursGreen.at(green2ndLargest).size() > 10) {
             auto it = contoursGreen.at(green2ndLargest).size() / 8;
@@ -109,7 +109,7 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
                 j  = j+ it;
             }
         }else {
-            rightLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+            rightLanePoints_px=(contoursGreen.at(green2ndLargest));
         }
     }
     contoursGreen.erase(contoursGreen.begin(),contoursGreen.end());
