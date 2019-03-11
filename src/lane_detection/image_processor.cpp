@@ -6,7 +6,8 @@
 
 Mat ImageProcessor::transformTo2D() {
     Mat output = Mat::zeros(Size(calibration.getDstWidth(), calibration.getDstHeight()), image.type());
-    warpPerspective(image, output, calibration.getTransformMatr(), output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
+    if(image.cols != 0 && image.rows != 0)
+        warpPerspective(image, output, calibration.getTransformMatr(), output.size()); // TODO: good idea to write back to the same image? allow a different image size than the original one?
 
     image = output;
 

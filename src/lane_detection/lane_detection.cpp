@@ -89,9 +89,9 @@ int main(int argc, char **argv)
 
   echtzeitsysteme::points right_line, left_line, center_line;
 
-  ros::Publisher right_line_pub = nh.advertise<echtzeitsysteme::points>("right_line", 10);
-  ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 10);
-  ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 10);
+  ros::Publisher right_line_pub = nh.advertise<echtzeitsysteme::points>("right_line", 1);
+  ros::Publisher left_line_pub = nh.advertise<echtzeitsysteme::points>("left_line", 1);
+  ros::Publisher center_line_pub = nh.advertise<echtzeitsysteme::points>("center_line", 1);
 
   ros::Rate loop_rate(LOOP_RATE_IN_HERTZ);
 
@@ -111,24 +111,33 @@ int main(int argc, char **argv)
 
     // detect lanes and publish the image after processing (for monitoring only)
     laneDetector.detectLanes(frame, lowGreen, highGreen, lowPink, highPink);
-    laneDetector.publishProcessedImage(processedImagePublisher);
 
     // prepare sending of new lane points
     right_line.points.clear();
     left_line.points.clear();
     center_line.points.clear();
-
+/*
+    int teiler = 50;
     // push points to messages
+    for (int j = 0; j*teiler < laneDetector.getLeftLane().size(); ++j) {
+      left_line.points.emplace_back(convertPointToMessagePoint(laneDetector.getLeftLane().at(j*teiler )));
+    }
+    for (int j = 0; j*teiler < laneDetector.getRightLane().size(); ++j) {
+      right_line.points.emplace_back(convertPointToMessagePoint(laneDetector.getRightLane().at(j*teiler)));
+    }*/
+
     for (auto it:laneDetector.getRightLane()) {
-    right_line.points.emplace_back(convertPointToMessagePoint(it));
+      right_line.points.emplace_back(convertPointToMessagePoint(it));
     }
     for (auto it:laneDetector.getLeftLane()) {
-    left_line.points.emplace_back(convertPointToMessagePoint(it));
+      left_line.points.emplace_back(convertPointToMessagePoint(it));
     }
     for (auto it:laneDetector.getMiddleLane()) {
-    center_line.points.emplace_back(convertPointToMessagePoint(it));
+      center_line.points.emplace_back(convertPointToMessagePoint(it));
     }
 
+
+    laneDetector.publishProcessedImage(processedImagePublisher);
     right_line_pub.publish(right_line);
     left_line_pub.publish(left_line);
     center_line_pub.publish(center_line);

@@ -23,9 +23,100 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
     proc.transformTo2D();
     Mat transformed = proc.convertToHSV();
 
+    std::vector<std::vector<Point> > contoursGreen, contoursPink;
+    std::vector<Vec4i> hierarchyGreen, hierarchyPink;
+
     // filter green lines
     Mat greenLines = proc.filterColor(lowColorGreen, highColorGreen);
+    findContours( greenLines, contoursGreen, hierarchyGreen, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+    int greenLargest(0);
+    int green2ndLargest(0);
+    int greenLargestSize(0);
+    int green2ndLargestSize(0);
 
+
+    for(int i = 0; i < contoursGreen.size(); i++){
+        auto size = contoursGreen.at(i).size();
+        if (size > greenLargestSize) {
+            green2ndLargestSize = greenLargestSize;
+            greenLargestSize = static_cast<int>(size);
+            green2ndLargest = greenLargest;
+            greenLargest = i;
+        } else if (size > green2ndLargestSize) {
+            green2ndLargestSize = static_cast<int>(size);
+            green2ndLargest = i;
+        }
+    }
+
+    double largestGreenMeanX_PX(0);
+    for(auto it: contoursGreen.at(greenLargest)) largestGreenMeanX_PX += it.x;
+    largestGreenMeanX_PX = largestGreenMeanX_PX / greenLargestSize;
+    double secondLargestGreenMeanX_PX(0);
+    for(auto it: contoursGreen.at(green2ndLargest)) secondLargestGreenMeanX_PX += it.x;
+    secondLargestGreenMeanX_PX = secondLargestGreenMeanX_PX / green2ndLargestSize;
+
+    bool largestIsRight = false;
+    if (largestGreenMeanX_PX > secondLargestGreenMeanX_PX) largestIsRight = true;
+
+/*
+    if(largestIsRight) {
+        rightLanePoints_px.swap(contoursGreen.at(greenLargest));
+        leftLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+    }else{
+        leftLanePoints_px.swap(contoursGreen.at(greenLargest));
+        rightLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+    }*/
+
+
+    if(largestIsRight) {
+        if (contoursGreen.at(greenLargest).size() > 10) {
+            auto it = contoursGreen.at(greenLargest).size() / 4;
+            for (int j = 0; j < contoursGreen.at(greenLargest).size()/ 2;) {
+                rightLanePoints_px.emplace_back(contoursGreen.at(greenLargest).at(j));
+                j = j + it;
+            }
+        } else {
+            ROS_INFO("Wait until the first frame has been received...");
+            rightLanePoints_px.swap(contoursGreen.at(greenLargest));
+        }
+        if (contoursGreen.at(green2ndLargest).size() > 10) {
+            auto it = contoursGreen.at(green2ndLargest).size() / 4;
+            for (int j = 0; j < contoursGreen.at(green2ndLargest).size()/ 2;) {
+                leftLanePoints_px.emplace_back(contoursGreen.at(green2ndLargest).at(j));
+                j = j + it;
+            }
+        }
+        else
+            {
+            leftLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+            }
+    }else{
+        if (contoursGreen.at(greenLargest).size() > 10) {
+            auto it = contoursGreen.at(greenLargest).size() / 4;
+            for (int j = 0; j < contoursGreen.at(greenLargest).size() / 2; ) {
+                leftLanePoints_px.emplace_back(contoursGreen.at(greenLargest).at(j));
+                j  = j+ it;
+            }
+        } else {
+            leftLanePoints_px.swap(contoursGreen.at(greenLargest));
+        }
+        if (contoursGreen.at(green2ndLargest).size() > 10) {
+            auto it = contoursGreen.at(green2ndLargest).size() / 4;
+            for (int j = 0; j < contoursGreen.at(green2ndLargest).size() / 2 ; ) {
+                rightLanePoints_px.emplace_back(contoursGreen.at(green2ndLargest).at(j));
+                j  = j+ it;
+            }
+        }else {
+            rightLanePoints_px.swap(contoursGreen.at(green2ndLargest));
+        }
+    }
+    sortPointsInDescendingYOrder(rightLanePoints_px);
+    sortPointsInDescendingYOrder(leftLanePoints_px);
+    proc.setImage(greenLines, GREY);
+
+
+    contoursGreen.erase(contoursGreen.begin(),contoursGreen.end());
+        /*
     // detect right and left line points and combine them in one sorted vector
     std::vector<Point2i> rightTmp = lpc.lanePoints(rows,rowsCount, LEFT, proc);
     std::vector<Point2i> leftRightTemp = lpc.lanePoints(rows, rowsCount, RIGHT, proc);
@@ -40,6 +131,8 @@ void TransformingLaneDetector::detectLanes(Mat &inputImage, Scalar &lowColorGree
     // add points to the vectors of the right / left line according to their relative position to the middle line
     addPointsToLeftAndRightLane(leftRightTemp);
     proc.setImage(pinkLine + greenLines, GREY);
+
+         */
 
 }
 

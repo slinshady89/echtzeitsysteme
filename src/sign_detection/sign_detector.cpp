@@ -34,7 +34,8 @@
 //constants
 #define STOP_ACTIVE_TIME 3
 #define PED_ACTIVE_TIME 3
-#define AREA_DEFAULT 50000
+#define AREA_DEFAULT 20000
+
 
 int signChecker(std::string objectClass) {
     if (objectClass == "stop") {
@@ -50,7 +51,7 @@ int signChecker(std::string objectClass) {
         return SEVENTY;
     }
 }
-
+/*
 void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg, int &sign) {
     int biggestArea = 0;
     sign = NONE;
@@ -63,6 +64,11 @@ void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg,
             sign = signChecker(it.Class);
         }
     }
+}*/
+
+void signDetectionCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg, darknet_ros_msgs::BoundingBoxes *inputBox)
+{
+    *inputBox = *msg;
 }
 
 
@@ -70,6 +76,7 @@ int main (int argc, char** argv) {
 
     std_msgs::Int16 publishedEvent;
 
+    darknet_ros_msgs::BoundingBoxes inputBox;
     int inputSign = NONE;
     int lastEvent = MEDIUM_EVENT;
     int event = MEDIUM_EVENT;
@@ -78,7 +85,7 @@ int main (int argc, char** argv) {
 
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("bounding_boxes", 10, boost::bind(signDetectionCallback, _1, boost::ref(inputSign)));
+    ros::Subscriber sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/darknet_ros/bounding_boxes", 1, boost::bind(signDetectionCallback, _1, &inputBox));
 
     ros::Publisher pub = nh.advertise<std_msgs::Int16>("sign_flag", 1);
 
@@ -91,6 +98,16 @@ int main (int argc, char** argv) {
     double delta = 0.0;
 
     while (ros::ok()) {
+        int biggestArea(0);
+        for (auto it : inputBox.bounding_boxes){
+            int height = it.ymax - it.ymin;
+            int width = it.xmax - it.xmin;
+            int area = height * width;
+            if (area >= biggestArea && area > AREA_DEFAULT) {
+                biggestArea = area;
+                inputSign = signChecker(it.Class);
+            }
+        }
 
         switch (state) {
             case RESET:
